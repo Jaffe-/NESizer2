@@ -13,7 +13,8 @@
 
 void setup_leds()
 {
-    // Set MISO/SHIFT_DATA, SCK/SHIFT_CLK and SS as output pins
+    // Set MISO/SHIFT_DATA, SCK/SHIFT_CLK and SS as output pins.
+    // SS (PB2) must be set to output even though it is never used. 
     DDRB |= SHIFT_DATA | SHIFT_CLK | SS;
     
     // Configure SPI (no interrupts, master, MSB first

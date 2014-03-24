@@ -112,13 +112,16 @@
         while(!(PORTC & PHI2));	  \
 	} while(0)
 
-#define databus_set(_VAL) do {     \
+/* 
+   The following macro waits for databus to be ready and 
+   puts the supplied value on the bus.
+*/
+#define databus_set(_VAL) do {    \
         databus_wait();           \
-        PORTD = _VAL;              \
+        PORTD = _VAL;             \
         } while(0)
 
 void register_write(uint8_t reg, uint8_t val);
-void register_write_final(uint8_t reg, uint8_t val);
 uint8_t status_read();
 void setup_2a03();
 

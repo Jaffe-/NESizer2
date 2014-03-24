@@ -4,44 +4,25 @@
 #include "2a03_io.h"
 
 /* 
-   NES APU interface
-
-   The APU is located on-die in the 2A03 IC. It is connected
-   internally to the 6502 CPU, and there are no external pins 
-   facilitating communication with the APU directly. This means
-   that all control of the APU must be done by using the 6502 to
-   store values in the APU registers. 
-
-   PORTD is connected to the 6502 databus. 
-
+   NES APU interface functions
 */
 
 void register_write(uint8_t reg, uint8_t val)
-/* Internal function for writing to register
+/* Write to register
   
    Writes a value to an APU register by feeding the 6502
    with instructions for loading the value into A, and then
    storing the value in $4014.
- */
+*/
 {
-    // Wait for 6502's read and but LDA_imm on databus
+    // Wait for 6502's read and put LDA_imm on databus
     databus_set(LDA_imm);
     databus_set(val);
 
     databus_set(STA_abs);
     databus_set(reg);
-    databus_set(0x40);
-}
+    databus_set(0x40)
 
-void register_write_final(uint8_t reg, uint8_t val)
-/* Write a value to a register
-   
-   This function writes a value to a register
- */
-{
-    register_write(reg, val);
-
-    // Have to put NOP on the buss to not halt the 6502
     databus_set(NOP);
 }
 
