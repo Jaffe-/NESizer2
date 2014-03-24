@@ -2,9 +2,6 @@
 
 The main idea of this project is to use an isolated NES 2A03 CPU/APU IC as a stand-alone synthesizer, controlled by an Atmega168 microcontroller. (The project is named NESizer2 after a failed attempt to create a NES synthesizer using only the 2A03 alone, with its own ROM, RAM and I/O logic.)
 
-
-### The idea
-
 The 2A03 IC consists of a 6502 core (with some minor differences), a DMA controller and the Audio Processing Unit. The various aspects of the APU are controlled via 22 registers, which are connected internally to the 6502 only. There are no external input pins facilitating communication with the APU. This means that in order to control the APU, the 6502 must act as a proxy. The microcontroller must send the 6502 instructions to take a value and put it in a desired register. 
 
 This project is inspired by a similar approach taken here: http://www.soniktech.com/tsundere/, but the approach here is to have the microcontroller communicate more directly with the 2A03, instead of using dedicated logic circuitry to send instructions.
@@ -25,12 +22,12 @@ The Atmega is hooked up to the 2A03 using the following connections:
 - **PC0**  --->  **RESET** pin on 2A03
 - **PC1**  <---  **PHI2** clock output from 2A03
 
-The Atmega168 runs on a 20MHz crystal oscillator clock, which is outputted on the **PB0** / **CLKO** pin. This clock is fed to the 2A03, and divided internally to provide a 20/12 MHz = 1.66MHz clock for the 6502 and APU. This is a bit too low for the 2A03 (it runst at 1.79MHz in the NES), but it has no serious impact on APU operation except for the length counters, which aren't that useful. 
+The Atmega168 runs on a 20MHz crystal oscillator clock, which is outputted on the **PB0** / **CLKO** pin. This clock is fed to the 2A03, and divided internally to provide a 20/12 MHz = 1.66MHz clock for the 6502 and APU. This is a bit lower than the usual frequency for the 2A03 (1.79 MHz), but it has no serious impact on APU operation.
 
-The reset could possibly be omitted (and just pulled high), but connecting it to the Atmega allows for the 2A03 to be reset at any time, which might be handy. 
+The reset connection could possibly be omitted (and the 2A03 reset pin just connected to a standard reset circuit), but connecting it to the Atmega allows for the 2A03 to be reset at any time, which might be handy. 
 
 The **PHI2** output (M2 in the schematic's 2A03 pinout) from the 2A03 is the clock signal of the 6502 which goes high when the 6502 reads or writes in memory. This simplifies synchronizing with the 6502 when sending it instructions. 
-	     
+
 	     
 #### 2A03 setup
 
@@ -40,15 +37,16 @@ In addition to the connections to the Atmega, some other connections are necessa
 - Pin 30 (diagonistics pin?) is pulled low
 - **SND1** and **SND2** (APU outputs) are pulled low via 100 ohm resistors
 
+The 100 ohm pull-down resistors on **SND1** and **SND2** are required for the DACs in the APU to function properly. This also has the effect that the output signals are very weak. 
+
 Apart from this and the usual power supply connections, there are no further connections made. The address bus and the gamepad inputs/outputs are simply left unconnected. 
 
-The 100 ohm pull-down resistors on **SND1** and **SND2** are required for the DACs in the APU to function properly. This also has the effect that the output signals are very weak. 
 
 #### Audio signal amplification
 
 #### Status LEDs
 
-The prototype board has 8 LEDs for debugging purposes. These are connected to a 74HC164 shift register, which is connected to the Atmega168 via SPI. 
+The prototype board has 8 LEDs for debugging purposes. These are connected to a 74HC164 shift register.
 
 ### Software
 
