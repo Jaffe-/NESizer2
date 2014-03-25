@@ -11,8 +11,6 @@ This project is inspired by a similar approach taken here: http://www.soniktech.
 
 The following image shows the most current schematic:
 
-![alt text](https://raw.githubusercontent.com/Jaffe-/NESizer2/master/hw.png "Hardware")
-
 
 #### The communication interface
 
