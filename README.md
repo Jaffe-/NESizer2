@@ -22,12 +22,15 @@ The Atmega is hooked up to the 2A03 using the following connections:
 - **PB0** (**CLKO**)  --->  clock input on 2A03
 - **PC0**  --->  **RESET** pin on 2A03
 - **PC1**  <---  **PHI2** clock output from 2A03
+- **PC2**  <---  **R/W** pin on 2A03
 
 The Atmega168 runs on a 20 MHz crystal oscillator clock, which is outputted on the **PB0** / **CLKO** pin. This clock is fed to the 2A03, and divided internally to provide a 20/12 MHz = 1.66MHz clock for the 6502 and APU. This is a bit lower than the usual frequency for the 2A03 (1.79 MHz), but it has no serious impact on APU operation.
 
 The reset connection could possibly be omitted (and the 2A03 reset pin just connected to a standard reset circuit), but connecting it to the Atmega allows for the 2A03 to be reset at any time, which might be handy. 
 
 The **PHI2** output (M2 in the schematic's 2A03 pinout) from the 2A03 is the clock signal of the 6502 which goes high when the 6502 reads or writes in memory. This simplifies synchronizing with the 6502 when sending it instructions. 
+
+The **R/W** output from the 2A03 is necessary to synchronize with the CPU.
 
 	     
 #### 2A03 setup
@@ -56,6 +59,15 @@ The prototype board has 8 LEDs for debugging purposes. These are connected to a 
 ### Software
 
 
+#### Running the 2A03 and synchronizing
+
+The 2A03 is kept idle by continuously holding 0x85, the opcode for `STA` (with zero page addressing), on the databus. The CPU thus continuously executes an `STA $85` instruction. 
+
+The reason for using this opcode instead of the more obvious `NOP` is to be able to synchronize with the CPU. This synchronization is done by monitoring the **R/W** line of the 2A03. When it goes low, the 6502 is writing to memory. This *only* happens when the `STA $85` instruction is in its third cycle, which means that the next cycle will be the fetch of the next opcode.
+
+The synchronization is done in the function `sync` by waiting for **R/W** to go low and **PHI2** to go high. When this is the case, the next time **PHI2** transitions from low to high the new instruction can be put on the bus. 
+
+
 #### Writing to the APU registers
 
 Writing to the APU registers is done by making the 6502 perform the following series of instructions:
@@ -63,7 +75,11 @@ Writing to the APU registers is done by making the 6502 perform the following se
     LDA #VALUE		0xA9 VALUE
     STA $40RR		0x8D 0xRR 0x40
 
-where RR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when **PHI2** goes high, and keep them on there long enough for the 6502 to read. When such a register write sequence is done, the Atmega must output the `NOP` opcode (0xEA) on the bus, so that the 6502 is kept busy (doing nothing) and doesn't halt. 
+where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when **PHI2** goes high, and keep them on there long enough for the 6502 to read. The `databus_wait` function is used to wait for **PHI2**'s transition. 
+
+When a register write sequence (or the last of many) is done, the function `reset_pc` is called. This sends a `JMP $0000` instruction (in the same manner as described) to reset the program counter back to $0000. This reset is necessary to keep the CPU from reading from addresses in the internal register range, which could lead to a bus conflict where the internal registers most likely win and the CPU fetches an unintentional opcode.
+
+Lastly, the Atmega puts the idle `STA` opcode (0x85) back on the bus.
 
 
 #### Reading from status register
