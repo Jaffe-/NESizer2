@@ -2,6 +2,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include "2a03_io.h"
+#include "leds.h"
 
 int main()
 {
