@@ -83,7 +83,7 @@ Lastly, the Atmega puts the idle `STA` opcode (0x85) back on the bus.
 
 #### Reading from status register
 
-The status register is the only readable APU register, and it contains information that is pretty much useless when not doing interrupt-based programming of the APU. Nonetheless I think it would be nice to be able to read its contents, just as a challenge more than anything. 
+The status register is the only readable APU register, and it contains information that is pretty much useless when not doing interrupt-based programming of the APU, but for completeness, the function `status_read` allows for it to be read. 
 
 Reading from the status register is done by sending the following instruction:
 
