@@ -16,15 +16,14 @@ The following image shows the most current schematic:
 
 #### The communication interface
 
+Both the Atmega168 and the 2A03 are clocked by a 20 MHz crystal oscillator circuit based on 74HCT04 inverters. The 2A03 divides this clock by 12 internally to provide a 1.66 MHz clock for the 6502 and APU. This is a bit lower than the usual frequency for the 2A03 (1.79 MHz), but it has no serious impact on APU operation (timer values become a bit different).
+
 The Atmega is hooked up to the 2A03 using the following connections:
 
 - **PORTD** (**PD0** .. **PD7**)  <--->  **D0** .. **D7** on 2A03
-- **PB0** (**CLKO**)  --->  clock input on 2A03
 - **PC0**  --->  **RESET** pin on 2A03
 - **PC1**  <---  **PHI2** clock output from 2A03
 - **PC2**  <---  **R/W** pin on 2A03
-
-The Atmega168 runs on a 20 MHz crystal oscillator clock, which is outputted on the **PB0** / **CLKO** pin. This clock is fed to the 2A03, and divided internally to provide a 20/12 MHz = 1.66MHz clock for the 6502 and APU. This is a bit lower than the usual frequency for the 2A03 (1.79 MHz), but it has no serious impact on APU operation.
 
 The reset connection could possibly be omitted (and the 2A03 reset pin just connected to a standard reset circuit), but connecting it to the Atmega allows for the 2A03 to be reset at any time, which might be handy. 
 
@@ -48,7 +47,7 @@ Apart from this and the usual power supply connections, there are no further con
 
 #### Audio signal amplification
 
-The output signals **SND1** and **SND2** are amplified up to line level and brought out on a stereo jack. There is also a mono mix made of the two with the same mixing ratio as in the NES, which is also amplified to line level.
+The output signals **SND1** and **SND2** are amplified up to line level and brought out on a stereo jack. There is also a mono mix made of the two with the same mixing ratio as in the NES, which is also amplified to line level. A somewhat shitty LM324 op-amp is used for all those purposes, in lack of a better one.
 
 
 #### Status LEDs
