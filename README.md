@@ -62,23 +62,27 @@ The prototype board has 8 LEDs for debugging purposes. These are connected to a 
 
 The 2A03 is kept idle by continuously holding 0x85, the opcode for `STA` (with zero page addressing), on the databus. The CPU thus continuously executes an `STA $85` instruction. 
 
-The reason for using this opcode instead of the more obvious `NOP` is to be able to synchronize with the CPU. This synchronization is done by monitoring the **R/W** line of the 2A03. When it goes low, the 6502 is writing to memory. This *only* happens when the `STA $85` instruction is in its third cycle, which means that the next cycle will be the fetch of the next opcode.
+The reason for using this opcode instead of the more obvious `NOP` is to be able to synchronize with the CPU when a new instruction is to be sent. This synchronization is done by monitoring the **R/W** line of the 2A03. When it goes low, the 6502 is writing to memory. This *only* happens when the `STA $85` instruction is in its third cycle, which means that the next cycle will be the fetch of the next opcode.
 
-The synchronization is done in the function `sync` by waiting for **R/W** to go low and **PHI2** to go high. When this is the case, the next time **PHI2** transitions from low to high the new instruction can be put on the bus. 
+The synchronization is done in the inline function `sync` by waiting for **R/W** to go low and **PHI2** to go high. When this is the case, the next time **PHI2** transitions from low to high the new instruction can be put on the bus. 
+
+During actual transmission of instructions, the `databus_wait` inline function is used to synchronize with the 6502's read cycles by waiting for **PHI2** to go high.
 
 
 #### Writing to the APU registers
 
-Writing to the APU registers is done by making the 6502 perform the following series of instructions:
+Writing to APU registers is done by the functions `register_write` and `register_write_all` which write one or all of the registers, respectively. 
+
+Actually writing to the APU registers is done by the function `register_set`. It makes the 6502 perform the following series of instructions:
 
     LDA #VALUE		0xA9 VALUE
     STA $40RR		0x8D 0xRR 0x40
 
 where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when **PHI2** goes high, and keep them on there long enough for the 6502 to read. The `databus_wait` function is used to wait for **PHI2**'s transition. 
 
-When a register write sequence (or the last of many) is done, the function `reset_pc` is called. This sends a `JMP $0000` instruction (in the same manner as described) to reset the program counter back to $0000. This reset is necessary to keep the CPU from reading from addresses in the internal register range, which could lead to a bus conflict where the internal registers most likely win and the CPU fetches an unintentional opcode.
+When a register write sequence (or the last of many in `register_write_all`'s case) is done, the function `reset_pc` is called. This sends a `JMP $4018` instruction (in the same manner as described) to reset the program counter back to $4018. This reset is necessary to keep the CPU from reading from addresses in the internal register range, which could lead to a bus conflict where the internal registers could win and the CPU fetches an unintentional opcode.
 
-Lastly, the Atmega puts the idle `STA` opcode (0x85) back on the bus.
+Lastly, the idle `STA` opcode (0x85) is put back on the bus to keep the CPU busy.
 
 
 #### Reading from status register
@@ -88,5 +92,6 @@ The status register is the only readable APU register, and it contains informati
 Reading from the status register is done by sending the following instruction:
 
     LDA $4015		0xAD 0x15 0x40
+    STA $85		0x85 0x85
     
-After the three bytes are output (as described above), the Atmega waits for **PHI2** to go low and then high again. When this happens, the 6502 is in the last cycle of the `LDA $4015` instruction, where it reads from the APU status register. Even though the register is read internally in the IC, the 6502 still drives the buses, and so the value it reads from $4015 is visible on the databus. When this happens, **PORTD** on the Atmega is switched from output to input, and the databus value is stored. **PORTD** is then tri-stated and then switched back to output, and a NOP instruction opcode is put on the bus. 
+The `LDA` instruction is put on the bus, and the fourth cycle is waited out. Then the `STA` instruction is sent, and the CPU waits for **PHI2** to go high during the third cycle. At this point **PORTD** is switched from output to input, and after two Atmega cycles, the value on the bus is read. **PORTD** is then switched back to output. 
