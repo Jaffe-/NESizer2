@@ -16,3 +16,4 @@ void register_write(uint8_t reg, uint8_t value);
 void register_write_all(uint8_t* values);
 uint8_t status_read();
 void setup_2a03();
+void tst_2a03();

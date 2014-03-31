@@ -2,6 +2,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include "2a03_io.h"
+#include "leds.h"
 
 /* 
    2a03_io.c 
@@ -12,6 +13,8 @@
 
 /* Internal utility functions */
 
+inline void databus_wait();
+
 inline void sync() 
 /*
   Synchronizes with the CPU by waiting for the R/W line to go high. When this
@@ -19,8 +22,12 @@ inline void sync()
   instruction (it is writing the bogus value to memory). 
  */
 {
-    while ((PINC & RW) && ~(PINC & PHI2));
+    while(PINC & RW);
+    while(!(PINC & RW));
+    while(PINC & RW);
+    while(!(PINC & PHI2));
 }
+
 
 inline void databus_wait()
 /*
@@ -29,8 +36,7 @@ inline void databus_wait()
 */
 {
     // If PHI2 is already 1, we'll wait until it goes low again
-    if (PINC & PHI2)
-	while (PINC & PHI2);
+    while (PINC & PHI2);
 
     // Wait until PHI2 transitions from low to high
     while (!(PINC & PHI2));
@@ -62,7 +68,15 @@ inline void register_set(uint8_t reg, uint8_t val)
     databus_set(STA_abs);         // takes 4 cycles
     databus_set(reg);
     databus_set(0x40);
-    databus_wait();               // wait out the last cycle
+//    while(PINC & RW);
+//    PORTD = 0;
+//    DDRD = 0;
+//    while(!(PINC & PHI2));
+//    while(PINC & PHI2);
+
+//    DDRD = 0xFF;
+    databus_wait();
+
 }
 
 inline void reset_pc() 
@@ -72,10 +86,10 @@ inline void reset_pc()
    This function assumes that synchronization is done. 
 */
 {
-    // Send JMP 0 instruction:
+    // Send JMP 0x4018 instruction:
     databus_set(JMP_abs);
-    databus_set(0);
-    databus_set(0);
+    databus_set(0x18);
+    databus_set(0x40);
 
     // Send default LDA instruction
     databus_set(STA_zp);
@@ -159,11 +173,17 @@ uint8_t read_status()
     PORTD = 0;
     DDRD = 0;
 
+    asm("nop\n");
+    asm("nop\n");
+    asm("nop\n");
+    asm("nop\n");
+    asm("nop\n");
+
     // Capture the value on the databus
     uint8_t val = PIND;
     
     // Configure PORT D as output again and send a NOP
-    DDRD = 1;
+    DDRD = 0xFF;
     PORTD = 0;     
    
     PORTD = STA_zp;
@@ -178,7 +198,7 @@ void reset_2a03()
     PORTC &= ~RES;
 
     // Hold it low for some time, for 6502 to perform reset
-    _delay_ms(1);
+    _delay_ms(10);
 
     // Set /RES high again
     PORTC |= RES;
@@ -197,8 +217,10 @@ void setup_2a03()
     PORTD = STA_zp;
 
     // Configure the /RES pin on PORT C as output and set /RES high
-    DDRC |= RES;
-    PORTC |= RES;
+    DDRC = RES;
+    PORTC = RES | RW | PHI2;
+
+    _delay_ms(50);
 
     // Reset the 2A03
     reset_2a03();
@@ -208,7 +230,15 @@ void setup_2a03()
     
     // The CPU should now be executing instructions. Instruct it to jump to 
     // address 0. This way the addresses can be monitored. 
+    sync();
+
+    // Send SEI instruction
+    databus_set(0x78);
+    databus_wait();
+
     reset_pc();
+
+    databus_set(STA_zp);
 
     // Now the 6502 should be ready to receive instructions (?)
 
