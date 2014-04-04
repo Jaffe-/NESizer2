@@ -86,6 +86,7 @@ void tri_update()
 void noise_setup()
 {
     register_update(NOISE_VOL, NOISE_LENGTH_CNTR_DISABLE | NOISE_CONSTANT_VOLUME);
+    register_update(NOISE_HI, 0b1000);
 }
 
 void noise_update()

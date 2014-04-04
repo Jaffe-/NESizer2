@@ -1,6 +1,8 @@
 #pragma once
 
+
 /* The channels */
+
 #define SQ1 1
 #define SQ2 0b10
 #define TRI 0b100
@@ -37,6 +39,7 @@
 
 
 /* Common bit masks and positions */
+
 #define VOLUME_m 0b00001111
 #define PERIOD_HI_m 0b00000111
 
@@ -46,29 +49,22 @@
 #define LENGTH_CNTR_LOAD_p 3
 
 
-/* PULSE channels */
+/* Square channels */
 
 // flags
 #define SQ_LENGTH_CNTR_DISABLE 0b00100000
-#define SQ_LOOP_ENVELOPE 0b00100000
 #define SQ_CONSTANT_VOLUME 0b00010000
-#define SQ_ENVELOPE_DISABLE 0b00010000
-#define SQ_SWEEP_ENABLE 0b10000000
-#define SQ_SWEEP_NEGATIVE 0b00001000
 
 // bit positions
 #define SQ_DUTY_p 6
-#define SQ_ENVELOPE_PERIOD_p 0
 #define SQ_VOLUME_p 0
 #define SQ_LENGTH_CNTR_LOAD_p 3
 
 // masks
-#define SQ_VOL_m 0b00001111
 #define SQ_DUTY_m 0b11000000
-#define SQ_PERIOD_HI_m 0b00000111
 
 
-/* TRIANGLE channel */
+/* Triangle channel */
 
 // flags
 #define TRI_LENGTH_CNTR_DISABLE 0b10000000
@@ -77,18 +73,12 @@
 #define TRI_LINEAR_RELOAD_bp 0
 #define TRI_LENGTH_CNTR_LOAD_bp 3
 
-// masks
-#define TRI_PERIOD_HI_m 0b00000111
 
-
-/* NOISE channel */
+/* Noise channel */
 
 // flags
-#define NOISE_LOOP_ENVELOPE 0b00100000
 #define NOISE_LENGTH_CNTR_DISABLE 0b00100000
 #define NOISE_CONSTANT_VOLUME 0b00010000
-#define NOISE_ENVELOPE_DISABLE 0b00010000
-#define NOISE_LOOP_ENABLE 0b10000000
 
 // bit positions
 #define NOISE_LENGTH_CNTR_LOAD_bp 3
@@ -107,7 +97,7 @@
 #define DMC_LOOP_SAMPLE 0b01000000
 
 
-/* CONTROL register */
+/* Control register */
 
 #define DMC_ENABLE_m 0b00010000
 #define NOISE_ENABLE_m 0b00001000
@@ -120,11 +110,6 @@
 #define TRI_ENABLE_p 2
 #define SQ2_ENABLE_p 1
 #define SQ1_ENABLE_p 0
-
-/* FRAME register */
-
-#define FRAME_5STAGE 0b10000000
-#define FRAME_INTERRUPT_DISABLE 0b01000000
 
 
 struct Square {
