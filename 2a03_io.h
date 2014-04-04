@@ -13,7 +13,8 @@
 #define RW 0b100          // PC2
 
 void register_write(uint8_t reg, uint8_t value);
-void register_write_all(uint8_t* values);
-uint8_t status_read();
+void register_write_all();
+uint8_t status_read();   
 void setup_2a03();
-void tst_2a03();
+
+uint8_t reg_buffer[0x16];
