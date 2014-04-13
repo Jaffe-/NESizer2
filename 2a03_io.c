@@ -129,9 +129,6 @@ void register_write_all()
     for (uint8_t i = 0; i <= 0x15; i++)
 	reg_update[i] = (reg_buffer[i] != reg_mirror[i]);
 	
-    // Sync to 6502
-    sync();
-
     // Write to all registers that have been changed
     if (reg_update[0x15]) register_write(0x15, reg_buffer[0x15]);
 

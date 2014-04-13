@@ -3,11 +3,11 @@
 
 /* The channels */
 
-#define SQ1 1
-#define SQ2 0b10
-#define TRI 0b100
-#define NOISE 0b1000
-#define DMC 0b10000
+#define SQ1_bm 1
+#define SQ2_bm 0b10
+#define TRI_bm 0b100
+#define NOISE_bm 0b1000
+#define DMC_bm 0b10000
 
 
 /* The APU registers */
@@ -111,31 +111,52 @@
 #define SQ2_ENABLE_p 1
 #define SQ1_ENABLE_p 0
 
-
-struct Square {
+typedef struct {
     uint8_t duty : 2;
-    uint16_t period : 11;
+    uint16_t base_period : 11;
     uint8_t volume : 4;
     uint8_t enabled : 1;
-} sq1, sq2;
 
-struct { 
+    // Used internally:
     uint16_t period : 11;
-    uint8_t enabled : 1;
-} tri;
+} Square;
 
-struct {
+typedef struct { 
+    uint16_t base_period : 11;
+    uint8_t enabled : 1;
+
+    // Used internally:
+    uint16_t period : 11;
+} Triangle;
+
+typedef struct {
     uint8_t volume : 4;
     uint8_t loop : 1;
-    uint8_t period : 4;
+    uint8_t base_period : 4;
     uint8_t enabled : 1;
-} noise;
 
-struct {
+    // Used internally:
+    uint8_t period : 4;
+} Noise;
+
+typedef struct {
     uint8_t data : 7;
     uint8_t enabled : 1;
-} dmc;
+    uint8_t sample_enabled : 1;
+    uint8_t sample_loop : 1;
+    uint8_t* sample;
+    uint16_t sample_length;
+    uint8_t tuned_sample : 1;
+    uint16_t period : 11;
 
+    // Used internally:
+    uint16_t current;
+} DMC;
+
+Square sq1, sq2;
+Triangle tri;
+Noise noise;
+DMC dmc;
 
 /* Functions */
 
@@ -149,4 +170,5 @@ void noise_setup();
 void noise_update();
 void dmc_setup();
 void dmc_update();
+void dmc_update_sample();
 void apu_refresh();

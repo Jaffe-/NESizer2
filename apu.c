@@ -6,7 +6,7 @@
 /* 
 APU abstraction layer 
 
-Contains functions for putting channel data in registers
+Contains functions for putting channel data in registers. 
 
 */
 
@@ -23,7 +23,7 @@ inline void sq_setup(uint8_t n)
     register_update(SQ1_HI + n * 4, 1 << LENGTH_CNTR_LOAD_p);
 }
 
-inline void sq_update(uint8_t n, struct Square sq)
+inline void sq_update(uint8_t n, Square sq)
 {
     register_update(SQ1_VOL + n * 4, (reg_buffer[SQ1_VOL + n * 4] & ~(SQ_DUTY_m | VOLUME_m)) 
                                      | sq.volume << VOLUME_p
@@ -119,6 +119,22 @@ void dmc_update()
     register_update(DMC_RAW, dmc.data);
 }
 
+void dmc_update_sample() 
+{
+    if (dmc.sample != 0) {
+	if (dmc.current == dmc.sample_length) {
+	    dmc.current = 0;
+	    if (!dmc.sample_loop)
+		dmc.sample_enabled = 0;
+	}
+
+	dmc.data = dmc.sample[dmc.current];
+	dmc.current++;
+	
+	register_update(DMC_RAW, dmc.data);
+	register_write(DMC_RAW, dmc.data);
+    }
+}
 
 void apu_refresh()
 {
