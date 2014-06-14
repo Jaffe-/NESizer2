@@ -68,9 +68,9 @@ inline void lfo_apply(LFO* lfo, uint16_t* period, uint8_t intensity)
     if (intensity == 0) 
 	return;
     if (intensity < 60) 
-        *period = lfo->value / (60 - intensity);
+        *period += lfo->value / (60 - intensity);
     else
-	*period = lfo->value * (intensity - 58);
+	*period += lfo->value * (intensity - 58);
 }
 
 void lfo_apply_square(LFO* lfo, Square* sq, uint8_t intensity) 
@@ -82,4 +82,5 @@ void lfo_apply_triangle(LFO* lfo, Triangle* tri, uint8_t intensity)
 {
     lfo_apply(lfo, &(tri->period), intensity);
 }
+
 

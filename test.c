@@ -87,8 +87,11 @@ int main()
     dmc.sample_loop = 0;
     dmc_update();
 
-    lfo1.period = 100;
+    lfo1.period = 5;
     lfo1.waveform = LFO_SINE;
+
+    lfo2.period = 10;
+    lfo2.waveform = LFO_SINE;
 
     apu_refresh();
 
