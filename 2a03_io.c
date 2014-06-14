@@ -3,6 +3,7 @@
 #include <util/delay.h>
 #include "2a03_io.h"
 #include "leds.h"
+#include <util/atomic.h>
 
 /* 
    2a03_io.c 
@@ -13,7 +14,6 @@
 uint8_t io_reg_buffer[0x16] = {0};
 uint8_t reg_mirror[0x16] = {0};
 uint8_t reg_update[0x16] = {0};
-
 
 /* Internal utility functions */
 
@@ -102,15 +102,20 @@ void io_register_write(uint8_t reg, uint8_t value)
    storing the value in $4014.
 */
 {
-    // Wait for 6502 to reach the third cycle of its idle STA
-    // instruction. 
-    sync();
 
-    // Do the actual write
-    register_set(reg, value);
+    // Ensure that interrupts are disabled when doing this
 
-    // Jump back
-    reset_pc();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+	// Wait for 6502 to reach the third cycle of its idle STA
+	// instruction. 
+	sync();
+
+	// Do the actual write
+	register_set(reg, value);
+	
+	// Jump back
+	reset_pc();
+    }
 
     // Reflect change in mirror
     reg_mirror[reg] = value;
@@ -125,26 +130,30 @@ void io_register_write_all()
     // Write to all registers that have been changed
     if (reg_update[0x15]) io_register_write(0x15, io_reg_buffer[0x15]);
 
+    // Square 1
     if (reg_update[0x00]) io_register_write(0x00, io_reg_buffer[0x00]);
     if (reg_update[0x01]) io_register_write(0x01, io_reg_buffer[0x01]);
     if (reg_update[0x02]) io_register_write(0x02, io_reg_buffer[0x02]);
     if (reg_update[0x03]) io_register_write(0x03, io_reg_buffer[0x03]);
 
+    // Square 2
     if (reg_update[0x04]) io_register_write(0x04, io_reg_buffer[0x04]);
     if (reg_update[0x05]) io_register_write(0x05, io_reg_buffer[0x05]);
     if (reg_update[0x06]) io_register_write(0x06, io_reg_buffer[0x06]);
     if (reg_update[0x07]) io_register_write(0x07, io_reg_buffer[0x07]);
 
+    // Noise
     if (reg_update[0x08]) io_register_write(0x08, io_reg_buffer[0x08]);
     if (reg_update[0x0A]) io_register_write(0x0A, io_reg_buffer[0x0A]);
     if (reg_update[0x0B]) io_register_write(0x0B, io_reg_buffer[0x0B]);
 
+    // Triangle
     if (reg_update[0x0C]) io_register_write(0x0C, io_reg_buffer[0x0C]);
     if (reg_update[0x0E]) io_register_write(0x0E, io_reg_buffer[0x0E]);
     if (reg_update[0x0F]) io_register_write(0x0F, io_reg_buffer[0x0F]);
 
+    // DMC: Does not update data register
     if (reg_update[0x10]) io_register_write(0x10, io_reg_buffer[0x10]);
-//    if (reg_update[0x11]) io_register_write(0x11, io_reg_buffer[0x11]);
     if (reg_update[0x12]) io_register_write(0x12, io_reg_buffer[0x12]);
     if (reg_update[0x13]) io_register_write(0x13, io_reg_buffer[0x13]);
 

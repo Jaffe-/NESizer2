@@ -83,6 +83,3 @@ void lfo_apply_triangle(LFO* lfo, Triangle* tri, uint8_t intensity)
     lfo_apply(lfo, &(tri->period), intensity);
 }
 
-
-
-

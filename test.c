@@ -87,6 +87,9 @@ int main()
     dmc.sample_loop = 0;
     dmc_update();
 
+    lfo1.period = 100;
+    lfo1.waveform = LFO_SINE;
+
     apu_refresh();
 
     uint8_t dmc_pat[16] = {DRUM_KICK, EMPTY, DRUM_KICK, EMPTY,

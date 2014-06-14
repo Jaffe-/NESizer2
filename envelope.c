@@ -36,7 +36,10 @@ void envelope_update(Envelope* env)
 	env->value = env->sustain;
     }
 
-    uint8_t duration;
+    if (env->state == SUSTAIN) 
+	return;
+
+    uint8_t duration = 0;
 
     // Find out how long to count each step for to get desired envelope time:
     switch (env->state) {

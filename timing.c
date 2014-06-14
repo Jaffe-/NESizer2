@@ -14,6 +14,10 @@ uint16_t testp;
 
 void setup_timer()
 {
+/* Sets up the timing interrupt 
+
+Timer triggers inerrupt at X kHz
+*/
     time_step = 0;
 
     // Enable interrupts
@@ -46,9 +50,13 @@ ISR(TIMER0_COMPA_vect)
     if (testp % 40 == 0) {
 	envelope_update(&env1);
 	envelope_update(&env2);
+	lfo_update(&lfo1);
 	noise.volume = env1.value >> 1;
 	sq1.volume = env2.value >> 1;
 	sq2.volume = env2.value >> 1;
+	
+	lfo_apply_square(&lfo1, &sq1, 10);
+	
 	sq1_update();
 	sq2_update();
 	noise_update();
