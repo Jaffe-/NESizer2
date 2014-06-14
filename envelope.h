@@ -2,6 +2,7 @@
 
 #include <avr/io.h>
 
+// Envelope states
 #define ATTACK 0
 #define DECAY 1
 #define SUSTAIN 2
@@ -9,15 +10,24 @@
 #define OFF 4
 
 typedef struct {
+/* Envelope settings:
+   
+   attack, decay, release times
+   sustain level 
+   gate state (on or off)
+   retrigger flag (retrigger the envelope when restarted)
+*/
+
     uint8_t attack : 6;
     uint8_t decay : 6;
     uint8_t sustain : 4;
     uint8_t release : 6;
     uint8_t gate : 1;
+    uint8_t retrigger : 1;
 
-    // used by envelope logic:
+    // The following are internal:
     uint8_t value : 4;
-    uint8_t phase : 3;
+    uint8_t state : 3;
     uint8_t counter;
     uint8_t gate_prev : 1;
 } Envelope;

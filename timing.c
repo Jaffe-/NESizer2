@@ -7,6 +7,7 @@
 #include "envelope.h"
 #include "lfo.h"
 #include "leds.h"
+#include "drums.h"
 
 uint8_t time_step;
 uint16_t testp;
@@ -14,7 +15,6 @@ uint16_t testp;
 void setup_timer()
 {
     time_step = 0;
-    testp = 800;
 
     // Enable interrupts
     sei();
@@ -22,14 +22,15 @@ void setup_timer()
     // CTC operation
     TCCR0A = 0b10;
 
-    // Normal operation, clock prescaler 1024
-    TCCR0B = 0b10000010;
-    
-    OCR0A = 156;
-    OCR0B = 0;
+    OCR0A = 200;
+//    TCNT0 = 0;
 
     // Enable compare match interrupt
     TIMSK0 = 0b10;
+
+    // Normal operation, clock prescaler 1024
+    TCCR0B |= 0b10000010;
+    
 }
 
 ISR(TIMER0_COMPA_vect)
@@ -37,34 +38,26 @@ ISR(TIMER0_COMPA_vect)
    16kHz (16025 Hz) timer interrupt which drives all the logic
  */
 {
-
-    // Update sample in DMC
     if (dmc.enabled && dmc.sample_enabled) 
 	dmc_update_sample();
-  
-    // Refresh APU registers
-    apu_refresh();
+    
+    testp++;
 
-    // Envelopes are updated at 250 Hz frequency
-    if (time_step++ == 64) 
-	time_step = 0;
-    if (time_step == 1) {
+    if (testp % 40 == 0) {
 	envelope_update(&env1);
 	envelope_update(&env2);
-	envelope_update(&env3);
-    }
-    if (time_step % 2 == 1) {
-	lfo_update(&lfo1);
-	lfo_update(&lfo2);
-	lfo_update(&lfo3);
-    }
-    if (time_step % 2 == 0) {
-//	sq2.volume = env2.value;
-	lfo_apply_square(&sq2, &lfo1);
-	lfo_apply_square(&sq1, &lfo2);
-//	lfo_apply_triangle(&tri, &lfo1);
-	sq2_update();
+	noise.volume = env1.value >> 1;
+	sq1.volume = env2.value >> 1;
+	sq2.volume = env2.value >> 1;
 	sq1_update();
-	set_leds(1 << (((uint8_t)(lfo1.value + 0x80) >> 5)));
+	sq2_update();
+	noise_update();
+	apu_refresh();
     }
+
+    if (testp == 2000) {
+	drum_pattern_update(&dp);
+	testp = 0;
+    }
+    
 }

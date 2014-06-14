@@ -59,24 +59,30 @@ void lfo_update(LFO* lfo)
 	    break;
 	}
 
-	if (lfo->intensity == 0) 
-	    lfo->output = 0;
-	if (lfo->intensity < 60) 
-	    lfo->output = lfo->value / (60 - lfo->intensity);
-	else
-	    lfo->output = lfo->value * (lfo->intensity - 58);
-
 	lfo->position++;
     }
 }
 
-void lfo_apply_square(Square* sq, LFO* lfo)
+inline void lfo_apply(LFO* lfo, uint16_t* period, uint8_t intensity) 
 {
-    sq->period = sq->base_period + lfo->output;
+    if (intensity == 0) 
+	return;
+    if (intensity < 60) 
+        *period = lfo->value / (60 - intensity);
+    else
+	*period = lfo->value * (intensity - 58);
 }
 
-void lfo_apply_triangle(Triangle* tri, LFO* lfo)
+void lfo_apply_square(LFO* lfo, Square* sq, uint8_t intensity) 
 {
-    tri->period = tri->base_period + lfo->output;
+    lfo_apply(lfo, &(sq->period), intensity);
 }
+
+void lfo_apply_triangle(LFO* lfo, Triangle* tri, uint8_t intensity) 
+{
+    lfo_apply(lfo, &(tri->period), intensity);
+}
+
+
+
 

@@ -10,7 +10,7 @@
    NES APU interface functions
 */
 
-uint8_t reg_buffer[0x16] = {0};
+uint8_t io_reg_buffer[0x16] = {0};
 uint8_t reg_mirror[0x16] = {0};
 uint8_t reg_update[0x16] = {0};
 
@@ -71,13 +71,6 @@ inline void register_set(uint8_t reg, uint8_t val)
     databus_set(STA_abs);         // takes 4 cycles
     databus_set(reg);
     databus_set(0x40);
-//    while(PINC & RW);
-//    PORTD = 0;
-//    DDRD = 0;
-//    while(!(PINC & PHI2));
-//    while(PINC & PHI2);
-
-//    DDRD = 0xFF;
     databus_wait();
 
 }
@@ -101,7 +94,7 @@ inline void reset_pc()
 
 /* External functions */
 
-void register_write(uint8_t reg, uint8_t value)
+void io_register_write(uint8_t reg, uint8_t value)
 /* Write to register
   
    Writes a value to an APU register by feeding the 6502
@@ -123,87 +116,44 @@ void register_write(uint8_t reg, uint8_t value)
     reg_mirror[reg] = value;
 }
 
-void register_write_all() 
+void io_register_write_all() 
 {
     // Determine which registers needs updating
     for (uint8_t i = 0; i <= 0x15; i++)
-	reg_update[i] = (reg_buffer[i] != reg_mirror[i]);
+	reg_update[i] = (io_reg_buffer[i] != reg_mirror[i]);
 	
     // Write to all registers that have been changed
-    if (reg_update[0x15]) register_write(0x15, reg_buffer[0x15]);
+    if (reg_update[0x15]) io_register_write(0x15, io_reg_buffer[0x15]);
 
-    if (reg_update[0x00]) register_write(0x00, reg_buffer[0x00]);
-    if (reg_update[0x01]) register_write(0x01, reg_buffer[0x01]);
-    if (reg_update[0x02]) register_write(0x02, reg_buffer[0x02]);
-    if (reg_update[0x03]) register_write(0x03, reg_buffer[0x03]);
+    if (reg_update[0x00]) io_register_write(0x00, io_reg_buffer[0x00]);
+    if (reg_update[0x01]) io_register_write(0x01, io_reg_buffer[0x01]);
+    if (reg_update[0x02]) io_register_write(0x02, io_reg_buffer[0x02]);
+    if (reg_update[0x03]) io_register_write(0x03, io_reg_buffer[0x03]);
 
-    if (reg_update[0x04]) register_write(0x04, reg_buffer[0x04]);
-    if (reg_update[0x05]) register_write(0x05, reg_buffer[0x05]);
-    if (reg_update[0x06]) register_write(0x06, reg_buffer[0x06]);
-    if (reg_update[0x07]) register_write(0x07, reg_buffer[0x07]);
+    if (reg_update[0x04]) io_register_write(0x04, io_reg_buffer[0x04]);
+    if (reg_update[0x05]) io_register_write(0x05, io_reg_buffer[0x05]);
+    if (reg_update[0x06]) io_register_write(0x06, io_reg_buffer[0x06]);
+    if (reg_update[0x07]) io_register_write(0x07, io_reg_buffer[0x07]);
 
-    if (reg_update[0x08]) register_write(0x08, reg_buffer[0x08]);
-    if (reg_update[0x0A]) register_write(0x0A, reg_buffer[0x0A]);
-    if (reg_update[0x0B]) register_write(0x0B, reg_buffer[0x0B]);
+    if (reg_update[0x08]) io_register_write(0x08, io_reg_buffer[0x08]);
+    if (reg_update[0x0A]) io_register_write(0x0A, io_reg_buffer[0x0A]);
+    if (reg_update[0x0B]) io_register_write(0x0B, io_reg_buffer[0x0B]);
 
-    if (reg_update[0x0C]) register_write(0x0C, reg_buffer[0x0C]);
-    if (reg_update[0x0E]) register_write(0x0E, reg_buffer[0x0E]);
-    if (reg_update[0x0F]) register_write(0x0F, reg_buffer[0x0F]);
+    if (reg_update[0x0C]) io_register_write(0x0C, io_reg_buffer[0x0C]);
+    if (reg_update[0x0E]) io_register_write(0x0E, io_reg_buffer[0x0E]);
+    if (reg_update[0x0F]) io_register_write(0x0F, io_reg_buffer[0x0F]);
 
-    if (reg_update[0x10]) register_write(0x10, reg_buffer[0x10]);
-    if (reg_update[0x11]) register_write(0x11, reg_buffer[0x11]);
-    if (reg_update[0x12]) register_write(0x12, reg_buffer[0x12]);
-    if (reg_update[0x13]) register_write(0x13, reg_buffer[0x13]);
+    if (reg_update[0x10]) io_register_write(0x10, io_reg_buffer[0x10]);
+//    if (reg_update[0x11]) io_register_write(0x11, io_reg_buffer[0x11]);
+    if (reg_update[0x12]) io_register_write(0x12, io_reg_buffer[0x12]);
+    if (reg_update[0x13]) io_register_write(0x13, io_reg_buffer[0x13]);
 
     // Reset program counter
     reset_pc();
 
     // Copy buffer over to mirror
     for (uint8_t i = 0; i <= 0x15; i++) 
-	reg_mirror[i] = reg_buffer[i];
-}
-
-uint8_t read_status()
-/* Read status register 
-
-   This function reads the status register in the APU by making the CPU
-   load the register into A and capturing the value on the databus when
-   it does the read. 
-*/
-{
-    sync();
-
-    // Make the CPU read from status register (0x4015 in its address space)
-    databus_set(LDA_abs);
-    databus_set(0x15);
-    databus_set(0x40);
-
-    // Wait for PHI2 to go high
-    databus_wait();
-
-    databus_set(STA_zp);
-    databus_set(0);
-    databus_wait();
-
-    // Set all PORT D pins as input and tri-state them. This is done after PHI2 goes
-    // low to waste a few cycles, to be sure that the value the 6502 reads from the
-    // APU register has appeared on the bus. 
-    PORTD = 0;
-    DDRD = 0;
-
-    asm("nop");
-    asm("nop");
-
-    // Capture the value on the databus
-    uint8_t val = PIND;
-    
-    // Configure PORT D as output again and send a NOP
-    DDRD = 0xFF;
-    PORTD = 0;     
-   
-    PORTD = STA_zp;
-
-    return val;
+	reg_mirror[i] = io_reg_buffer[i];
 }
 
 void reset_2a03()
@@ -219,7 +169,7 @@ void reset_2a03()
     PORTC |= RES;
 }
 
-void setup_2a03()
+void io_setup_2a03()
 /* Initializes the interface to communicate with 6502 
 
    Configures ports and resets the 6502 and puts the APU in a suitable
@@ -258,9 +208,9 @@ void setup_2a03()
     // Now the 6502 should be ready to receive instructions (?)
 
     // We need to disable the frame interrupt
-    //register_write(0x17, 0b01000000);
+    io_register_write(0x17, 0b01000000);
 
     // Ensure that DMC channel does not trigger IRQ
-    register_write(0x15, 0);
+    io_register_write(0x15, 0);
 }
 

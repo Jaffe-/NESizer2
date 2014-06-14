@@ -1,41 +1,45 @@
 #include "envelope.h"
 
+Envelope env1 = {0};
+Envelope env2 = {0};
+Envelope env3 = {0};
+
 void envelope_update(Envelope* env)
 /*
-  Computes the next step in the given envelope.
-  Stops the envelope if gate switches off and starts 
-  it switches on. The function expects to be called at
-  a 250 Hz frequency (f_cpu / (156 * 64 * 32)).
+  Computes the next step in the given envelope. 
 */
 
 {
     if (env->gate != env->gate_prev) {
 	// If gate goes on, start the envelope
-	if (env->gate_prev == 0) 
-	    env->phase = ATTACK;
+	if (env->gate_prev == 0) { 
+	    env->state = ATTACK;
+	    if (env->retrigger) 
+		env->value = 0;
+	}
 		
 	// Otherwise, start release phase
 	else 
-	    env->phase = RELEASE;
+	    env->state = RELEASE;
 
 	env->counter = 0;
 	env->gate_prev = env->gate;
     }
 
     // If there is no attack or decay, just set levels manually
-    if (env->phase == ATTACK && env->attack == 0) {
-	env->phase = DECAY;
+    if (env->state == ATTACK && env->attack == 0) {
+	env->state = DECAY;
 	env->value = 15;
     }
-    if (env->phase == DECAY && env->decay == 0) {
-	env->phase = SUSTAIN;
+    if (env->state == DECAY && env->decay == 0) {
+	env->state = SUSTAIN;
 	env->value = env->sustain;
     }
 
     uint8_t duration;
 
     // Find out how long to count each step for to get desired envelope time:
-    switch (env->phase) {
+    switch (env->state) {
     case ATTACK:
 	duration = 4*env->attack;
 	break;
@@ -51,28 +55,27 @@ void envelope_update(Envelope* env)
     env->counter++;
     if (env->counter == duration) {
 	env->counter = 0;
-	switch (env->phase) {
+	switch (env->state) {
 	case ATTACK:
 	    env->value++;
 	    if (env->value == 15) 
-		env->phase = DECAY;
+		env->state = DECAY;
 	    break;
 
 	case DECAY:
 	    env->value--;
 	    if (env->value == env->sustain)  
-		env->phase = SUSTAIN;
+		env->state = SUSTAIN;
 	    break;
 
 	case RELEASE:
 	    if (env->value == 0) 
-		env->phase = OFF;
+		env->state = OFF;
 	    else
 		env->value--;
 	    break;
 	}
     }
     else return;
-    
 }
 

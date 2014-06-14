@@ -84,11 +84,12 @@
 #define NOISE_LENGTH_CNTR_LOAD_bp 3
 #define NOISE_LOOP_p 7
 #define NOISE_PERIOD_p 0
+#define NOISE_HW_ENV_p 4
 
 // masks
 #define NOISE_LOOP_m 0b10000000
 #define NOISE_PERIOD_m 0b00001111
-
+#define NOISE_HW_ENV_m 0b00010000
 
 /* DMC channel */
 
@@ -113,27 +114,25 @@
 
 typedef struct {
     uint8_t duty : 2;
-    uint16_t base_period : 11;
     uint8_t volume : 4;
     uint8_t enabled : 1;
 
     // Used internally:
-    uint16_t period : 11;
+    uint16_t period;
 } Square;
 
 typedef struct { 
-    uint16_t base_period : 11;
     uint8_t enabled : 1;
 
     // Used internally:
-    uint16_t period : 11;
+    uint16_t period;
 } Triangle;
 
 typedef struct {
     uint8_t volume : 4;
     uint8_t loop : 1;
-    uint8_t base_period : 4;
     uint8_t enabled : 1;
+    uint8_t hw_env : 1;
 
     // Used internally:
     uint8_t period : 4;
@@ -146,8 +145,6 @@ typedef struct {
     uint8_t sample_loop : 1;
     uint8_t* sample;
     uint16_t sample_length;
-    uint8_t tuned_sample : 1;
-    uint16_t period : 11;
 
     // Used internally:
     uint16_t current;

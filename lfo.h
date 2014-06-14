@@ -9,11 +9,8 @@
 #define LFO_RAMP_DOWN 4
 
 typedef struct {
-    uint8_t base_p;
     uint8_t period;
     uint8_t waveform : 3;
-    uint8_t intensity;
-    int16_t output;
 
     // Used by LFO logic:
     int8_t value;
@@ -26,5 +23,5 @@ LFO lfo2;
 LFO lfo3;
 
 void lfo_update(LFO* lfo);
-void lfo_apply_square(Square*, LFO*);
-void lfo_apply_triangle(Triangle*, LFO*);
+void lfo_apply_square(LFO*, Square*, uint8_t);
+void lfo_apply_triangle(LFO*, Triangle*, uint8_t);
