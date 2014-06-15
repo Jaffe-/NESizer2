@@ -44,13 +44,12 @@ Timer triggers inerrupt at X kHz
     // CTC operation
     TCCR0A = 0b10;
 
-    OCR0A = 200;
-//    TCNT0 = 0;
+    OCR0A = F_CPU / (8.0 * F_INTERRUPT);
 
     // Enable compare match interrupt
     TIMSK0 = 0b10;
 
-    // Normal operation, clock prescaler 1024
+    // Normal operation, clock prescaler 8
     TCCR0B |= 0b10000010;
     
 }
@@ -60,17 +59,19 @@ ISR(TIMER0_COMPA_vect)
    16kHz (16025 Hz) timer interrupt which drives all the logic
  */
 {
-    if (dmc.enabled && dmc.sample_enabled) 
-	dmc_update_sample();
+    if (testp % (F_INTERRUPT / F_DMC) == 0) {
+	if (dmc.enabled && dmc.sample_enabled) 
+	    dmc_update_sample();
+    }
     
     testp++;
 
-    if (testp % 2 == 0) {
+    if (testp % (F_INTERRUPT / F_LFO) == 0) {
 	lfo_update(&lfo1);
 	lfo_update(&lfo2);
     }
 
-    if (testp % 40 == 0) {
+    if (testp % (F_INTERRUPT / F_ENVELOPE) == 0) {
 	envelope_update(&env1);
 	envelope_update(&env2);
 	noise.volume = env1.value >> 1;
@@ -82,7 +83,6 @@ ISR(TIMER0_COMPA_vect)
 	tri.period = tri_note;
 	lfo_apply_square(&lfo2, &sq2, 20);
 	lfo_apply_square(&lfo1, &sq1, 20);
-
 	sq1_update();
 	sq2_update();
 	tri_update();
@@ -90,7 +90,7 @@ ISR(TIMER0_COMPA_vect)
 	apu_refresh();
     }
 
-    if (testp == 2000) {
+    if (testp % (uint16_t)(F_INTERRUPT / (BPM * 1/60.0 * 4)) == 0) {
 	drum_pattern_update(&dp);
 	testp = 0;
     }
@@ -132,7 +132,7 @@ void drum_pattern_update(DrumPattern* pattern)
     sq2_note = sq2_pat[pattern->current] << 1;
     env2.gate = sq_mask[pattern->current];
     
-    set_leds(1 << (pattern->current >> 1));
+    //set_leds(1 << (pattern->current >> 1));
 
     pattern->current++;
 
