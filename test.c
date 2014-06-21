@@ -1,115 +1,74 @@
-#include "constants.h"
 #include <avr/io.h>
-#include <util/delay.h>
-#include <avr/pgmspace.h>
+#include "task.h"
+#include "apu.h"
 #include "2a03_io.h"
 #include "leds.h"
-#include "apu.h"
-#include "timing.h"
-#include "envelope.h"
 #include "lfo.h"
-#include "drums.h"
+#include "envelope.h"
+#include "timing.h"
 
-#define C4 197
-#define Cs4 186
-#define D4 176
-#define Ds4 166
-#define E4 156
-#define F4 148
-#define Fs4 139
-#define G4 131
-#define Gs4 124
-#define A4 118
-#define As4 110
-#define B4 104
-#define C5 98
-
-uint16_t basspat[16] = {A4, 0, A4, 0,
-			0, 0, 0, E4,
-			F4, 0, F4, 0,
-			B4, B4, E4, 0};
-
-uint16_t sq1_pat[16] = {A4, A4, A4, A4,
-		       B4, B4, C5, C5,
-		       C5, C5, C5, C5,
-		       C5, C5, C5, C5};
-
-uint16_t sq2_pat[16] = {C4, C4, E4, E4,
-		       A4, A4, A4, A4,
-		       F4, F4, G4, G4,
-		       B4, B4, C4, C4};
-
-uint8_t sq_mask[16] = {1, 1, 1, 0, 
-		       1, 0, 1, 1,
-		       1, 1, 1, 1,
-		       1, 1, 0, 0};
-
-int main()
+void update_lfo()
 {
-    setup_leds();
-    io_setup_2a03();
+    lfo_update(&lfo1);
+    lfo_update(&lfo2);
+}
 
-    noise_setup();
-    noise.enabled = 1;
-    noise.period = 0;
-    noise.loop = 0;
-    noise.volume = 0;
-    noise.hw_env = 1;
-    noise_update();
-    
-    env1.attack = 0;
-    env1.decay = 1;
-    env1.sustain = 0;
-    env1.release = 0;
-    env1.gate_prev = 0;
-    
-    env2.attack = 2;
-    env2.decay = 2;
-    env2.sustain = 8;
-    env2.release = 3;
-    env2.gate_prev = 0;
+void update_env()
+{
+    envelope_update(&env1);
+    envelope_update(&env2);
+    envelope_update(&env3);
+}
+
+void update_dmc()
+{
+    if (dmc.enabled && dmc.sample_enabled) 
+	dmc_update_sample();
+}
+
+uint8_t s = 0;
+
+void update_led()
+{
+    s ^= 1;
+    set_leds(s);
+}
+
+void apply_mod()
+{
+    sq1.period = 400;
+    lfo_apply_square(&lfo1, &sq1, 30);
+    sq1_update();
+}
+
+int main() 
+{
+    io_setup_2a03();
+    leds_setup();
+    timer_setup();
 
     sq1_setup();
+    sq1.period = 400;
+    sq1.volume = 15;
     sq1.enabled = 1;
-    sq1.duty = 1;
+    sq1.duty = 2;
     sq1_update();
 
-    sq2_setup();
-    sq2.enabled = 1;
-    sq2.duty = 2;
-    sq2_update();
-
     tri_setup();
-    tri.enabled = 1;
+    tri.period = 400;
+    tri.enabled = 0;
+    tri_update();
 
-    dmc_setup();
-    dmc.enabled = 1;
-    dmc.sample_loop = 0;
-    dmc_update();
-
-    lfo1.period = 5;
+    lfo1.period = 1;
     lfo1.waveform = LFO_SINE;
 
-    lfo2.period = 10;
-    lfo2.waveform = LFO_SINE;
-
-    apu_refresh();
-
-    uint8_t dmc_pat[16] = {DRUM_KICK, EMPTY, DRUM_KICK, EMPTY,
-		       DRUM_SNARE, EMPTY, EMPTY, DRUM_KICK,
-		       DRUM_KICK, EMPTY, DRUM_KICK, EMPTY,
-		       DRUM_SNARE, DRUM_SNARE, EMPTY, EMPTY};
-    uint8_t noise_pat[16] = {1, 1, 0, 1,
-			     1, 0, 1, 1,
-			     1, 1, 0, 1,
-			     0, 1, 1, 1};
-    dp.dmc_data = dmc_pat;
-    dp.noise_data = noise_pat;
-    dp.current = 0;
+    io_register_write(0x15, 0xFF);
     
-    setup_timer();
-
-    while(1) {
-    }
-
+    task_add(&update_dmc, 1, 0);
+    task_add(&apu_refresh, 10, 1);
+    task_add(&update_lfo, 10, 4);
+    task_add(&update_env, 400, 20);
+    task_add(&apply_mod, 200, 25);
+    task_add(&update_led, 8000, 21);
+    task_manager();
 }

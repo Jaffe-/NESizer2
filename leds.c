@@ -11,7 +11,7 @@
    PB5 (SCK) is connected to the clock input
 */
 
-void setup_leds()
+void leds_setup()
 {
     // Set MISO/SHIFT_DATA, SCK/SHIFT_CLK and SS as output pins.
     // SS (PB2) must be set to output even though it is never used. 

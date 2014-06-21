@@ -1,3 +1,5 @@
 #pragma once
 
-void setup_timer();
+void timer_setup();
+
+volatile uint16_t ticks;

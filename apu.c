@@ -140,6 +140,16 @@ void dmc_update_sample()
 
 void apu_refresh()
 {
-    io_register_write_all();
+    static cur_reg = 0;
+    io_write_changed(cur_reg++);
+    if (cur_reg == 0x09 || cur_reg == 0x0D || cur_reg == 0x11 || cur_reg == 0x14)
+	cur_reg++;
+    else if (cur_reg == 0x16) 
+	cur_reg = 0;
 }
 
+void apu_refresh_all()
+{
+    for (uint8_t i = 0; i < 0x15; i++)
+	apu_refresh();
+}

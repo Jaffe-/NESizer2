@@ -1,6 +1,5 @@
 #pragma once
 
-
 /* The channels */
 
 #define SQ1_bm 1
@@ -169,3 +168,4 @@ void dmc_setup();
 void dmc_update();
 void dmc_update_sample();
 void apu_refresh();
+//void apu_refresh_all();

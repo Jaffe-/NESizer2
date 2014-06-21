@@ -5,5 +5,5 @@
 #define SHIFT_DATA 0b1000
 #define SHIFT_DATA_bp 1
 
-void setup_leds();
+void leds_setup();
 void set_leds(uint8_t);
