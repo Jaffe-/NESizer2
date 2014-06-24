@@ -140,16 +140,38 @@ void dmc_update_sample()
 
 void apu_refresh()
 {
-    static cur_reg = 0;
-    io_write_changed(cur_reg++);
-    if (cur_reg == 0x09 || cur_reg == 0x0D || cur_reg == 0x11 || cur_reg == 0x14)
-	cur_reg++;
-    else if (cur_reg == 0x16) 
-	cur_reg = 0;
+    static uint8_t group = 0;
+    if (group == 0) { 
+	io_write_changed(0x00);
+	io_write_changed(0x01);
+	io_write_changed(0x02);
+	io_write_changed(0x03);
+	io_write_changed(0x04);
+	io_write_changed(0x05);
+	group++;
+    }
+    else if (group == 1) {
+	io_write_changed(0x06);
+	io_write_changed(0x07);
+	io_write_changed(0x08);
+	io_write_changed(0x0A);
+	io_write_changed(0x0B);
+	io_write_changed(0x0C);
+	group++;
+    }
+    else {
+	io_write_changed(0x0E);
+	io_write_changed(0x0F);
+	io_write_changed(0x10);
+	io_write_changed(0x12);
+	io_write_changed(0x13);
+	io_write_changed(0x15);
+	group = 0;
+    }
 }
 
 void apu_refresh_all()
 {
-    for (uint8_t i = 0; i < 0x15; i++)
+    for (uint8_t i = 0; i < 3; i++)
 	apu_refresh();
 }

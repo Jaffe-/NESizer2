@@ -22,7 +22,7 @@ void leds_setup()
     SPCR = 0b01010000;
 }
 
-void set_leds(uint8_t val)
+void leds_set(uint8_t val)
 {
     // Writing to the SPI data register triggers transfer:
     SPDR = val;

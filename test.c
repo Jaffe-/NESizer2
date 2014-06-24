@@ -6,6 +6,7 @@
 #include "lfo.h"
 #include "envelope.h"
 #include "timing.h"
+#include "modulation.h"
 
 void update_lfo()
 {
@@ -31,14 +32,7 @@ uint8_t s = 0;
 void update_led()
 {
     s ^= 1;
-    set_leds(s);
-}
-
-void apply_mod()
-{
-    sq1.period = 400;
-    lfo_apply_square(&lfo1, &sq1, 30);
-    sq1_update();
+    leds_set(s);
 }
 
 int main() 
@@ -56,19 +50,26 @@ int main()
 
     tri_setup();
     tri.period = 400;
-    tri.enabled = 0;
+    tri.enabled = 1;
     tri_update();
 
-    lfo1.period = 1;
+    lfo1.period = 5;
     lfo1.waveform = LFO_SINE;
 
-    io_register_write(0x15, 0xFF);
+    lfo1.period = 10;
+    lfo1.waveform = LFO_RAMP_UP;
+
+    lfo_mod_matrix[0][0] = 20;
+    lfo_mod_matrix[1][0] = 20;
+    lfo_mod_matrix[0][1] = 20;
+
+    io_register_write(SND_CHN, SQ1_ENABLE_m | TRI_ENABLE_m);
     
     task_add(&update_dmc, 1, 0);
-    task_add(&apu_refresh, 10, 1);
-    task_add(&update_lfo, 10, 4);
-    task_add(&update_env, 400, 20);
-    task_add(&apply_mod, 200, 25);
-    task_add(&update_led, 8000, 21);
+    task_add(&apu_refresh, 5, 0);
+    task_add(&update_lfo, 10, 1);
+    task_add(&update_env, 20, 3);
+    task_add(&modulation_handler, 20, 4);
+    task_add(&update_led, 8000, 6);
     task_manager();
 }

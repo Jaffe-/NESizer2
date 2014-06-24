@@ -23,5 +23,4 @@ LFO lfo2;
 LFO lfo3;
 
 void lfo_update(LFO* lfo);
-void lfo_apply_square(LFO*, Square*, uint8_t);
-void lfo_apply_triangle(LFO*, Triangle*, uint8_t);
+int16_t lfo_value(LFO* lfo, uint8_t intensity);
