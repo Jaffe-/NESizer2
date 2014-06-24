@@ -113,7 +113,7 @@
 
 typedef struct {
     uint8_t duty : 2;
-    uint8_t volume : 4;
+    uint8_t volume;
     uint8_t enabled : 1;
 
     // Used internally:
@@ -128,7 +128,7 @@ typedef struct {
 } Triangle;
 
 typedef struct {
-    uint8_t volume : 4;
+    uint8_t volume;
     uint8_t loop : 1;
     uint8_t enabled : 1;
     uint8_t hw_env : 1;

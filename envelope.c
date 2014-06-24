@@ -39,18 +39,21 @@ void envelope_update(Envelope* env)
     if (env->state == SUSTAIN) 
 	return;
 
+    if (env->state == RELEASE && env->release == 0) 
+	env->value = 0;
+
     uint8_t duration = 0;
 
     // Find out how long to count each step for to get desired envelope time:
     switch (env->state) {
     case ATTACK:
-	duration = 4*env->attack;
+	duration = 2*env->attack;
 	break;
     case DECAY:
-	duration = 4*(15 * env->decay) / (15 - env->sustain);
+	duration = 2*(15 * env->decay) / (15 - env->sustain);
 	break;
     case RELEASE:
-	duration = 4*(15 * env->release) / env->sustain;
+	duration = 2*(15 * env->release) / env->sustain;
 	break;
     }
 
