@@ -2,6 +2,7 @@
 #include <avr/pgmspace.h>
 #include "2a03_io.h"
 #include "apu.h"
+#include "tools/deltacompress.h"
 
 /* 
 APU abstraction layer 
@@ -120,12 +121,45 @@ void dmc_update()
     register_update(DMC_RAW, dmc.data);
 }
 
-void dmc_update_sample() 
+void dmc_update_sample_old()
 {
     if (dmc.sample != 0) {
-	dmc.data = pgm_read_byte(&dmc.sample[dmc.current]) >> 1;
+        dmc.data = pgm_read_byte(&dmc.sample[dmc.current++]) >> 1;
 
-	dmc.current++;
+	register_update(DMC_RAW, dmc.data);
+	io_register_write(DMC_RAW, dmc.data);
+
+	if (dmc.current == dmc.sample_length) {
+	    dmc.current = 0;
+	    if (!dmc.sample_loop)
+		dmc.sample_enabled = 0;
+	}
+	
+    }
+}
+
+void dmc_update_sample() 
+{
+    static uint8_t data;
+    static int8_t accumulator;
+    static uint8_t flag;
+
+    if (dmc.sample != 0) {
+	if (dmc.current == 0) {
+	    accumulator = pgm_read_byte(&dmc.sample[dmc.current++]); 
+	    flag = 1;
+	}
+	else if (!flag) {
+	    data = pgm_read_byte(&dmc.sample[dmc.current]);
+	    accumulator += delta_table[data & 0x0F];
+	}
+	else {
+	    accumulator += delta_table[(data >> 4) & 0x0F];
+	    dmc.current++;
+	}
+	flag ^= 1;
+	    
+	dmc.data = accumulator >> 1;
 
 	register_update(DMC_RAW, dmc.data);
 	io_register_write(DMC_RAW, dmc.data);

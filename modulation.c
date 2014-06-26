@@ -51,5 +51,5 @@ void modulation_handler()
     sq1_update();
     sq2_update();
     tri_update();
-
+    noise_update();
 }

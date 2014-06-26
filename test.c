@@ -7,6 +7,9 @@
 #include "envelope.h"
 #include "timing.h"
 #include "modulation.h"
+#include <avr/pgmspace.h>
+#include "snare_c.c"
+//#include "snare_uc.c"
 
 void update_lfo()
 {
@@ -34,6 +37,7 @@ void update_led()
     s ^= 1;
     leds_set(s);
     env1.gate = s;
+    dmc.sample_enabled = 1;
 }
 
 int main() 
@@ -42,9 +46,16 @@ int main()
     leds_setup();
     timer_setup();
 
+    dmc_setup();
+    dmc.sample = snare_c_raw;
+    dmc.sample_length = snare_c_raw_len;
+    dmc.enabled = 1;
+    dmc.sample_enabled = 1;
+    dmc_update();
+
     sq1_setup();
     sq1.volume = 15;
-    sq1.enabled = 1;
+    sq1.enabled = 0;
     sq1.duty = 2;
     sq1_update();
 
@@ -57,21 +68,21 @@ int main()
 
     sq1.period = bperiods[0];
 
-    env1.attack = 10;
+    env1.attack = 30;
     env1.decay = 0;
     env1.sustain = 15;
-    env1.release = 10;
+    env1.release = 30;
 
     env_mod_select[0] = 0;
 
     lfo1.period = 2;
     lfo1.waveform = LFO_SINE;
 
-    lfo2.period = 50;
-    lfo2.waveform = LFO_SINE;
+    lfo2.period = 10;
+    lfo2.waveform = LFO_RAMP_UP;
 
-    lfo_mod_matrix[0][0] = 40;
-    lfo_mod_matrix[0][1] = 55;
+    lfo_mod_matrix[0][0] = 20;
+    lfo_mod_matrix[0][1] = 0;
     //lfo_mod_matrix[0][1] = 20;
 
     io_register_write(SND_CHN, SQ1_ENABLE_m | TRI_ENABLE_m);
@@ -81,6 +92,6 @@ int main()
     task_add(&update_lfo, 10, 1);
     task_add(&update_env, 20, 3);
     task_add(&modulation_handler, 20, 4);
-    task_add(&update_led, 16000, 6);
+    task_add(&update_led, 10000, 6);
     task_manager();
 }

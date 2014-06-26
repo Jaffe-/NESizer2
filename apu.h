@@ -168,4 +168,4 @@ void dmc_setup();
 void dmc_update();
 void dmc_update_sample();
 void apu_refresh();
-//void apu_refresh_all();
+void apu_refresh_all();
