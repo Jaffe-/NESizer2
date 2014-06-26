@@ -11,7 +11,7 @@ int compress(unsigned char* data, int size, unsigned char* output)
 
     int out_ptr = 1;
 
-    unsigned char accumulator = data[0];
+    unsigned char accumulator = output[0];
 
     for (int i = 0; i < size - 1; i++) {
 	char diff = data[i + 1] - accumulator;

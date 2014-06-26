@@ -8,7 +8,7 @@
 #include "timing.h"
 #include "modulation.h"
 #include <avr/pgmspace.h>
-#include "snare_c.c"
+#include "snare.c"
 //#include "snare_uc.c"
 
 void update_lfo()
