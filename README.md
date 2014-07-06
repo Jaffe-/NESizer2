@@ -85,13 +85,36 @@ When a register write sequence (or the last of many in `register_write_all`'s ca
 Lastly, the idle `STA` opcode (0x85) is put back on the bus to keep the CPU busy.
 
 
-#### Reading from status register
+#### APU abstaction layer
 
-The status register is the only readable APU register, and it contains information that is pretty much useless when not doing interrupt-based programming of the APU, but for completeness, the function `status_read` allows for it to be read. 
+The APU abstraction layer (`apu.h`, `apu.c`) contains structs and functions for manipulating the 2A03 channels in a high level manenr without having to deal with register writes manually. The channels are represented by structs having fields corresponding to each parameter of the channel. 
 
-Reading from the status register is done by sending the following instruction:
+Each channel type is represented by a struct, `Square`, `Triangle`, `Noise` and `DMC`, respectively. Global objects `sq1`, `sq2`, `tri`, `noise` and `dmc` of corresponding types are allocated on the stack. Each channel has a setup function named `<channel>_setup`, intended for initializing the struct, and an update function `<channel>_update` which takes the data in a struct and fills the appropriate registers in a register buffer. The function `apu_refresh` takes the data in the register buffer and writes them to the 2A03. This function updates 6 registers at a time, so it needs to be called 3 times to update all registers. This is necessary to reduce time spent on register updates. 
 
-    LDA $4015		0xAD 0x15 0x40
-    STA $85		0x85 0x85
-    
-The `LDA` instruction is put on the bus, and the fourth cycle is waited out. Then the `STA` instruction is sent, and the CPU waits for **PHI2** to go high during the third cycle. At this point **PORTD** is switched from output to input, and after two Atmega cycles, the value on the bus is read. **PORTD** is then switched back to output. 
+The abstraction makes producing sound easy: 
+
+	int main() 
+	{
+		// Initialize 2A03:
+		2a03_setup();
+		
+		// Initialize Square 1 channel:
+		sq1_setup();
+		
+		// Set the values for period, duty cycle and volume:
+		sq1.period = 400;
+		sq1.duty = 2;
+		sq1.volume = 15;
+		
+		// Update APU register buffer with new square 1 values:
+		sq1_update();
+		
+		// Transfer changes to the APU:
+		apu_refresh();
+		apu_refresh();
+		apu_refresh();
+		
+		// Wait indefinitely
+		while(1);
+	}
+
