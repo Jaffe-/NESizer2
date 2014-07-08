@@ -8,6 +8,7 @@
 #include "timing.h"
 #include "modulation.h"
 #include <avr/pgmspace.h>
+#include "kick.c"
 #include "snare.c"
 //#include "snare_uc.c"
 
@@ -27,16 +28,33 @@ void update_env()
 void update_dmc()
 {
     if (dmc.enabled && dmc.sample_enabled) 
-	dmc_update_sample();
+	dmc_update_sample_dpcm();
 }
 
-uint8_t s = 0;
+void update_apu()
+{
+    static uint8_t chn = CHN_SQ1;
+
+    apu_refresh_channel(chn);
+    if (++chn == 5) chn = 0;
+}
 
 void update_led()
 {
+    static uint8_t s = 0;
     s ^= 1;
     leds_set(s);
     env1.gate = s;
+    if (s) {
+	dmc.sample = kick_c_raw;
+	dmc.sample_length = kick_c_raw_len;
+	dmc.current = 0;
+    }
+    else {
+	dmc.sample = snare_c_raw;
+	dmc.sample_length = snare_c_raw_len;
+	dmc.current = 0;
+    }
     dmc.sample_enabled = 1;
 }
 
@@ -47,8 +65,8 @@ int main()
     timer_setup();
 
     dmc_setup();
-    dmc.sample = snare_c_raw;
-    dmc.sample_length = snare_c_raw_len;
+    dmc.sample = kick_c_raw;
+    dmc.sample_length = kick_c_raw_len;
     dmc.enabled = 1;
     dmc.sample_enabled = 1;
     dmc_update();
@@ -88,10 +106,10 @@ int main()
     io_register_write(SND_CHN, SQ1_ENABLE_m | TRI_ENABLE_m);
     
     task_add(&update_dmc, 1, 0);
-    task_add(&apu_refresh, 5, 0);
+    task_add(&update_apu, 5, 0);
     task_add(&update_lfo, 10, 1);
     task_add(&update_env, 20, 3);
     task_add(&modulation_handler, 20, 4);
-    task_add(&update_led, 10000, 6);
+    task_add(&update_led, 8000, 6);
     task_manager();
 }

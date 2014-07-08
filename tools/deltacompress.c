@@ -6,6 +6,8 @@
 
 int compress(unsigned char* data, int size, unsigned char* output)
 {
+    int vals[16] = {0};
+
     // Initial start value is the same
     output[0] = data[0];
 
@@ -26,11 +28,8 @@ int compress(unsigned char* data, int size, unsigned char* output)
 	    }
 	}
 
+	vals[value]++;
 	accumulator += delta_table[value];
-
-	printf("%i -> %i\t", diff, delta_table[value]);
-	if (i >= 10 && i % 10 == 0) printf("\n");
-
 
 	if (i % 2 == 0) 
 	    output[out_ptr] = value;
@@ -39,6 +38,17 @@ int compress(unsigned char* data, int size, unsigned char* output)
 	    out_ptr++;
 	}
     }
+
+    int tot = 0;
+    for (int i = 0; i < 16; i++) 
+	tot += vals[i];
+
+    printf("Statistics:\n");
+    for (int i = 0; i < 16; i++) {
+	printf("%i: %2f %\t\t", i, vals[i] / (double)tot * 100);
+	if (i == 7) printf("\n");
+    }
+    printf("\n");
     
     return out_ptr;
 }

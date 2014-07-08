@@ -121,7 +121,7 @@ void dmc_update()
     register_update(DMC_RAW, dmc.data);
 }
 
-void dmc_update_sample_old()
+void dmc_update_sample_raw()
 {
     if (dmc.sample != 0) {
         dmc.data = pgm_read_byte(&dmc.sample[dmc.current++]) >> 1;
@@ -138,7 +138,7 @@ void dmc_update_sample_old()
     }
 }
 
-void dmc_update_sample() 
+void dmc_update_sample_dpcm() 
 {
     static uint8_t data;
     static int8_t accumulator;
@@ -172,40 +172,46 @@ void dmc_update_sample()
     }
 }
 
-void apu_refresh()
+void apu_refresh_channel(uint8_t ch_number)
 {
-    static uint8_t group = 0;
-    if (group == 0) { 
-	io_write_changed(0x00);
-	io_write_changed(0x01);
-	io_write_changed(0x02);
-	io_write_changed(0x03);
-	io_write_changed(0x04);
-	io_write_changed(0x05);
-	group++;
+    io_write_changed(SND_CHN);
+
+    switch (ch_number) {
+    case CHN_SQ1:
+	io_write_changed(SQ1_VOL);
+	io_write_changed(SQ1_SWEEP);
+	io_write_changed(SQ1_LO);
+	io_write_changed(SQ1_HI);
+	break;
+
+    case CHN_SQ2:
+	io_write_changed(SQ2_VOL);
+	io_write_changed(SQ2_SWEEP);
+	io_write_changed(SQ2_LO);
+	io_write_changed(SQ2_HI);
+	break;
+
+    case CHN_TRI:
+	io_write_changed(TRI_LINEAR);
+	io_write_changed(TRI_LO);
+	io_write_changed(TRI_HI);
+	break;
+
+    case CHN_NOISE:
+	io_write_changed(NOISE_VOL);
+	io_write_changed(NOISE_LO);
+	io_write_changed(NOISE_HI);
+	break;
+
+    case CHN_DMC:
+	io_write_changed(DMC_RAW);
+	break;
     }
-    else if (group == 1) {
-	io_write_changed(0x06);
-	io_write_changed(0x07);
-	io_write_changed(0x08);
-	io_write_changed(0x0A);
-	io_write_changed(0x0B);
-	io_write_changed(0x0C);
-	group++;
-    }
-    else {
-	io_write_changed(0x0E);
-	io_write_changed(0x0F);
-	io_write_changed(0x10);
-	io_write_changed(0x12);
-	io_write_changed(0x13);
-	io_write_changed(0x15);
-	group = 0;
-    }
+    
 }
 
 void apu_refresh_all()
 {
-    for (uint8_t i = 0; i < 3; i++)
-	apu_refresh();
+    for (uint8_t i = CHN_SQ1; i <= CHN_DMC; i++) 
+	apu_refresh_channel(i);
 }

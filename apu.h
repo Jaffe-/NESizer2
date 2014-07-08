@@ -2,6 +2,12 @@
 
 /* The channels */
 
+#define CHN_SQ1 0
+#define CHN_SQ2 1
+#define CHN_TRI 2
+#define CHN_NOISE 3
+#define CHN_DMC 4
+
 #define SQ1_bm 1
 #define SQ2_bm 0b10
 #define TRI_bm 0b100
@@ -166,6 +172,7 @@ void noise_setup();
 void noise_update();
 void dmc_setup();
 void dmc_update();
-void dmc_update_sample();
-void apu_refresh();
+void dmc_update_sample_dpcm();
+void dmc_update_sample_raw();
+void apu_refresh_channel(uint8_t);
 void apu_refresh_all();
