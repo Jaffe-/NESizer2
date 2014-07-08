@@ -142,7 +142,7 @@ void reset_2a03()
     PORTC |= RES;
 }
 
-void io_setup_2a03()
+void io_setup()
 /* Initializes the interface to communicate with 6502 
 
    Configures ports and resets the 6502 and puts the APU in a suitable

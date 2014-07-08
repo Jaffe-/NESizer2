@@ -14,7 +14,7 @@
 
 void io_register_write(uint8_t reg, uint8_t value);
 void io_write_changed(uint8_t reg);
-void io_setup_2a03();
+void io_setup();
 
 uint8_t io_reg_buffer[0x16];
 

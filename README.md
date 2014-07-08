@@ -102,6 +102,7 @@ The abstraction makes producing sound easy:
 		sq1_setup();
 		
 		// Set the values for period, duty cycle and volume:
+		sq1.enabled = 1;
 		sq1.period = 400;
 		sq1.duty = 2;
 		sq1.volume = 15;
@@ -110,9 +111,7 @@ The abstraction makes producing sound easy:
 		sq1_update();
 		
 		// Transfer changes to the APU:
-		apu_refresh();
-		apu_refresh();
-		apu_refresh();
+		apu_refresh_channel(CHN_SQ1);
 		
 		// Wait indefinitely
 		while(1);
