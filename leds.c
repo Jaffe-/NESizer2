@@ -1,30 +1,40 @@
 #include <avr/io.h>
 #include "leds.h"
+#include "bus.h"
 
 /* 
-   Status LED interface 
-
-   The 8 status LEDs are connected to a 74HC164 shift register.
-   The shift register is connected to the Atmega using the SPI interface:
-
-   PB3 (MOSI) is connected to the data inputs
-   PB5 (SCK) is connected to the clock input
+   LED matrix interface
 */
 
-void leds_setup()
+uint8_t leds[32] = {0};
+uint8_t row_mirror = 0;
+
+void leds_refresh() 
+/* This function is intended to be called by the task handler
+   at a given frequency. Each time it is called, a new LED column
+   is displayed. 
+*/
 {
-    // Set MISO/SHIFT_DATA, SCK/SHIFT_CLK and SS as output pins.
-    // SS (PB2) must be set to output even though it is never used. 
-    DDRB |= SHIFT_DATA | SHIFT_CLK | SS;
+    static uint8_t current_col = 0;
+
+    // Fetch LED status for the rows in the current column
+    row_mirror = 0x0F & ~(leds[current_col] 
+			  | (leds[current_col + 8] << 1)
+			  | (leds[current_col + 8 * 2] << 2)
+			  | (leds[current_col + 8 * 3] << 3));
     
-    // Configure SPI (no interrupts, master, MSB first
-    // f_cpu / 4 as clock frequency
-    SPCR = 0b01010000;
-}
+    // Address the row latch and put on bus
+    bus_set_address(ROW_ADDR);
+    bus_set_value(row_mirror);
+    
+    // Switch to column latch, the row value is latched when this happens
+    bus_set_address(LEDCOL_ADDR);
+    
+    // Activate desired column
+    bus_set_value(1 << current_col);
 
-void leds_set(uint8_t val)
-{
-    // Writing to the SPI data register triggers transfer:
-    SPDR = val;
-}
+    // Switch to some other address to latch the previous value
+    bus_set_address(SWITCHCOL_ADDR);
 
+    if (++current_col == 8) current_col = 0;
+}

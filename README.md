@@ -117,3 +117,9 @@ The abstraction makes producing sound easy:
 		while(1);
 	}
 
+
+#### Interrupt timing and task handler
+
+One of the Atmega's timers is used to generate an interrupt at approximately 16 kHz. This interrupt provides the basic timing used by various subsystems (LFOs, envelopes, APU updates, etc.)  
+
+A simple task handler (`task.h`, `task.c`) is used to sequence tasks to be performed. Tasks are registered with a desired frequency and a time delay to spread tasks out in time. 

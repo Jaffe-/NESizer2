@@ -3,6 +3,7 @@
 #include <util/delay.h>
 #include "2a03_io.h"
 #include "leds.h"
+#include "bus.h"
 #include <util/atomic.h>
 
 /* 
@@ -41,8 +42,9 @@ inline void databus_wait()
     // If PHI2 is already 1, we'll wait until it goes low again
     while (PINC & PHI2);
 
-    // Wait until PHI2 transitions from low to high
-    while (!(PINC & PHI2));
+    // PHI2 has gone low, we're in a new cycle
+    nop();
+  
 }
 
 inline void databus_set(uint8_t value)
@@ -71,8 +73,7 @@ inline void register_set(uint8_t reg, uint8_t val)
     databus_set(STA_abs);         // takes 4 cycles
     databus_set(reg);
     databus_set(0x40);
-    databus_wait();
-
+    databus_wait();    
 }
 
 inline void reset_pc() 
@@ -102,10 +103,15 @@ inline void io_register_write(uint8_t reg, uint8_t value)
    storing the value in $4014.
 */
 {
-
     // Ensure that interrupts are disabled when doing this
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+	// Put STA_zp on bus before deactivating CPU latch
+	PORTD = STA_zp;
+	
+	// Open latch gates
+	bus_set_address(CPU_ADDR);
+
 	// Wait for 6502 to reach the third cycle of its idle STA
 	// instruction. 
 	sync();
@@ -115,6 +121,10 @@ inline void io_register_write(uint8_t reg, uint8_t value)
 	
 	// Jump back
 	reset_pc();
+
+	// Finally, latch the bus value by switching to a
+	// different address
+	bus_set_address(SWITCHCOL_ADDR);
     }
 
     // Reflect change in mirror
@@ -149,13 +159,15 @@ void io_setup()
    (non-interruptive) state.
 */
 {
-    // Configure all of PORTD as output and set value to 0. This value will be 
-    // the taken as the reset vector address the CPU jumps to when restarted. 
+    PORTC &= ~ADDR_m;
+
+    PORTD = 0;
     DDRD = 0xFF;
     PORTD = STA_zp;
 
     // Configure the /RES pin on PORT C as output and set /RES high
-    DDRC = RES;
+    PORTC = 0;
+    DDRC = RES | ADDR_m;
     PORTC = RES | RW | PHI2;
 
     _delay_ms(50);
@@ -166,8 +178,6 @@ void io_setup()
     // Wait for reset cycle to complete
     _delay_ms(1);
     
-    // The CPU should now be executing instructions. Instruct it to jump to 
-    // address 0. This way the addresses can be monitored. 
     sync();
 
     // Send SEI instruction
@@ -175,9 +185,7 @@ void io_setup()
     databus_wait();
 
     reset_pc();
-
-    databus_set(STA_zp);
-
+    
     // Now the 6502 should be ready to receive instructions (?)
 
     // We need to disable the frame interrupt
