@@ -13,26 +13,43 @@ The following image shows the most current schematic:
 
 ![alt text](https://raw.githubusercontent.com/Jaffe-/NESizer2/master/hw.png "Hardware")
 
+The circuit essentially consists of the following parts:
 
-#### The communication interface
+- Atmega168 microcontroller
+- 2A03 CPU/APU
+- LED matrix
+- Switch matrix
+- Analog signal amplifier
+
+
+#### Communication
+
+The Atmega168 accesses the 2A03, LED matrix and switch matrix through a simple bus system consisting of a 2-bit "address bus" and an 8-bit data bus. Bits 4, 5 of **PORTC** is used as the address, while **PORTD** is connected to the data bus. A 74HC238 decoder is used to decode the 2-bit address into one of four activation signals for each component. The addresses are decoded as follows:
+
+- 0: 2A03 data bus 
+- 1: LED matrix column
+- 2: matrix row for both LED and switch matrices
+- 3: switch matrix column 
+
+
+#### 2A03 setup
 
 Both the Atmega168 and the 2A03 are clocked by a 20 MHz crystal oscillator circuit based on 74HCT04 inverters. The 2A03 divides this clock by 12 internally to provide a 1.66 MHz clock for the 6502 and APU. This is a bit lower than the usual frequency for the 2A03 (1.79 MHz), but it has no serious impact on APU operation (timer values become a bit different).
 
 The Atmega is hooked up to the 2A03 using the following connections:
 
-- **PORTD** (**PD0** .. **PD7**)  <--->  **D0** .. **D7** on 2A03
+- **PORTD** (**PD0** .. **PD7**)  --->  74HC573 latch ---> **D0** .. **D7** on 2A03 
 - **PC0**  --->  **RESET** pin on 2A03
 - **PC1**  <---  **PHI2** clock output from 2A03
 - **PC2**  <---  **R/W** pin on 2A03
+
+The latch is necessary to hold on to the databus value when the bus is being used for something else. 
 
 The reset connection could possibly be omitted (and the 2A03 reset pin just connected to a standard reset circuit), but connecting it to the Atmega allows for the 2A03 to be reset at any time, which might be handy. 
 
 The **PHI2** output (M2 in the schematic's 2A03 pinout) from the 2A03 is the clock signal of the 6502 which goes high when the 6502 reads or writes in memory. This simplifies synchronizing with the 6502 when sending it instructions. 
 
 The **R/W** output from the 2A03 is necessary to synchronize with the CPU.
-
-	     
-#### 2A03 setup
 
 In addition to the connections to the Atmega, some other connections are necessary for the 2A03 to function properly:
 
@@ -45,14 +62,18 @@ The 100 ohm pull-down resistors on **SND1** and **SND2** are required for the DA
 Apart from this and the usual power supply connections, there are no further connections made. The address bus and the gamepad inputs/outputs are simply left unconnected. 
 
 
+#### LED and switch matrices
+
+These are both pretty standard. Each matrix is of size 4 x 8. The lower four bits of a 74HC573 latch are used to hold the selected LED row, and the upper four bits are used to hold the selected switch row. This latch is accessed through the data bus by selecting address 2. 
+
+The LED column is specified by writing to a 74HC573 latch connected to the data bus and selected with address 1. (Note that in order to light an LED at row *x* and column *y*, a 1 must be written at bit position *y* in the column latch, while a 0 must be written to bit position *x* of the row latch. This is because the column latch is sourcing the current while the row latch is sinking it.) 
+
+Reading a switch state is done by activating the correct row in the row latch, and then selecting address 3 and reading from the bus. 
+
+
 #### Audio signal amplification
 
 The output signals **SND1** and **SND2** are amplified up to line level and brought out on a stereo jack. There is also a mono mix made of the two with the same mixing ratio as in the NES, which is also amplified to line level. A somewhat shitty LM324 op-amp is used for all those purposes, in lack of a better one.
-
-
-#### Status LEDs
-
-The prototype board has 8 LEDs for debugging purposes. These are connected to a 74HC164 shift register which is connected to the SPI interface of the Atmega168. 
 
 
 ### Software
@@ -96,7 +117,7 @@ The abstraction makes producing sound easy:
 	int main() 
 	{
 		// Initialize 2A03:
-		2a03_setup();
+		io_setup();
 		
 		// Initialize Square 1 channel:
 		sq1_setup();
@@ -123,3 +144,12 @@ The abstraction makes producing sound easy:
 One of the Atmega's timers is used to generate an interrupt at approximately 16 kHz. This interrupt provides the basic timing used by various subsystems (LFOs, envelopes, APU updates, etc.)  
 
 A simple task handler (`task.h`, `task.c`) is used to sequence tasks to be performed. Tasks are registered with a desired frequency and a time delay to spread tasks out in time. 
+
+
+#### LEDs and switches
+
+These are handled in `leds.c`, `leds.h` and `input.c`, `input.h`. 
+
+LED states are held in a 32 byte array `leds`. The function `leds_refresh` is intended to be registered as a task, and will update one column of the LED array each time it is called. It is intended to be run often enough for the sequential updating to happen unnoticed. 
+
+Switch states are held in a 32 byte array `input`. The function `input_refresh` reads one row of switch data at a time and updates `input` accordingly. It is intended to be registered as a task and executed often enough for input to be seamless. 
