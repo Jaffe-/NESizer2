@@ -144,6 +144,12 @@ int main()
     env_mod_select[0] = 0;
     env_mod_select[1] = 1;
 
+    leds[0] = 0b11111111;
+    leds[2] = 0b11111111;
+
+    leds_7seg_set(2);
+    leds_7seg_dot_on();
+
     task_add(&update_apu, 10, 1);
     task_add(&update_lfo, 10, 2);
     task_add(&update_env, 10, 3);
