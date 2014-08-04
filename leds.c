@@ -2,16 +2,14 @@
 #include "leds.h"
 #include "bus.h"
 
+#define isone(VAL) ((VAL) != 0)
+
 /* 
    LED matrix interface
 */
 
 uint8_t leds[4] = {0};
 uint8_t row_mirror = 0;
-
-#define isone(VAL) ((VAL) != 0)
-
-#define L0 0b01110111
 
 const uint8_t leds_7seg_values[10] = {0b01110111,
 				      0b00010100,

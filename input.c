@@ -4,12 +4,17 @@
 
 uint8_t input[32] = {0}; 
 
+// Private for debouncing
+uint8_t last_input[4] = {0};
+
 void input_refresh() 
 /* Rreads one column of switch data each time it is called and auto-increments
    the current row
 */
 {
     static uint8_t current_row = 0;
+    static uint8_t stage = 0;
+    static uint8_t last_data = 0;
 
     // Update row latch value
     bus_set_value(row_mirror | (0x10 << current_row));
@@ -23,11 +28,17 @@ void input_refresh()
     uint8_t switch_data = bus_read_value();
     bus_set_output();
 
-    // Expand the switch bits into individual bytes in the input array
-    uint8_t* row = &input[current_row * 8];
-    for (uint8_t i = 0; i < 8; i++) {
-	row[i] = (switch_data >> i) & 1;
+    if (stage == 1) {	
+	// Expand the switch bits into individual bytes in the input array
+	uint8_t* row = &input[current_row * 8];
+	for (uint8_t i = 0; i < 8; i++) {
+	    if (((switch_data & (1 << i)) == (last_data & (1 << i)))) 
+		row[i] = (switch_data >> i) & 1;
+	}
+        if (++current_row == 4) current_row = 0;
     }
 
-    if (++current_row == 4) current_row = 0;
+    stage ^= 1;
+
+    last_data = switch_data;
 }

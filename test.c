@@ -10,6 +10,7 @@
 #include "timing.h"
 #include "modulation.h"
 #include "input.h"
+#include "drummachine.h"
 #include <avr/pgmspace.h>
 //#include "kick.c"
 //#include "snare.c"
@@ -43,68 +44,6 @@ void update_apu()
     if (++chn == 5) chn = 0;
 }
 
-#define C4 197
-#define D4 176
-#define E4 156
-#define F4 148
-#define G4 131
-#define A4 118
-#define B4 104
-#define C5 98
-
-uint8_t ledrow = 0;
-
-inline uint8_t switch_to_period(uint8_t num)
-{
-    uint8_t p = 0;
-    switch (num) {
-    case 0: p = C4; break;
-    case 1: p = D4; break;
-    case 2: p = E4; break;
-    case 3: p = F4; break;
-    case 4: p = G4; break;
-    case 5: p = A4; break;
-    case 6: p = B4; break;
-    case 7: p = C5; break;
-    }
-    return p;
-}
-
-void blah()
-{
-    uint8_t i = 0;
-    static uint8_t sq1_last = 0;
-    static uint8_t sq2_last = 0;
-
-    if (input[sq1_last] == 0) env1.gate = 0;
-    if (input[sq2_last] == 0) env2.gate = 0;
-
-    for (; i < 8; i++) {
-	if (input[i]) { 
-	    env1.gate = 1;
-	    bperiods[0] = switch_to_period(i) << 2;
-	    break;
-	}
-    }
-    
-    for (i += 1; i < 8; i++) {
-	if (input[i]) { 
-	    env2.gate = 1;
-	    bperiods[1] = switch_to_period(i) << 2;
-	    break;
-	}
-    }
-
-    bperiods[2] = 0;
-    for (i = 0; i < 8; i++) {
-	if (input[8 + i]) {
-	    bperiods[2] = switch_to_period(i) << 2;
-	    break;
-	}
-    }
-
-}
-
 int main() 
 {
     io_setup();
@@ -121,42 +60,50 @@ int main()
     tri_setup();
     tri.enabled = 1;
 
-    lfo1.period = 15;
-    lfo1.waveform = LFO_SINE;
+    noise_setup();
+    noise.enabled = 1;
+    noise.period = 0;
+    noise.loop = 0;
+    noise.volume = 0;
 
-    env1.attack = 50;
-    env1.decay = 0;
-    env1.sustain = 15;
-    env1.release = 50;
+    dmc_setup();
+    dmc.enabled = 1;
+    dmc.sample_enabled = 0;
 
-    env2.attack = 50;
+    env1.attack = 0;
+    env1.decay = 2;
+    env1.sustain = 10;
+    env1.release = 30;
+
+    env2.attack = 30;
     env2.decay = 0;
     env2.sustain = 15;
-    env2.release = 50;
-    
-    lfo2.period = 14;
-    lfo2.waveform = LFO_SINE;
+    env2.release = 30;
 
+    env3.attack = 0;
+    env3.decay = 2;
+    env3.sustain = 5;
+    env3.release = 10;
+  
+    env_mod_select[1] = 1;
+    env_mod_select[2] = 2;
+
+    lfo1.period = 20;
+    lfo1.waveform = LFO_SINE;
+    
     lfo_mod_matrix[0][0] = 20;
 
-    lfo_mod_matrix[1][1] = 20;
+    leds_7seg_set(8);
 
-    env_mod_select[0] = 0;
-    env_mod_select[1] = 1;
-
-    leds[0] = 0b11111111;
-    leds[2] = 0b11111111;
-
-    leds_7seg_set(2);
-    leds_7seg_dot_on();
-
+    task_add(&update_dmc, 1, 0);
     task_add(&update_apu, 10, 1);
     task_add(&update_lfo, 10, 2);
     task_add(&update_env, 10, 3);
     task_add(&modulation_handler, 10, 4);
     task_add(&leds_refresh, 20, 5);
-    task_add(&input_refresh, 20, 6);
-    task_add(&blah, 20, 7);
+    task_add(&input_refresh, 80, 6);
+    task_add(&drum_task, 80, 7);
+    task_add(&drum_update_leds, 80, 9);
 
     task_manager();
     
