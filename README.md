@@ -6,6 +6,8 @@ The 2A03 IC consists of a 6502 core (with some minor differences), a DMA control
 
 This project is inspired by a similar approach taken here: http://www.soniktech.com/tsundere/, but the idea here is to have the microcontroller communicate more directly with the 2A03, instead of using dedicated logic circuitry to send instructions.
 
+Here is a demo: https://www.youtube.com/watch?v=0pwFglPS3n8
+
 
 ### Hardware
 
@@ -87,30 +89,30 @@ The reason for using this opcode instead of the more obvious `NOP` is to be able
 
 The synchronization is done in the inline function `sync` by waiting for **R/W** to go low and **PHI2** to go high. When this is the case, the next time **PHI2** transitions from low to high the new instruction can be put on the bus. 
 
-During actual transmission of instructions, the `databus_wait` inline function is used to synchronize with the 6502's read cycles by waiting for **PHI2** to go high.
+During actual transmission of instructions, the `databus_wait` inline function is used to synchronize with the 6502's read cycles by waiting for **PHI2** to go low. When this happens, the new data can safely be put on the bus.
 
 
 #### Writing to the APU registers
 
-Writing to APU registers is done by the functions `register_write` and `register_write_all` which write one or all of the registers, respectively. 
+Writing to APU registers is done by the function `io_register_write`.
 
 Actually writing to the APU registers is done by the function `register_set`. It makes the 6502 perform the following series of instructions:
 
     LDA #VALUE		0xA9 VALUE
     STA $40RR		0x8D 0xRR 0x40
 
-where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when **PHI2** goes high, and keep them on there long enough for the 6502 to read. The `databus_wait` function is used to wait for **PHI2**'s transition. 
+where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when the 6502 enters a new read cycle. Waiting for each read cycle is done by the `databus_wait` function.
 
 When a register write sequence (or the last of many in `register_write_all`'s case) is done, the function `reset_pc` is called. This sends a `JMP $4018` instruction (in the same manner as described) to reset the program counter back to $4018. This reset is necessary to keep the CPU from reading from addresses in the internal register range, which could lead to a bus conflict where the internal registers could win and the CPU fetches an unintentional opcode.
 
-Lastly, the idle `STA` opcode (0x85) is put back on the bus to keep the CPU busy.
+Lastly, the idle `STA` opcode (0x85) is put back on the bus and latched to keep the CPU busy.
 
 
 #### APU abstaction layer
 
-The APU abstraction layer (`apu.h`, `apu.c`) contains structs and functions for manipulating the 2A03 channels in a high level manenr without having to deal with register writes manually. The channels are represented by structs having fields corresponding to each parameter of the channel. 
+The APU abstraction layer (`apu.h`, `apu.c`) contains structs and functions for manipulating the 2A03 channels in a high level manner without having to deal with register writes manually. The channels are represented by structs having fields corresponding to each parameter of the channel. 
 
-Each channel type is represented by a struct, `Square`, `Triangle`, `Noise` and `DMC`, respectively. Global objects `sq1`, `sq2`, `tri`, `noise` and `dmc` of corresponding types are allocated on the stack. Each channel has a setup function named `<channel>_setup`, intended for initializing the struct, and an update function `<channel>_update` which takes the data in a struct and fills the appropriate registers in a register buffer. The function `apu_refresh` takes the data in the register buffer and writes them to the 2A03. This function updates 6 registers at a time, so it needs to be called 3 times to update all registers. This is necessary to reduce time spent on register updates. 
+Each channel type is represented by a struct, `Square`, `Triangle`, `Noise` and `DMC`, respectively. Global objects `sq1`, `sq2`, `tri`, `noise` and `dmc` of corresponding types are allocated on the stack. Each channel has a setup function named `<channel>_setup`, intended for initializing the struct, and an update function `<channel>_update` which takes the data in a struct and fills the appropriate registers in a register buffer. The function `apu_refresh_channel` takes the data for a given channel in the register buffer and writes them to the 2A03. This function updates one channel's registers at a time, so it needs to be called 5 times to update all registers. This is necessary to reduce time spent on register updates.
 
 The abstraction makes producing sound easy: 
 
