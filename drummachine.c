@@ -13,6 +13,7 @@
 
 #define STATE_PROGRAM 0
 #define STATE_PLAY 1
+#define STATE_WAIT_NOTE 2
 
 #define BUTTON_NEXT 1
 #define BUTTON_PREV 0
@@ -20,7 +21,9 @@
 
 uint8_t BD_pat[16] = {0};
 uint8_t SD_pat[16] = {0};
-uint8_t HH_pat[16] = {1};
+uint8_t HH_pat[16] = {0};
+uint8_t TRI_pat[16] = {0};
+uint8_t SQ1_pat[16] = {0};
 
 uint8_t prev_input[32] = {0};
 
@@ -28,7 +31,7 @@ uint8_t state = STATE_PROGRAM;
 
 uint8_t current_pattern = 0;
 
-uint8_t* patterns[3] = {BD_pat, SD_pat, HH_pat};
+uint8_t* patterns[5] = {BD_pat, SD_pat, HH_pat, TRI_pat, SQ1_pat};
 
 uint8_t current_pos = 0;
 
@@ -61,11 +64,16 @@ inline uint8_t switch_to_period(uint8_t num)
     return p;
 }
 
+#define button_pressed(BTN) (input[BTN] == 1 && prev_input[BTN] == 0)
 
 void drum_task()
 {
-    if (input[BUTTON_PLAY] == 1 && prev_input[BUTTON_PLAY] == 0) {
-	if (state == STATE_PROGRAM) {
+    if (button_pressed(BUTTON_PLAY)) {
+	if (state == STATE_WAIT_NOTE) {
+	    patterns[current_pattern][current_pos] = 0;
+	    state = STATE_PROGRAM;
+	}
+	else if (state == STATE_PROGRAM) {
 	    state = STATE_PLAY;
 	    current_pos = 0;
 	    counter = cnt;
@@ -73,31 +81,54 @@ void drum_task()
 	else {
 	    state = STATE_PROGRAM;
 	    env3.gate = 0;
+	    env1.gate = 0;
+	    bperiods[2] = 0;
 	}
     }
 	
+    else if (state == STATE_WAIT_NOTE) {
+	for (uint8_t i = 0; i < 8; i++) {
+	    if (button_pressed(i)) {
+		patterns[current_pattern][current_pos] = switch_to_period(i);
+		state = STATE_PROGRAM;
+	    }
+	}
+    }
+
     else if (state == STATE_PROGRAM) {
 
-	if (input[BUTTON_NEXT] == 1 && prev_input[BUTTON_NEXT] == 0 && current_pattern < 2) {
+	if (button_pressed(BUTTON_NEXT) && current_pattern < 4) {
 	    current_pattern++;
 	}
 	
-	else if (input[BUTTON_PREV] == 1 && prev_input[BUTTON_PREV] == 0 && current_pattern > 0)
+	else if (button_pressed(BUTTON_PREV) && current_pattern > 0)
 	    current_pattern--;
 	   
 	for (uint8_t i = 8; i < 24; i++) {
-	    if (input[i] == 1 && prev_input[i] == 0) {
-		if (i < 16)
-		    patterns[current_pattern][i] ^= 1;
-		else
-		    patterns[current_pattern][i - 16] ^= 1; 
+	    if (button_pressed(i)) {
+		if (current_pattern < 3) {
+		    if (i < 16)
+			patterns[current_pattern][i] ^= 1;
+		    else
+			patterns[current_pattern][i - 16] ^= 1; 
+		    
+		}
+		else {
+		    state = STATE_WAIT_NOTE;
+		    current_pos = (i < 16) ? i : i - 16;
+		    counter = 4;
+		    break;
+		}
 	    }
 	}
     }
 
     else if (state == STATE_PLAY) {
-	if (counter == cnt/2)
+	if (counter == cnt/2) {
 	    env3.gate = 0;
+	    env1.gate = 0;
+	    tri.period = 0;
+	}
 	if (counter-- == 0) {
 	    counter = cnt;
 	    
@@ -118,42 +149,26 @@ void drum_task()
 	    if (HH_pat[current_pos]) {
 		env3.gate = 1;
 	    }
-	    
+	
+	    bperiods[2] = TRI_pat[current_pos] << 2;
+    
+	    if (SQ1_pat[current_pos]) {
+		env1.gate = 1;
+		bperiods[0] = SQ1_pat[current_pos] << 1;
+	    }
+
 	    if (++current_pos == 16) current_pos = 0;
 
 	}
-	
-	uint8_t i = 0;
-	static uint8_t sq1_last = 0;
-	static uint8_t sq2_last = 0;
-	
-	if (input[sq1_last] == 0) env1.gate = 0;
-	if (input[sq2_last] == 0) env2.gate = 0;
-	
-	for (; i < 8; i++) {
-	    if (input[i]) { 
-		env1.gate = 1;
-		bperiods[0] = switch_to_period(i) << 2;
-		break;
-	    }
-	}
-	
-	for (i += 1; i < 8; i++) {
+
+	env2.gate = 0;	
+	for (uint8_t i = 0; i < 8; i++) {
 	    if (input[i]) { 
 		env2.gate = 1;
-		bperiods[1] = switch_to_period(i) << 2;
-		break;
+		bperiods[1] = switch_to_period(i) << 1;
 	    }
 	}
-	
-	bperiods[2] = 0;
-	for (i = 0; i < 8; i++) {
-	    if (input[8 + i]) {
-		bperiods[2] = switch_to_period(i) << 2;
-		break;
-	    }
-	}
- 
+	 
     }
 
     for (uint8_t i = 0; i < 25; i++) {
@@ -170,14 +185,29 @@ void drum_update_leds()
     else
 	leds_7seg_dot_off();
 
+    if (state == STATE_WAIT_NOTE) {
+	if (--counter == 0) {
+	    counter = 60;
+	    if (current_pos < 8) 
+		leds[1] = 1 << current_pos;
+	    else
+		leds[0] = 1 << (current_pos - 8);
+	}
+	if (counter == 30) {
+	    leds[1] = 0;
+	    leds[0] = 0;
+	}
+	    
+    }
+
     if (state == STATE_PROGRAM) {
 	leds[0] = 0;
 	leds[1] = 0;
 	for (uint8_t i = 0; i < 16; i++) {
 	    if (i < 8) 
-		leds[1] |= (patterns[current_pattern][i] << i);
+		leds[1] |= ((patterns[current_pattern][i] != 0) << i);
 	    else
-		leds[0] |= (patterns[current_pattern][i] << (i - 8));
+		leds[0] |= ((patterns[current_pattern][i] != 0) << (i - 8));
 	}
     }
 

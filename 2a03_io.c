@@ -42,7 +42,8 @@ inline void databus_wait()
     // If PHI2 is already 1, we'll wait until it goes low again
     while (PINC & PHI2);
 
-    // PHI2 has gone low, we're in a new cycle
+    // PHI2 has gone low, we're in a new cycle. Waste a little time before
+    // data can be put on the bus
     nop();
   
 }

@@ -103,7 +103,7 @@ Actually writing to the APU registers is done by the function `register_set`. It
 
 where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when the 6502 enters a new read cycle. Waiting for each read cycle is done by the `databus_wait` function.
 
-When a register write sequence (or the last of many in `register_write_all`'s case) is done, the function `reset_pc` is called. This sends a `JMP $4018` instruction (in the same manner as described) to reset the program counter back to $4018. This reset is necessary to keep the CPU from reading from addresses in the internal register range, which could lead to a bus conflict where the internal registers could win and the CPU fetches an unintentional opcode.
+When a register write sequence is done, the function `reset_pc` is called. This sends a `JMP $4018` instruction (in the same manner as described) to reset the program counter back to $4018. This reset is necessary to keep the CPU from reading from addresses in the internal register range, which could lead to a bus conflict where the internal registers could win and the CPU fetches an unintentional opcode.
 
 Lastly, the idle `STA` opcode (0x85) is put back on the bus and latched to keep the CPU busy.
 

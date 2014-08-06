@@ -51,11 +51,13 @@ int main()
 
     sq1_setup();
     sq1.enabled = 1;
+    sq1.volume = 0;
     sq1.duty = 2;
 
     sq2_setup();
     sq2.enabled = 1;
-    sq2.duty = 2;
+    sq2.volume = 0;
+    sq2.duty = 1;
 
     tri_setup();
     tri.enabled = 1;
@@ -73,12 +75,14 @@ int main()
     env1.attack = 0;
     env1.decay = 2;
     env1.sustain = 10;
-    env1.release = 30;
+    env1.release = 25;
+    env1.gate = 0;
 
-    env2.attack = 30;
+    env2.attack = 40;
     env2.decay = 0;
     env2.sustain = 15;
-    env2.release = 30;
+    env2.release = 40;
+    env2.gate = 0;
 
     env3.attack = 0;
     env3.decay = 2;
@@ -88,7 +92,7 @@ int main()
     env_mod_select[1] = 1;
     env_mod_select[2] = 2;
 
-    lfo1.period = 20;
+    lfo1.period = 3;
     lfo1.waveform = LFO_SINE;
     
     lfo_mod_matrix[0][0] = 20;
