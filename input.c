@@ -27,6 +27,7 @@ void input_refresh()
     bus_set_input();
     uint8_t switch_data = bus_read_value();
     bus_set_output();
+    bus_set_address(NO_ADDR);
 
     if (stage == 1) {	
 	// Expand the switch bits into individual bytes in the input array

@@ -44,8 +44,26 @@ void update_apu()
     if (++chn == 5) chn = 0;
 }
 
+void bogus() 
+{
+    bus_set_address(ATTINY_ADDR);
+    bus_set_input();
+
+    for (uint8_t i = 0; i < 15; i++) 
+	nop();
+
+    uint8_t val = bus_read_value();
+    bus_set_address(NO_ADDR);
+    bus_set_output();
+    leds[0] = val;
+}
+
 int main() 
 {
+    PORTB = 0;
+    DDRB = ADDR_m;
+    PORTB = ADDR_m;
+
     io_setup();
     timer_setup();
 
@@ -97,19 +115,25 @@ int main()
     
     lfo_mod_matrix[0][0] = 20;
 
+    leds[0] = 0b10101010;
+    leds[1] = 0b10101010;
     leds_7seg_set(8);
+
 
     task_add(&update_dmc, 1, 0);
     task_add(&update_apu, 10, 1);
     task_add(&update_lfo, 10, 2);
     task_add(&update_env, 10, 3);
     task_add(&modulation_handler, 10, 4);
-    task_add(&leds_refresh, 20, 5);
+    task_add(&leds_refresh, 20, 5); // 20
     task_add(&input_refresh, 80, 6);
     task_add(&drum_task, 80, 7);
     task_add(&drum_update_leds, 80, 9);
 
-    task_manager();
+
+
+  
+  task_manager();
     
 //    bus_set_address(LEDROW_ADDR);
 //    PORTD = 0b11111100;
@@ -117,7 +141,5 @@ int main()
 //    PORTD = 1;
 
 //    while(1);
-
-    while(1);
 
 }

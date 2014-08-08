@@ -27,10 +27,17 @@ inline void sync()
   instruction (it is writing the bogus value to memory). 
  */
 {
-    while(PINC & RW);
-    while(!(PINC & RW));
-    while(PINC & RW);
+    while(PINC & RW);       // wait until R/W goes low
+    while(!(PINC & RW));    // wait until it goes up again
+
+    while(PINC & RW);       // wait until R/W goes low
+//    while(!(PINC & RW));    // wait until it goes up again
+//    while(PINC & RW);       
     while(!(PINC & PHI2));
+//    while(PINC & PHI2);
+    nop();
+    nop();
+
 }
 
 inline void databus_wait()
@@ -39,13 +46,7 @@ inline void databus_wait()
   to read from the bus. 
 */
 {
-    // If PHI2 is already 1, we'll wait until it goes low again
-    while (PINC & PHI2);
-
-    // PHI2 has gone low, we're in a new cycle. Waste a little time before
-    // data can be put on the bus
-    nop();
-  
+//    nop();
 }
 
 inline void databus_set(uint8_t value)
@@ -53,8 +54,8 @@ inline void databus_set(uint8_t value)
    Waits for PHI2 to go high and then puts new value on bus.
 */
 {
+    bus_set_value(value);
     databus_wait();
-    PORTD = value;
 }
 
 inline void register_set(uint8_t reg, uint8_t val) 
@@ -108,7 +109,7 @@ inline void io_register_write(uint8_t reg, uint8_t value)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	// Put STA_zp on bus before deactivating CPU latch
-	PORTD = STA_zp;
+	bus_set_value(STA_zp);
 	
 	// Open latch gates
 	bus_set_address(CPU_ADDR);
@@ -125,7 +126,7 @@ inline void io_register_write(uint8_t reg, uint8_t value)
 
 	// Finally, latch the bus value by switching to a
 	// different address
-	bus_set_address(SWITCHCOL_ADDR);
+	bus_set_address(NO_ADDR);
     }
 
     // Reflect change in mirror
@@ -160,16 +161,15 @@ void io_setup()
    (non-interruptive) state.
 */
 {
-    PORTC &= ~ADDR_m;
-
     PORTD = 0;
-    DDRD = 0xFF;
-    PORTD = STA_zp;
+    DDRD = DATA_PORTD_m;
 
     // Configure the /RES pin on PORT C as output and set /RES high
     PORTC = 0;
-    DDRC = RES | ADDR_m;
+    DDRC = RES | DATA_PORTC_m;
     PORTC = RES | RW | PHI2;
+
+    bus_set_value(STA_zp);
 
     _delay_ms(50);
 

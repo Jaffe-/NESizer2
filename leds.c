@@ -47,7 +47,7 @@ void leds_refresh()
     bus_set_value(current_col);
 
     // Switch to some other address to latch the previous value
-    bus_set_address(SWITCHCOL_ADDR);
+    bus_set_address(NO_ADDR);
 
     if (current_col == 0x80) 
 	current_col = 1;

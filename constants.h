@@ -9,8 +9,3 @@
 #define F_UPDATE 1600
 #define F_LFO 6000
 #define BPM 100
-
-uint16_t basspat[16];
-uint16_t sq1_pat[16];
-uint16_t sq2_pat[16];
-uint8_t sq_mask[16];
