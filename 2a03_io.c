@@ -96,9 +96,27 @@ void io_write_changed(uint8_t reg)
     }
 }
 
-void reset_2a03()
-/* Simply resets the 6502. */
+void io_setup()
+/* Initializes the interface to communicate with 6502 
+
+   Configures ports and resets the 6502 and puts the APU in a suitable
+   (non-interruptive) state.
+*/
 {
+    // Configure upper 6 bits of PORTD as output:
+    PORTD = 0;
+    DDRD = DATA_PORTD_m;
+
+    // Configure the /RES pin on PORT C as output and set /RES high, also set
+    // bits 0, 1 as output
+    PORTC = 0;
+    DDRC = RES | DATA_PORTC_m;
+    PORTC = RES | RW;
+
+    bus_set_value(STA_zp);
+
+    // Reset the 2A03:
+
     // Set /RES low
     PORTC &= ~RES;
 
@@ -107,42 +125,14 @@ void reset_2a03()
 
     // Set /RES high again
     PORTC |= RES;
-}
 
-void io_setup()
-/* Initializes the interface to communicate with 6502 
-
-   Configures ports and resets the 6502 and puts the APU in a suitable
-   (non-interruptive) state.
-*/
-{
-    PORTD = 0;
-    DDRD = DATA_PORTD_m;
-
-    // Configure the /RES pin on PORT C as output and set /RES high
-    PORTC = 0;
-    DDRC = RES | DATA_PORTC_m;
-    PORTC = RES | RW;
-
+    // Send SEI instruction:
+    sync();
+    bus_set_value(0x78);
     bus_set_value(STA_zp);
-
-    _delay_ms(50);
-
-    // Reset the 2A03
-    reset_2a03();
-
+    
     // Wait for reset cycle to complete
     _delay_ms(1);
         
-    // Now the 6502 should be ready to receive instructions (?)
-
-/*
-    // We need to disable the frame interrupt
-    io_register_write(0x17, 0b01000000);
-
-    // Ensure that DMC channel does not trigger IRQ
-    io_register_write(0x15, 0);
-*/
-
 }
 
