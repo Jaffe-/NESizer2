@@ -9,8 +9,7 @@
 
 // Pins used to interface with 6502
 #define RES 100             // PC2
-#define PHI2 0b1000         // PC3
-#define RW 0b10000          // PC4
+#define RW 0b1000          // PC3
 
 #define nop() asm volatile("nop")
 

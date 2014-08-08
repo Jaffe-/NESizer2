@@ -23,40 +23,23 @@
 // Helper functions for using the bus:
 #define bus_set_address(ADDR) PORTB = (PORTB & ~ADDR_m) | (ADDR << ADDR_p)
 
-//#define bus_set_value(VAL) PORTD = (PORTD & DATA_PORTD_t) | ((VAL) & DATA_PORTD_m); \ 
-//                           PORTC = (PORTC & DATA_PORTC_t) | ((VAL) & DATA_PORTC_m)  
-
-/*
-#define bus_set_value(VAL) 
-asm volatile("in $0, 0x0b"\
-	     "andi $0, 0x03"			\
-	     "ldi $0, " #VAL			\
-	     "andi $1, 0xFC"			\
-	     "or $0, $1"			\
-	     "in $1, 0x08"			\
-	     "andi $1, 0xFC"			\
-	     "ldi $2, " #VAL			\
-	     "andi $2, 0x03"			\
-	     "or $1, $2"			\
-	     "out 0x0b, $0"			\
-	     "out 0x08, $1")
-*/
-
-#define bus_set_value(VAL)					\
-    asm ("mov r26, %[value]\n"				\
-		 "in r24, 0x0b\n"				\
-		 "andi r24, 0x03\n"				\
-		 "andi %[value], 0xFC\n"			\
-		 "or r24, %[value]\n"				\
-		 "in r25, 0x08\n"				\
-		 "andi r25, 0xFC\n"				\
-		 "andi r26, 0x03\n"				\
-		 "or r25, r26\n"				\
-		 "out 0x0b, r24\n"				\
-		 "out 0x08, r25\n"				\
-		 :							\
-		 : [value] "r" ((VAL))					\
-		 : "r24", "r25", "r26")
+// Changed to assembly for tighter control of when the new port values are
+// actually written! 
+#define bus_set_value(VAL)						\
+    asm ("mov r26, %[value]\n"						\
+	 "in r24, 0x0b\n"						\
+	 "andi r24, 0x03\n"						\
+	 "andi %[value], 0xFC\n"					\
+	 "or r24, %[value]\n"						\
+	 "in r25, 0x08\n"						\
+	 "andi r25, 0xFC\n"						\
+	 "andi r26, 0x03\n"						\
+	 "or r25, r26\n"						\
+	 "out 0x0b, r24\n"						\
+	 "out 0x08, r25\n"						\
+	 :								\
+	 : [value] "r" ((VAL))						\
+	 : "r24", "r25", "r26")
 
 #define bus_read_value() (PIND & DATA_PORTD_m) | (PINC & DATA_PORTC_m)
 

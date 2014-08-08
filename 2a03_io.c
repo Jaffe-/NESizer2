@@ -18,8 +18,6 @@ uint8_t reg_update[0x16] = {0};
 
 /* Internal utility functions */
 
-inline void databus_wait();
-
 inline void sync() 
 /*
   Synchronizes with the CPU by waiting for the R/W line to go high. When this
@@ -29,33 +27,7 @@ inline void sync()
 {
     while(PINC & RW);       // wait until R/W goes low
     while(!(PINC & RW));    // wait until it goes up again
-
     while(PINC & RW);       // wait until R/W goes low
-//    while(!(PINC & RW));    // wait until it goes up again
-//    while(PINC & RW);       
-    while(!(PINC & PHI2));
-//    while(PINC & PHI2);
-    nop();
-    nop();
-
-}
-
-inline void databus_wait()
-/*
-  Waits for PHI2 to transition from 0 to 1, which signals that the CPU is ready
-  to read from the bus. 
-*/
-{
-//    nop();
-}
-
-inline void databus_set(uint8_t value)
-/* 
-   Waits for PHI2 to go high and then puts new value on bus.
-*/
-{
-    bus_set_value(value);
-    databus_wait();
 }
 
 inline void register_set(uint8_t reg, uint8_t val) 
@@ -69,29 +41,15 @@ inline void register_set(uint8_t reg, uint8_t val)
 */
 {
     // Wait for 6502's read and put LDA_imm on databus:
-    databus_set(LDA_imm);         // takes 2 cycles
-    databus_set(val);
+    bus_set_value(LDA_imm);         // takes 2 cycles
+    bus_set_value(val);
 
-    databus_set(STA_abs);         // takes 4 cycles
-    databus_set(reg);
-    databus_set(0x40);
-    databus_wait();    
-}
+    bus_set_value(STA_abs);         // takes 4 cycles
+    bus_set_value(reg);
+    bus_set_value(0x40);
 
-inline void reset_pc() 
-/* 
-   Resets PC to avoid CPU reading from APU registers when fetching instructions. 
-
-   This function assumes that synchronization is done. 
-*/
-{
-    // Send JMP 0x4018 instruction:
-    databus_set(JMP_abs);
-    databus_set(0x18);
-    databus_set(0x40);
-
-    // Send default LDA instruction
-    databus_set(STA_zp);
+    // Put back STA zero page instruction
+    bus_set_value(STA_zp);
 }
 
 
@@ -121,9 +79,6 @@ inline void io_register_write(uint8_t reg, uint8_t value)
 	// Do the actual write
 	register_set(reg, value);
 	
-	// Jump back
-	reset_pc();
-
 	// Finally, latch the bus value by switching to a
 	// different address
 	bus_set_address(NO_ADDR);
@@ -167,7 +122,7 @@ void io_setup()
     // Configure the /RES pin on PORT C as output and set /RES high
     PORTC = 0;
     DDRC = RES | DATA_PORTC_m;
-    PORTC = RES | RW | PHI2;
+    PORTC = RES | RW;
 
     bus_set_value(STA_zp);
 
@@ -178,22 +133,16 @@ void io_setup()
 
     // Wait for reset cycle to complete
     _delay_ms(1);
-    
-    sync();
-
-    // Send SEI instruction
-    databus_set(0x78);
-    databus_wait();
-
-    reset_pc();
-    
+        
     // Now the 6502 should be ready to receive instructions (?)
 
+/*
     // We need to disable the frame interrupt
     io_register_write(0x17, 0b01000000);
 
     // Ensure that DMC channel does not trigger IRQ
     io_register_write(0x15, 0);
+*/
 
 }
 
