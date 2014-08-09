@@ -28,9 +28,7 @@ inline void sync()
     while(PINC & RW);       // wait until R/W goes low
     while(!(PINC & RW));    // wait until it goes up again
     while(PINC & RW);       // wait until R/W goes low
-
 }
-
 
 inline void register_set(uint8_t reg, uint8_t val)
 /*
@@ -55,21 +53,21 @@ inline void register_set(uint8_t reg, uint8_t val)
 	"ori r24, %[lda_imm_hi]\n"     // or with upper 6 bits of value
 	"mov r25, %[portc_reg]\n"      // get PORTC with lower 2 bits cleared
 	"ori r25, %[lda_imm_lo]\n"     // or with lower 2 bits of value
-	"out %[portd_addr], r24\n"     // Output these values
+	"out %[portd_addr], r24\n"     // output the values
 	"out %[portc_addr], r25\n"
 	
 	// Write value:
-	"mov r24, %[portd_reg]\n"
+	"mov r24, %[portd_reg]\n"      // get PORTD with upper 6 bits cleared
 	"mov r26, %[v]\n"
-	"andi r26, 0xFC\n"
-	"or r24, r26\n"
-	"mov r25, %[portc_reg]\n"
+	"andi r26, 0xFC\n"             
+	"or r24, r26\n"                // or with upper 6 bits of value
+	"mov r25, %[portc_reg]\n"      // get PORTC with lower 2 bits cleared
 	"mov r26, %[v]\n"
 	"andi r26, 0x03\n"
-	"or r25, r26\n"
-	"nop\n"
-	"nop\n"
-	"out %[portd_addr], r24\n"
+	"or r25, r26\n"                // or with lower 2 bits of value
+	"nop\n"                        // waste two cycles so that the new value is output
+	"nop\n"                        // exactly 12 cc after the last time
+	"out %[portd_addr], r24\n"     // output the values
 	"out %[portc_addr], r25\n"
 	
 	// Write STA_abs:
@@ -77,8 +75,8 @@ inline void register_set(uint8_t reg, uint8_t val)
 	"ori r24, %[sta_abs_hi]\n"
 	"mov r25, %[portc_reg]\n"
 	"ori r25, %[sta_abs_lo]\n"
-	"nop\n"
-	"nop\n"
+	"nop\n"                        // again, waste cycles so that the next write happens
+	"nop\n"                        // 12 cc (one 6502 cc) after the last one
 	"nop\n"
 	"nop\n"
 	"nop\n"
@@ -150,7 +148,7 @@ inline void register_write(uint8_t reg, uint8_t value)
   
    Writes a value to an APU register by feeding the 6502
    with instructions for loading the value into A, and then
-   storing the value in $4014.
+   storing the value in $40<reg>.
 */
 {
     // Ensure that interrupts are disabled when doing this
@@ -244,6 +242,8 @@ void io_setup()
 	"ori r24, %[sta_zp_hi]\n"
 	"mov r25, %[portc_reg]\n"
 	"ori r25, %[sta_zp_lo]\n"
+	"nop\n"
+	"nop\n"
 	"nop\n"
 	"nop\n"
 	"nop\n"
