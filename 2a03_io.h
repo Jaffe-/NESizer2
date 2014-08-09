@@ -3,9 +3,7 @@
 // The 6502 opcodes needed
 #define LDA_imm 0xA9
 #define STA_abs 0x8D
-#define LDA_abs 0xAD
 #define STA_zp 0x85
-#define JMP_abs 0x4C
 
 // Pins used to interface with 6502
 #define RES 100             // PC2

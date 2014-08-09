@@ -44,20 +44,6 @@ void update_apu()
     if (++chn == 5) chn = 0;
 }
 
-void bogus() 
-{
-    bus_set_address(ATTINY_ADDR);
-    bus_set_input();
-
-    for (uint8_t i = 0; i < 15; i++) 
-	nop();
-
-    uint8_t val = bus_read_value();
-    bus_set_address(NO_ADDR);
-    bus_set_output();
-    leds[0] = val;
-}
-
 int main() 
 {
     PORTB = 0;

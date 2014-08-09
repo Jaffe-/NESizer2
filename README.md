@@ -40,16 +40,14 @@ Both the Atmega168 and the 2A03 are clocked by a 20 MHz crystal oscillator circu
 
 The Atmega is hooked up to the 2A03 using the following connections:
 
-- **PORTD** (**PD0** .. **PD7**)  --->  74HC573 latch ---> **D0** .. **D7** on 2A03 
-- **PC0**  --->  **RESET** pin on 2A03
-- **PC1**  <---  **PHI2** clock output from 2A03
-- **PC2**  <---  **R/W** pin on 2A03
+- **PD2** .. **PD7**  --->  74HC573 latch ---> **D2** .. **D7** on 2A03 
+- **PC0** .. **PC1**  --->  74HC573 latch ---> **D0** .. **D1** on 2A03
+- **PC2**  --->  **RESET** pin on 2A03
+- **PC3**  <---  **R/W** pin on 2A03
 
 The latch is necessary to hold on to the databus value when the bus is being used for something else. 
 
 The reset connection could possibly be omitted (and the 2A03 reset pin just connected to a standard reset circuit), but connecting it to the Atmega allows for the 2A03 to be reset at any time, which might be handy. 
-
-The **PHI2** output (M2 in the schematic's 2A03 pinout) from the 2A03 is the clock signal of the 6502 which goes high when the 6502 reads or writes in memory. This simplifies synchronizing with the 6502 when sending it instructions. 
 
 The **R/W** output from the 2A03 is necessary to synchronize with the CPU.
 
@@ -80,6 +78,10 @@ The output signals **SND1** and **SND2** are amplified up to line level and brou
 
 ### Software
 
+#### Databus communication
+
+`bus.h` contains utility macros for using the bus system. The target component is adressed using `bus_set_address(<address>)`. A value is put on the bus using `bus_set_value(<value>)`. Changing bus direction to input or output is done by `bus_set_input()` and `bus_set_output()`, respectively. Values are read from the bus using `bus_read_value()`.
+
 
 #### Running the 2A03 and synchronizing
 
@@ -87,23 +89,19 @@ The 2A03 is kept idle by continuously holding 0x85, the opcode for `STA` (with z
 
 The reason for using this opcode instead of the more obvious `NOP` is to be able to synchronize with the CPU when a new instruction is to be sent. This synchronization is done by monitoring the **R/W** line of the 2A03. When it goes low, the 6502 is writing to memory. This *only* happens when the `STA $85` instruction is in its third cycle, which means that the next cycle will be the fetch of the next opcode.
 
-The synchronization is done in the inline function `sync` by waiting for **R/W** to go low and **PHI2** to go high. When this is the case, the next time **PHI2** transitions from low to high the new instruction can be put on the bus. 
-
-During actual transmission of instructions, the `databus_wait` inline function is used to synchronize with the 6502's read cycles by waiting for **PHI2** to go low. When this happens, the new data can safely be put on the bus.
+The synchronization is done in the inline function `sync` by waiting for **R/W** to go low, high and then low again. The 6502 is then guaranteed to be at the start of its third cycle, and preparations for the next cycle can start.
 
 
 #### Writing to the APU registers
 
 Writing to APU registers is done by the function `io_register_write`.
 
-Actually writing to the APU registers is done by the function `register_set`. It makes the 6502 perform the following series of instructions:
+The actual write sequence is performed by the function `register_set`. It makes the 6502 perform the following series of instructions:
 
     LDA #VALUE		0xA9 VALUE
     STA $40RR		0x8D 0xRR 0x40
 
-where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when the 6502 enters a new read cycle. Waiting for each read cycle is done by the `databus_wait` function.
-
-When a register write sequence is done, the function `reset_pc` is called. This sends a `JMP $4018` instruction (in the same manner as described) to reset the program counter back to $4018. This reset is necessary to keep the CPU from reading from addresses in the internal register range, which could lead to a bus conflict where the internal registers could win and the CPU fetches an unintentional opcode.
+where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when the 6502 enters a new read cycle. The `bus_set_value` macro expands to an inline assembly expression which takes about 10 clock cycles, and the actual values are not put on the PORTC and PORTD pins before the last two. In addition, a slight delay occurs between the pins being set and the corresponding pins on the 74HC573 latch getting the same values. Therefore, `bus_set_value` must be called almost a clock cycle before the value actually has to be on the 2A03's databus. 
 
 Lastly, the idle `STA` opcode (0x85) is put back on the bus and latched to keep the CPU busy.
 
