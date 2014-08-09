@@ -8,11 +8,15 @@ This project is inspired by a similar approach taken here: http://www.soniktech.
 
 Here is a demo: https://www.youtube.com/watch?v=0pwFglPS3n8
 
+
 ### Changelog
 
 **09/08/14**: PHI2 is no longer needed for communication between the Atmega168 and the 6502, as the register write routine is now written in assembly and timed by counting clock cycles instead of reading the state of PHI2.  
+
 **08/07/14**: Started preparing for MIDI, databus now occupies lower 2 bits of PORTC and upper 6 bits of PORTD. This is to be able to use the RX and possibly TX pins on the Atmega168 for MIDI. 
+
 **08/05/14**: Bus addresses are now 3 bits instead of 2, to be able to select more than 4 components. This is not needed right now, but I plan to add a battery backed SRAM to store sequences composed on the sequencer, as well as "patches", etc. 
+
 
 ### Hardware
 
