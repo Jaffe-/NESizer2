@@ -8,6 +8,11 @@ This project is inspired by a similar approach taken here: http://www.soniktech.
 
 Here is a demo: https://www.youtube.com/watch?v=0pwFglPS3n8
 
+### Changelog
+
+**09/08/14**: PHI2 is no longer needed for communication between the Atmega168 and the 6502, as the register write routine is now written in assembly and timed by counting clock cycles instead of reading the state of PHI2.  
+**08/07/14**: Started preparing for MIDI, databus now occupies lower 2 bits of PORTC and upper 6 bits of PORTD. This is to be able to use the RX and possibly TX pins on the Atmega168 for MIDI. 
+**08/05/14**: Bus addresses are now 3 bits instead of 2, to be able to select more than 4 components. This is not needed right now, but I plan to add a battery backed SRAM to store sequences composed on the sequencer, as well as "patches", etc. 
 
 ### Hardware
 
@@ -80,7 +85,14 @@ The output signals **SND1** and **SND2** are amplified up to line level and brou
 
 #### Databus communication
 
-`bus.h` contains utility macros for using the bus system. The target component is adressed using `bus_set_address(<address>)`. A value is put on the bus using `bus_set_value(<value>)`. Changing bus direction to input or output is done by `bus_set_input()` and `bus_set_output()`, respectively. Values are read from the bus using `bus_read_value()`.
+`bus.h` contains utility macros for using the bus system. The target component is adressed using `bus_set_address(<address>)`. A value is put on the bus using `bus_set_value(<value>)`. Changing bus direction to input or output is done by `bus_set_input()` and `bus_set_output()`, respectively. Values are read from the bus using `bus_read_value()`. 
+
+`bus.h` also contains definitions of the adresses:
+
+* 2A03: `CPU_ADDR`
+* LED column: `LEDCOL_ADDR`
+* Row (for both LEDs and switches): `ROW_ADDR`
+* Switch column: `SWITCHCOL_ADDR`
 
 
 #### Running the 2A03 and synchronizing
@@ -94,16 +106,16 @@ The synchronization is done in the inline function `sync` by waiting for **R/W**
 
 #### Writing to the APU registers
 
-Writing to APU registers is done by the function `io_register_write`.
+Writing to APU registers is done by the function `register_write` (exposed externally as `io_register_write`).
 
 The actual write sequence is performed by the function `register_set`. It makes the 6502 perform the following series of instructions:
 
     LDA #VALUE		0xA9 VALUE
     STA $40RR		0x8D 0xRR 0x40
 
-where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when the 6502 enters a new read cycle. The `bus_set_value` macro expands to an inline assembly expression which takes about 10 clock cycles, and the actual values are not put on the PORTC and PORTD pins before the last two. In addition, a slight delay occurs between the pins being set and the corresponding pins on the 74HC573 latch getting the same values. Therefore, `bus_set_value` must be called almost a clock cycle before the value actually has to be on the 2A03's databus. 
+where 0xRR is the low byte of the register address to be written to. The Atmega must put these byte strings on the 6502 databus when the 6502 enters a new read cycle. Because of the tight timing requirements, and the computations necessary because the databus is divided across PORTC and PORTD, assembly is used to write this routine. See the source code for a more detailed explanation of it.
 
-Lastly, the idle `STA` opcode (0x85) is put back on the bus and latched to keep the CPU busy.
+At the end, `register_set` puts the `STA` zero page opcode (0x85) back on the bus to keep the CPU busy until the next time something needs to be written.
 
 
 #### APU abstaction layer
