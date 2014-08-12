@@ -35,12 +35,18 @@ The circuit essentially consists of the following parts:
 
 #### Communication
 
-The Atmega168 accesses the 2A03, LED matrix and switch matrix through a simple bus system consisting of a 2-bit "address bus" and an 8-bit data bus. Bits 4, 5 of **PORTC** is used as the address, while **PORTD** is connected to the data bus. A 74HC238 decoder is used to decode the 2-bit address into one of four activation signals for each component. The addresses are decoded as follows:
+The Atmega168 accesses the 2A03, LED matrix and switch matrix through a simple bus system consisting of a 2-bit "address bus" and an 8-bit data bus. Bits 0, 1 and 2 of **PORTB** are used as the address, while bits 0 and 1 of **PORTC** and bits 2 to 7 of **PORTD** are connected to the data bus. A 74HC238 decoder is used to decode the 3-bit address into one of eight activation signals for each component. The addresses are decoded as follows:
 
 - 0: 2A03 data bus 
 - 1: LED matrix column
 - 2: matrix row for both LED and switch matrices
-- 3: switch matrix column 
+- 3: switch matrix column / default/idle address
+- 4: memory lower address
+- 5: memory high address
+- 6: memory read address
+- 7: memory write address 
+
+The highest bit of the address (bit 2) is also inverted to give a chip select signal for the SRAM memory. 
 
 
 #### 2A03 setup
@@ -78,6 +84,11 @@ These are both pretty standard. Each matrix is of size 4 x 8. The lower four bit
 The LED column is specified by writing to a 74HC573 latch connected to the data bus and selected with address 1. (Note that in order to light an LED at row *x* and column *y*, a 1 must be written at bit position *y* in the column latch, while a 0 must be written to bit position *x* of the row latch. This is because the column latch is sourcing the current while the row latch is sinking it.) 
 
 Reading a switch state is done by activating the correct row in the row latch, and then selecting address 3 and reading from the bus. 
+
+
+#### SRAM memory
+
+This is not fully developed yet. 
 
 
 #### Audio signal amplification
