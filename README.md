@@ -11,6 +11,8 @@ Here is a demo: https://www.youtube.com/watch?v=0pwFglPS3n8
 
 ### Changelog
 
+**14/08/14**: SRAM memory added. I plan to use two 512kx8 SRAM ICs, but in theory the way I have implemented it allows for up to 8MB memory (using two 4MB SRAM ICs, if such a thing exists) 
+
 **09/08/14**: PHI2 is no longer needed for communication between the Atmega168 and the 6502, as the register write routine is now written in assembly and timed by counting clock cycles instead of reading the state of PHI2.  
 
 **08/07/14**: Started preparing for MIDI, databus now occupies lower 2 bits of PORTC and upper 6 bits of PORTD. This is to be able to use the RX and possibly TX pins on the Atmega168 for MIDI. 
@@ -35,18 +37,16 @@ The circuit essentially consists of the following parts:
 
 #### Communication
 
-The Atmega168 accesses the 2A03, LED matrix and switch matrix through a simple bus system consisting of a 2-bit "address bus" and an 8-bit data bus. Bits 0, 1 and 2 of **PORTB** are used as the address, while bits 0 and 1 of **PORTC** and bits 2 to 7 of **PORTD** are connected to the data bus. A 74HC238 decoder is used to decode the 3-bit address into one of eight activation signals for each component. The addresses are decoded as follows:
+The Atmega168 accesses the 2A03, LED matrix and switch matrix through a simple bus system consisting of a 3-bit "address bus" and an 8-bit data bus. Bits 0, 1 and 2 of **PORTB** are used as the address, while bits 0 and 1 of **PORTC** and bits 2 to 7 of **PORTD** are connected to the data bus. A 74HC238 decoder is used to decode the 3-bit address into one of eight activation signals for each component. The addresses are decoded as follows:
 
 - 0: 2A03 data bus 
 - 1: LED matrix column
 - 2: matrix row for both LED and switch matrices
 - 3: switch matrix column / default/idle address
-- 4: memory lower address
-- 5: memory high address
-- 6: memory read address
-- 7: memory write address 
-
-The highest bit of the address (bit 2) is also inverted to give a chip select signal for the SRAM memory. 
+- 4: memory, lower part of address
+- 5: memory, middle part of address
+- 6: memory high part of address
+- 7: unused/"idle" address
 
 
 #### 2A03 setup
@@ -86,9 +86,9 @@ The LED column is specified by writing to a 74HC573 latch connected to the data 
 Reading a switch state is done by activating the correct row in the row latch, and then selecting address 3 and reading from the bus. 
 
 
-#### SRAM memory
+#### Battery backed SRAM memory
 
-This is not fully developed yet. 
+There are two SRAM ICs of 512KByte each, thus a 20 bit address is needed to address each individual byte (1MB in total). Since the databus is only 8 bit wide, three latches are used to specify an address before reading or writing to memory. The lowest 8 bits are written to the latch at databus address 4, the next 8 bits to the latch at address 5, and the final three bits to the latch at address 6. This totals to 19 bits, enough to address any byte in one of the ICs. The final 20th bit of the address selects between the two. 
 
 
 #### Audio signal amplification
