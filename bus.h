@@ -15,11 +15,16 @@
 #define LEDCOL_ADDR 1
 #define ROW_ADDR 2
 #define SWITCHCOL_ADDR 3
+#define MEMORY_ADDRLOW_ADDR 4
+#define MEMORY_ADDRMID_ADDR 5
+#define MEMORY_ADDRHIGH_ADDR 6
+#define MEMORY_DATA_ADDR 7
+
 #define NO_ADDR 7
 
 // Helper functions for using the bus:
-#define bus_set_address(ADDR)\ 
-    PORTB = (PORTB & ~ADDR_m) | (ADDR << ADDR_p)
+#define bus_set_address(ADDRESS)\ 
+    PORTB = (PORTB & ~ADDR_m) | ((ADDRESS) << ADDR_p)
 
 #define bus_set_value(VAL)\ 
     PORTD = (PORTD & ~DATA_PORTD_m) | ((VAL) & DATA_PORTD_m);\	       
@@ -29,7 +34,7 @@
     (PIND & DATA_PORTD_m) | (PINC & DATA_PORTC_m)
 
 #define bus_set_input()\
-    PORTD &= ~DATA_PORTD_m;\
+    PORTD &= ~DATA_PORTD_m; \
     DDRD &= ~DATA_PORTD_m;\
     PORTD |= DATA_PORTD_m;\ 
     PORTC &= ~DATA_PORTC_m;\ 
@@ -39,7 +44,7 @@
 #define bus_set_output()\ 
     PORTD &= ~DATA_PORTD_m;\ 
     DDRD |= DATA_PORTD_m;\ 
-    PORTC &= ~DATA_PORTC_m;\ 
+    PORTC &= ~DATA_PORTC_m;\
     DDRC |= DATA_PORTC_m
 
 // Handy nop thingy

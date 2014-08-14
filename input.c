@@ -1,11 +1,14 @@
 #include <avr/io.h>
 #include "bus.h"
 #include "leds.h"
+#include "input.h"
 
-uint8_t input[32] = {0}; 
+uint8_t input[24] = {0}; 
+
+uint8_t input_analog_value = 0;
 
 // Private for debouncing
-uint8_t last_input[4] = {0};
+uint8_t last_input[3] = {0};
 
 void input_refresh() 
 /* Rreads one column of switch data each time it is called and auto-increments
@@ -17,7 +20,7 @@ void input_refresh()
     static uint8_t last_data = 0;
 
     // Update row latch value
-    bus_set_value(row_mirror | (0x10 << current_row));
+    bus_set_value(row_mirror | (0x20 << current_row));
     bus_set_address(ROW_ADDR);
    
     nop();
@@ -36,10 +39,26 @@ void input_refresh()
 	    if (((switch_data & (1 << i)) == (last_data & (1 << i)))) 
 		row[i] = (switch_data >> i) & 1;
 	}
-        if (++current_row == 4) current_row = 0;
+        if (++current_row == 3) current_row = 0;
     }
 
     stage ^= 1;
 
     last_data = switch_data;
+}
+
+void input_setup()
+{
+    PORTC &= ~ANALOG_INPUT;
+    DDRC &= ~ANALOG_INPUT;
+
+    ADMUX = 0b01100101;     // Select AVCC voltage as reference, ADC5 (PC5) as input
+
+    ADCSRA = 0b10000111;    // Enable ADC, no auto trigger, no interrupt, 128 prescaler
+}
+
+void input_analog_refresh()
+{
+    input_analog_value = ADCH;
+    ADCSRA |= 0b01000000;
 }

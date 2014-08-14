@@ -17,21 +17,22 @@
 
 #define BUTTON_NEXT 1
 #define BUTTON_PREV 0
-#define BUTTON_PLAY 24
+#define BUTTON_PLAY 7
 
 uint8_t BD_pat[16] = {0};
 uint8_t SD_pat[16] = {0};
 uint8_t HH_pat[16] = {0};
 uint8_t TRI_pat[16] = {0};
 uint8_t SQ1_pat[16] = {0};
+uint8_t SQ2_pat[16] = {0};
 
-uint8_t prev_input[32] = {0};
+uint8_t prev_input[24] = {0};
 
 uint8_t state = STATE_PROGRAM;
 
 uint8_t current_pattern = 0;
 
-uint8_t* patterns[5] = {BD_pat, SD_pat, HH_pat, TRI_pat, SQ1_pat};
+uint8_t* patterns[6] = {BD_pat, SD_pat, HH_pat, TRI_pat, SQ1_pat, SQ2_pat};
 
 uint8_t current_pos = 0;
 
@@ -81,6 +82,7 @@ void drum_task()
 	else {
 	    state = STATE_PROGRAM;
 	    env3.gate = 0;
+	    env2.gate = 0;
 	    env1.gate = 0;
 	    bperiods[2] = 0;
 	}
@@ -97,7 +99,7 @@ void drum_task()
 
     else if (state == STATE_PROGRAM) {
 
-	if (button_pressed(BUTTON_NEXT) && current_pattern < 4) {
+	if (button_pressed(BUTTON_NEXT) && current_pattern < 5) {
 	    current_pattern++;
 	}
 	
@@ -126,8 +128,9 @@ void drum_task()
     else if (state == STATE_PLAY) {
 	if (counter == cnt/2) {
 	    env3.gate = 0;
+	    env2.gate = 0;
 	    env1.gate = 0;
-	    tri.period = 0;
+	    bperiods[2] = 0;
 	}
 	if (counter-- == 0) {
 	    counter = cnt;
@@ -157,21 +160,17 @@ void drum_task()
 		bperiods[0] = SQ1_pat[current_pos] << 1;
 	    }
 
+	    if (SQ2_pat[current_pos]) {
+		env2.gate = 1;
+		bperiods[1] = SQ2_pat[current_pos] << 1;
+	    }
+
 	    if (++current_pos == 16) current_pos = 0;
 
-	}
-
-	env2.gate = 0;	
-	for (uint8_t i = 0; i < 8; i++) {
-	    if (input[i]) { 
-		env2.gate = 1;
-		bperiods[1] = switch_to_period(i) << 1;
-	    }
-	}
-	 
+	}	 
     }
 
-    for (uint8_t i = 0; i < 25; i++) {
+    for (uint8_t i = 0; i < 24; i++) {
 	prev_input[i] = input[i];
     }
 
@@ -179,11 +178,11 @@ void drum_task()
 
 void drum_update_leds()
 {
-    leds_7seg_set(current_pattern + 1);
+    leds_7seg_set(3, current_pattern + 1);
     if (state == STATE_PROGRAM) 
-	leds_7seg_dot_on();
+	leds_7seg_dot_on(3);
     else
-	leds_7seg_dot_off();
+	leds_7seg_dot_off(3);
 
     if (state == STATE_WAIT_NOTE) {
 	if (--counter == 0) {

@@ -12,6 +12,7 @@
 #include "input.h"
 #include "drummachine.h"
 #include <avr/pgmspace.h>
+#include "memory.h"
 //#include "kick.c"
 //#include "snare.c"
 #include "bus.h"
@@ -21,6 +22,7 @@ void update_lfo()
 {
     lfo_update(&lfo1);
     lfo_update(&lfo2);
+    lfo_update(&lfo3);
 }
 
 void update_env()
@@ -44,11 +46,19 @@ void update_apu()
     if (++chn == 5) chn = 0;
 }
 
+void tst()
+{
+    static uint32_t address = 0x80800;
+    
+    leds_7seg_two_digit_set(3, 4, memory_read(address));
+    //leds[0] = memory_read(address);
+    address = (address == 0x80800) ? 80000 : address + 1;
+}
+
 int main() 
 {
-    PORTB = 0;
     DDRB = ADDR_m;
-    PORTB = ADDR_m;
+    bus_set_address(CPU_ADDR);
 
     io_setup();
     timer_setup();
@@ -82,10 +92,10 @@ int main()
     env1.release = 25;
     env1.gate = 0;
 
-    env2.attack = 40;
-    env2.decay = 0;
-    env2.sustain = 15;
-    env2.release = 40;
+    env2.attack = 4;
+    env2.decay = 4;
+    env2.sustain = 10;
+    env2.release = 25;
     env2.gate = 0;
 
     env3.attack = 0;
@@ -101,10 +111,8 @@ int main()
     
     lfo_mod_matrix[0][0] = 20;
 
-    leds[0] = 0b10101010;
-    leds[1] = 0b10101010;
-    leds_7seg_set(8);
-
+    input_setup();
+    memory_setup();
 
     task_add(&update_dmc, 1, 0);
     task_add(&update_apu, 10, 1);
@@ -113,19 +121,10 @@ int main()
     task_add(&modulation_handler, 10, 4);
     task_add(&leds_refresh, 20, 5); // 20
     task_add(&input_refresh, 80, 6);
+    task_add(&input_analog_refresh, 80, 8);
     task_add(&drum_task, 80, 7);
     task_add(&drum_update_leds, 80, 9);
+    task_add(&drum_update_leds, 80, 5);
 
-
-
-  
-  task_manager();
-    
-//    bus_set_address(LEDROW_ADDR);
-//    PORTD = 0b11111100;
-//    bus_set_address(LEDCOL_ADDR);
-//    PORTD = 1;
-
-//    while(1);
-
+    task_manager();
 }

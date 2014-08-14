@@ -28,6 +28,8 @@ inline void sync()
     while(PINC & RW);       // wait until R/W goes low
     while(!(PINC & RW));    // wait until it goes up again
     while(PINC & RW);       // wait until R/W goes low
+    nop();
+    nop();
 }
 
 inline void register_set(uint8_t reg, uint8_t val)
@@ -46,7 +48,6 @@ inline void register_set(uint8_t reg, uint8_t val)
   cc between each register write (so that each write happens at the same phase of the 6502 cc)
  */
 {
-
     asm volatile(
 	// Write LDA_imm to 6502:
 	"mov r24, %[portd_reg]\n"      // get PORTD with upper 6 bits cleared
@@ -112,6 +113,61 @@ inline void register_set(uint8_t reg, uint8_t val)
 	"out %[portd_addr], r24\n"
 	"out %[portc_addr], r25\n"
 
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+
+	// Write JMP_abs:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, %[jmp_abs_hi]\n"
+	"mov r25, %[portc_reg]\n"
+	"ori r25, %[jmp_abs_lo]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	// Write low byte of address:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, 0x18\n"
+	"mov r25, %[portc_reg]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	// Write high byte of address:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, 0x40\n"
+	"mov r25, %[portc_reg]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+	
 	// Put STA_zp back on the bus:
 	"mov r24, %[portd_reg]\n"
 	"ori r24, %[sta_zp_hi]\n"
@@ -125,7 +181,7 @@ inline void register_set(uint8_t reg, uint8_t val)
 	"nop\n"
 	"out %[portd_addr], r24\n"
 	"out %[portc_addr], r25\n"
-	
+
 	:
 	: [portd_addr] "I" (_SFR_IO_ADDR(PORTD)), 
 	  [portc_addr] "I" (_SFR_IO_ADDR(PORTC)),
@@ -138,10 +194,271 @@ inline void register_set(uint8_t reg, uint8_t val)
 	  [sta_abs_hi] "M" (STA_abs & 0xFC),
 	  [sta_abs_lo] "M" (STA_abs & 0x03),
 	  [sta_zp_hi] "M" (STA_zp & 0xFC),
-	  [sta_zp_lo] "M" (STA_zp & 0x03)
+	  [sta_zp_lo] "M" (STA_zp & 0x03),
+	  [jmp_abs_hi] "M" (JMP_abs & 0xFC),
+	  [jmp_abs_lo] "M" (JMP_abs & 0x03)
 	: "r24", "r25", "r26");
+}	
+
+inline void register_set15(uint8_t reg, uint8_t val)
+{
+    asm volatile(
+	// Write LDA_imm to 6502:
+	"mov r24, %[portd_reg]\n"      // get PORTD with upper 6 bits cleared
+	"ori r24, %[lda_imm_hi]\n"     // or with upper 6 bits of value
+	"mov r25, %[portc_reg]\n"      // get PORTC with lower 2 bits cleared
+	"ori r25, %[lda_imm_lo]\n"     // or with lower 2 bits of value
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"     // output the values
+	"out %[portc_addr], r25\n"
+	
+	// Write value:
+	"mov r24, %[portd_reg]\n"      // get PORTD with upper 6 bits cleared
+	"mov r26, %[v]\n"
+	"andi r26, 0xFC\n"             
+	"or r24, r26\n"                // or with upper 6 bits of value
+	"mov r25, %[portc_reg]\n"      // get PORTC with lower 2 bits cleared
+	"mov r26, %[v]\n"
+	"andi r26, 0x03\n"
+	"or r25, r26\n"                // or with lower 2 bits of value
+	"nop\n"                        // waste two cycles so that the new value is output
+	"nop\n"                        // exactly 12 cc after the last time
+	"nop\n"
+	"nop\n"
+	"nop\n"
+
+	"out %[portd_addr], r24\n"     // output the values
+	"out %[portc_addr], r25\n"
+	
+	// Write STA_abs:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, %[sta_abs_hi]\n"
+	"mov r25, %[portc_reg]\n"
+	"ori r25, %[sta_abs_lo]\n"
+	"nop\n"                        // again, waste cycles so that the next write happens
+	"nop\n"                        // 12 cc (one 6502 cc) after the last one
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+	
+	// Write low byte of register:
+	"mov r24, %[portd_reg]\n"
+	"mov r26, %[r]\n"
+	"andi r26, 0xFC\n"
+	"or r24, r26\n"
+	"mov r25, %[portc_reg]\n"
+	"mov r26, %[r]\n"
+	"andi r26, 0x03\n"
+	"or r25, r26\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+	
+	// Write high byte of register:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, 0x40\n"
+	"mov r25, %[portc_reg]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+
+	// Write JMP_abs:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, %[jmp_abs_hi]\n"
+	"mov r25, %[portc_reg]\n"
+	"ori r25, %[jmp_abs_lo]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	// Write low byte of address:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, 0x18\n"
+	"mov r25, %[portc_reg]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	// Write high byte of address:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, 0x40\n"
+	"mov r25, %[portc_reg]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+	
+	// Put STA_zp back on the bus:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, %[sta_zp_hi]\n"
+	"mov r25, %[portc_reg]\n"
+	"ori r25, %[sta_zp_lo]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	:
+	: [portd_addr] "I" (_SFR_IO_ADDR(PORTD)), 
+	  [portc_addr] "I" (_SFR_IO_ADDR(PORTC)),
+	  [portd_reg] "r" (PORTD & 0x03), 
+	  [portc_reg] "r" (PORTC & 0xFC),
+	  [v] "r" (val),
+	  [r] "r" (reg),
+	  [lda_imm_hi] "M" (LDA_imm & 0xFC),
+	  [lda_imm_lo] "M" (LDA_imm & 0x03),
+	  [sta_abs_hi] "M" (STA_abs & 0xFC),
+	  [sta_abs_lo] "M" (STA_abs & 0x03),
+	  [sta_zp_hi] "M" (STA_zp & 0xFC),
+	  [sta_zp_lo] "M" (STA_zp & 0x03),
+	  [jmp_abs_hi] "M" (JMP_abs & 0xFC),
+	  [jmp_abs_lo] "M" (JMP_abs & 0x03)
+	: "r24", "r25", "r26");
+}	
+
+void io_reset_pc()
+{
+    sync();
+    reset_pc();
 }
 
+inline void reset_pc()
+/* Sets PC to $4018 to avoid running into the APU registers.
+   
+   sync() must be called before this to synchronize
+ */
+{    
+    asm volatile(
+	// Write JMP_abs:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, %[jmp_abs_hi]\n"
+	"mov r25, %[portc_reg]\n"
+	"ori r25, %[jmp_abs_lo]\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	// Write low byte of address:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, 0x18\n"
+	"mov r25, %[portc_reg]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	// Write high byte of address:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, 0x40\n"
+	"mov r25, %[portc_reg]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	// Put STA_zp back on the bus:
+	"mov r24, %[portd_reg]\n"
+	"ori r24, %[sta_zp_hi]\n"
+	"mov r25, %[portc_reg]\n"
+	"ori r25, %[sta_zp_lo]\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"nop\n"
+	"out %[portd_addr], r24\n"
+	"out %[portc_addr], r25\n"
+
+	:
+	: [portd_addr] "I" (_SFR_IO_ADDR(PORTD)), 
+	  [portc_addr] "I" (_SFR_IO_ADDR(PORTC)),
+	  [portd_reg] "r" (PORTD & 0x03), 
+	  [portc_reg] "r" (PORTC & 0xFC),
+	  [sta_zp_hi] "M" (STA_zp & 0xFC),
+	  [sta_zp_lo] "M" (STA_zp & 0x03),
+	  [jmp_abs_hi] "M" (JMP_abs & 0xFC),
+	  [jmp_abs_lo] "M" (JMP_abs & 0x03)
+	: "r24", "r25", "r26");
+}
 
 inline void register_write(uint8_t reg, uint8_t value)
 /* Write to register
@@ -166,7 +483,7 @@ inline void register_write(uint8_t reg, uint8_t value)
 
 	// Do the actual write
 	register_set(reg, value);
-	
+
 	// Finally, latch the bus value by switching to a
 	// different address
 	bus_set_address(NO_ADDR);
@@ -200,14 +517,14 @@ void io_setup()
 */
 {
     // Configure upper 6 bits of PORTD as output:
-    PORTD = 0;
     DDRD = DATA_PORTD_m;
 
     // Configure the /RES pin on PORT C as output and set /RES high, also set
     // bits 0, 1 as output
-    PORTC = 0;
     DDRC = RES | DATA_PORTC_m;
     PORTC = RES | RW;
+
+    bus_set_output();
 
     bus_set_value(STA_zp);
 
@@ -224,6 +541,11 @@ void io_setup()
 
     // Wait for reset cycle to complete
     _delay_ms(1);
+
+/*
+    // Set program counter to $4018
+    sync();
+    reset_pc();
 
     // Send SEI instruction:
     sync();
@@ -260,6 +582,7 @@ void io_setup()
 	  [sta_zp_lo] "M" (STA_zp & 0x03)
 	: "r24", "r25"
     );
-        
+*/
+      
 }
 

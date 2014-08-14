@@ -2,6 +2,7 @@
 #include "task.h"
 #include "timing.h"
 
+Task tasks[16];
 uint8_t num_tasks = 0;
 
 void task_manager()
@@ -16,7 +17,7 @@ void task_manager()
 	    task->counter += ticks - last_tick; 
 	    if (task->counter >= task->period) {
 		task->counter = 0;
-		if (task->enable) 
+		if (task->enable)
 		    task->handler();
 	    }
 	}

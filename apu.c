@@ -207,6 +207,8 @@ void apu_refresh_channel(uint8_t ch_number)
 	io_write_changed(DMC_RAW);
 	break;
     }
+
+    // io_reset_pc();
     
 }
 
