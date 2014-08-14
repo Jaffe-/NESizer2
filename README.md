@@ -88,7 +88,9 @@ Reading a switch state is done by activating the correct row in the row latch, a
 
 #### Battery backed SRAM memory
 
-There are two SRAM ICs of 512KByte each, thus a 20 bit address is needed to address each individual byte (1MB in total). Since the databus is only 8 bit wide, three latches are used to specify an address before reading or writing to memory. The lowest 8 bits are written to the latch at databus address 4, the next 8 bits to the latch at address 5, and the final three bits to the latch at address 6. This totals to 19 bits, enough to address any byte in one of the ICs. The final 20th bit of the address selects between the two. 
+There are two SRAM ICs of 512KByte each, thus a 20 bit address is needed to address each individual byte (1MB in total). Since the databus is only 8 bit wide, three latches are used to specify an address before reading or writing to memory. The lowest 8 bits are written to the latch at databus address 4, the next 8 bits to the latch at address 5, and the next three bits to the latch at address 6. This totals to 19 bits, enough to address any byte in one of the ICs. The desired chip is selected by the upper two bits of the high address latch, where a value of 0b10 selects the first, 0b01 the other, and 0b11 neither. 
+
+The write enable (/WE) line of the SRAM ICs is connected to pin 4 of **PORTC**. This pin must be kept high at all times except when a write is to performed. When an address is set up and a desired value is put on the databus, this pin is pulled low and thereafter pulled high to write the value to the address in memory. 
 
 
 #### Audio signal amplification
@@ -180,3 +182,11 @@ These are handled in `leds.c`, `leds.h` and `input.c`, `input.h`.
 LED states are held in a 32 byte array `leds`. The function `leds_refresh` is intended to be registered as a task, and will update one column of the LED array each time it is called. It is intended to be run often enough for the sequential updating to happen unnoticed. 
 
 Switch states are held in a 32 byte array `input`. The function `input_refresh` reads one row of switch data at a time and updates `input` accordingly. It is intended to be registered as a task and executed often enough for input to be seamless. 
+
+
+#### SRAM
+
+Functions for using the SRAM are available in `memory.c`, `memory.h`. Even though addresses are represented by 19 bits and two bits for chip selection at the hardware level, these details are glossed over by the software memory interface; an address is 20 bits, giving a total address space of 0 - 0xFFFFF. The internal function `set_address` translates a 20-bit address to the corresponding 19 bits and chip select bits.
+
+The functions `memory_write(<address>, <value>)` and `memory_read(<address>)` are used to access the RAMs. 
+
