@@ -7,11 +7,16 @@ The 2A03 IC consists of a 6502 core (with some minor differences), a DMA control
 This project is inspired by a similar approach taken here: http://www.soniktech.com/tsundere/, but the idea here is to have the microcontroller communicate more directly with the 2A03, instead of using dedicated logic circuitry to send instructions.
 
 Here is a demo: https://www.youtube.com/watch?v=0pwFglPS3n8
+A second demo: https://www.youtube.com/watch?v=6Rg04oqwLCA
 
 
 ### Changelog
 
+**17/08/14**: Started on planning and implementing the intended user interface. A prototype panel PCB has been designed and sent for production. I have settled on trying to implement as much functionality as possible, without making the user interface too complicated. The final product will have the step sequencer showed in the videos above. 
+
 **14/08/14**: SRAM memory added. I plan to use two 512kx8 SRAM ICs, but in theory the way I have implemented it allows for up to 8MB memory (using two 4MB SRAM ICs, if such a thing exists) 
+
+**12/08/14**: Analog potentiometer input added. This is needed in the front panel for the user to select attack times, LFO speed, etc. 
 
 **09/08/14**: PHI2 is no longer needed for communication between the Atmega168 and the 6502, as the register write routine is now written in assembly and timed by counting clock cycles instead of reading the state of PHI2.  
 
@@ -79,7 +84,7 @@ Apart from this and the usual power supply connections, there are no further con
 
 #### LED and switch matrices
 
-These are both pretty standard. Each matrix is of size 4 x 8. The lower four bits of a 74HC573 latch are used to hold the selected LED row, and the upper four bits are used to hold the selected switch row. This latch is accessed through the data bus by selecting address 2. 
+These are both pretty standard. The LED matrix is a row scan matrix with 8 columns and 5 rows. The switch matrix is also a row scan matrix with 8 columns and 3 rows. The lower five bits of a 74HC573 latch are used to hold the selected LED row, and the upper three bits are used to hold the selected switch row. This latch is accessed through the data bus by selecting address 2. 
 
 The LED column is specified by writing to a 74HC573 latch connected to the data bus and selected with address 1. (Note that in order to light an LED at row *x* and column *y*, a 1 must be written at bit position *y* in the column latch, while a 0 must be written to bit position *x* of the row latch. This is because the column latch is sourcing the current while the row latch is sinking it.) 
 
