@@ -27,9 +27,12 @@ A second demo: https://www.youtube.com/watch?v=6Rg04oqwLCA
 
 ### Hardware
 
-The following image shows the most current schematic:
+The following images shows the most current schematics.
 
+Main board:
 ![alt text](https://raw.githubusercontent.com/Jaffe-/NESizer2/master/mainboard.png "Main board")
+
+Front panel board:
 ![alt text](https://raw.githubusercontent.com/Jaffe-/NESizer2/master/panelboard.png "Panel board")
 
 The circuit essentially consists of the following parts:
