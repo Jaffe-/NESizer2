@@ -10,7 +10,7 @@
 
 typedef struct {
     uint8_t period;
-    uint8_t waveform : 3;
+    uint8_t waveform;
 
     // Used by LFO logic:
     int8_t value;

@@ -45,6 +45,11 @@ void input_refresh()
     stage ^= 1;
 
     last_data = switch_data;
+
+    // Get analog value and start new conversion
+    input_analog_value = ADCH;
+    ADCSRA |= 0b01000000;
+
 }
 
 void input_setup()
@@ -55,10 +60,4 @@ void input_setup()
     ADMUX = 0b01100101;     // Select AVCC voltage as reference, ADC5 (PC5) as input
 
     ADCSRA = 0b10000111;    // Enable ADC, no auto trigger, no interrupt, 128 prescaler
-}
-
-void input_analog_refresh()
-{
-    input_analog_value = ADCH;
-    ADCSRA |= 0b01000000;
 }

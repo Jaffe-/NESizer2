@@ -118,16 +118,16 @@
 #define SQ1_ENABLE_p 0
 
 typedef struct {
-    uint8_t duty : 2;
+    uint8_t duty;
     uint8_t volume;
-    uint8_t enabled : 1;
+    uint8_t enabled;
 
     // Used internally:
     uint16_t period;
 } Square;
 
 typedef struct { 
-    uint8_t enabled : 1;
+    uint8_t enabled;
 
     // Used internally:
     uint16_t period;
@@ -135,9 +135,9 @@ typedef struct {
 
 typedef struct {
     uint8_t volume;
-    uint8_t loop : 1;
-    uint8_t enabled : 1;
-    uint8_t hw_env : 1;
+    uint8_t loop;
+    uint8_t enabled;
+    uint8_t hw_env;
 
     // Used internally:
     uint8_t period : 4;
@@ -145,7 +145,7 @@ typedef struct {
 
 typedef struct {
     uint8_t data : 7;
-    uint8_t enabled : 1;
+    uint8_t enabled;
     uint8_t sample_enabled : 1;
     uint8_t sample_loop : 1;
     uint8_t* sample;

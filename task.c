@@ -6,6 +6,12 @@ Task tasks[16];
 uint8_t num_tasks = 0;
 
 void task_manager()
+/* 
+   Schedules tasks, kind of like cooperative multitasking. 
+   Tasks are assumed to not take too long to run. Tasks are prioritized by
+   the order in which they are added to the task list.
+ */
+
 {
     uint16_t last_tick = 0;
 

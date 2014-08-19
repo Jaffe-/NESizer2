@@ -10,7 +10,8 @@
 #include "timing.h"
 #include "modulation.h"
 #include "input.h"
-#include "drummachine.h"
+//#include "drummachine.h"
+#include "user_interface.h"
 #include <avr/pgmspace.h>
 #include "memory.h"
 //#include "kick.c"
@@ -65,51 +66,22 @@ int main()
 
     sq1_setup();
     sq1.enabled = 1;
-    sq1.volume = 0;
-    sq1.duty = 2;
+    env1.attack = 10;
+    env1.decay = 10;
+    env1.sustain = 10;
+    env1.release = 10;
+    env1.gate = 1;
+    sq1_update();
+    bperiods[0] = 400;
 
     sq2_setup();
-    sq2.enabled = 1;
-    sq2.volume = 0;
-    sq2.duty = 1;
-
     tri_setup();
-    tri.enabled = 1;
-
     noise_setup();
-    noise.enabled = 1;
-    noise.period = 0;
-    noise.loop = 0;
-    noise.volume = 0;
-
     dmc_setup();
-    dmc.enabled = 1;
-    dmc.sample_enabled = 0;
 
-    env1.attack = 0;
-    env1.decay = 2;
-    env1.sustain = 10;
-    env1.release = 25;
-    env1.gate = 0;
+    io_write_changed(SND_CHN);
 
-    env2.attack = 4;
-    env2.decay = 4;
-    env2.sustain = 10;
-    env2.release = 25;
-    env2.gate = 0;
-
-    env3.attack = 0;
-    env3.decay = 2;
-    env3.sustain = 5;
-    env3.release = 10;
-  
-    env_mod_select[1] = 1;
-    env_mod_select[2] = 2;
-
-    lfo1.period = 3;
-    lfo1.waveform = LFO_SINE;
-    
-    lfo_mod_matrix[0][0] = 20;
+    env_mod_select[0] = 0;
 
     input_setup();
     memory_setup();
@@ -121,10 +93,8 @@ int main()
     task_add(&modulation_handler, 10, 4);
     task_add(&leds_refresh, 20, 5); // 20
     task_add(&input_refresh, 80, 6);
-    task_add(&input_analog_refresh, 80, 8);
-    task_add(&drum_task, 80, 7);
-    task_add(&drum_update_leds, 80, 9);
-    task_add(&drum_update_leds, 80, 5);
+    task_add(&ui_handler, 80, 7);
+    task_add(&ui_leds_handler, 80, 9);
 
     task_manager();
 }

@@ -27,13 +27,17 @@ inline void sq_setup(uint8_t n)
 inline void sq_update(uint8_t n, Square sq)
 {
     register_update(SQ1_VOL + n * 4, (io_reg_buffer[SQ1_VOL + n * 4] & ~(SQ_DUTY_m | VOLUME_m)) 
-                                     | sq.volume << VOLUME_p
+		                     | sq.volume << VOLUME_p
 		                     | sq.duty << SQ_DUTY_p);
 
     register_update(SQ1_LO + n * 4, sq.period & 0xFF);
 
-    register_update(SQ1_HI + n * 4, (io_reg_buffer[SQ1_HI + n * 4] & ~PERIOD_HI_m) 
+    // Need to check if sq.enabled is true to decide the value of the length counter. 
+    // It is set to zero whenever the corresponding SND_CHN bit is cleared, and this needs
+    // to be reflected in the register mirror.
+    register_update(SQ1_HI + n * 4, ((sq.enabled) ? 0b1000 : 0) 
 		                    | (sq.period >> 8) << PERIOD_HI_p);
+
 }
 
 void sq1_setup()
@@ -77,9 +81,10 @@ void tri_update()
 		             | tri.enabled << TRI_ENABLE_p);
 
     register_update(TRI_LO, tri.period & 0xFF);
-     
-    register_update(TRI_HI, (io_reg_buffer[TRI_HI] & ~PERIOD_HI_m) 
+
+    register_update(TRI_HI, ((tri.enabled) ? 0b1000 : 0) 
 		            | (tri.period >> 8) << PERIOD_HI_p);
+
 }
 
 
@@ -102,6 +107,8 @@ void noise_update()
     register_update(NOISE_LO, (io_reg_buffer[NOISE_VOL] & ~(NOISE_LOOP_m | NOISE_PERIOD_m))
 	                      | noise.loop << NOISE_LOOP_p 
 		              | noise.period << NOISE_PERIOD_p);
+
+    register_update(NOISE_HI, (noise.enabled) ? 0b1000 : 0);
 }
 
 /* DMC channel */
@@ -207,9 +214,7 @@ void apu_refresh_channel(uint8_t ch_number)
 	io_write_changed(DMC_RAW);
 	break;
     }
-
-    // io_reset_pc();
-    
+   
 }
 
 void apu_refresh_all()

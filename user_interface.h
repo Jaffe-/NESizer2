@@ -18,11 +18,24 @@
 #define BTN_S 14
 #define BTN_R 15
 
-#define BTN_OK 1
-#define BTN_TST 7
+#define BTN_TST 0
+#define BTN_SET 1
+#define BTN_PRG 2
+#define BTN_SEQ 3
+#define BTN_SYS 4
+#define BTN_MIDI 5
+#define BTN_UP 6
+#define BTN_DOWN 7
 
-#define STATE_TOPLEVEL 0
-#define STATE_GETVALUE 1
+#define MODE_PROGRAMMER 0
+#define MODE_SEQUENCER 1
+#define MODE_SETTINGS 2
+#define MODE_MIDI 3
 
-void programmer_handler();
-void programmer_tst();
+#define button_pressed(BTN) (input[BTN] == 1 && prev_input[BTN] == 0)
+#define button_depressed(BTN) (input[BTN] == 0 && prev_input[BTN] == 1)
+
+void ui_handler();
+void ui_leds_handler();
+uint8_t prev_input[24];
+uint8_t button_leds[24];
