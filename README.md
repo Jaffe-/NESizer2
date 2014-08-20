@@ -43,12 +43,13 @@ The circuit essentially consists of the following parts:
 - 2A03 CPU/APU
 - LED matrix
 - Switch matrix
+- Battery backed SRAM
 - Analog signal amplifier
 
 
 #### Communication
 
-The Atmega168 accesses the 2A03, LED matrix and switch matrix through a simple bus system consisting of a 3-bit "address bus" and an 8-bit data bus. Bits 0, 1 and 2 of **PORTB** are used as the address, while bits 0 and 1 of **PORTC** and bits 2 to 7 of **PORTD** are connected to the data bus. A 74HC238 decoder is used to decode the 3-bit address into one of eight activation signals for each component. The addresses are decoded as follows:
+The Atmega168 accesses the 2A03, LED matrix, switch matrix and SRAM through a simple bus system consisting of a 3-bit "address bus" and an 8-bit data bus. Bits 0, 1 and 2 of **PORTB** are used as the address, while bits 0 and 1 of **PORTC** and bits 2 to 7 of **PORTD** are connected to the data bus. A 74HC238 decoder is used to decode the 3-bit address into one of eight activation signals for each component. The addresses are decoded as follows:
 
 - 0: 2A03 data bus 
 - 1: LED matrix column
@@ -102,6 +103,8 @@ Reading a switch state is done by activating the correct row in the row latch, a
 There are two SRAM ICs of 512KByte each, thus a 20 bit address is needed to address each individual byte (1MB in total). Since the databus is only 8 bit wide, three latches are used to specify an address before reading or writing to memory. The lowest 8 bits are written to the latch at databus address 4, the next 8 bits to the latch at address 5, and the next three bits to the latch at address 6. This totals to 19 bits, enough to address any byte in one of the ICs. The desired chip is selected by the upper two bits of the high address latch, where a value of 0b10 selects the first, 0b01 the other, and 0b11 neither. 
 
 The write enable (/WE) line of the SRAM ICs is connected to pin 4 of **PORTC**. This pin must be kept high at all times except when a write is to performed. When an address is set up and a desired value is put on the databus, this pin is pulled low and thereafter pulled high to write the value to the address in memory. 
+
+The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium battery. Diodes are placed in series between each voltage source and the supply inputs to prevent current from going from voltage source one to the other. 
 
 
 #### Audio signal amplification
