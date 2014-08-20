@@ -12,7 +12,7 @@ A second demo: https://www.youtube.com/watch?v=6Rg04oqwLCA
 
 ### Changelog
 
-**20/08/14**: Much of the front panel functionality has been implemented. Patch memory saving/loading as well.
+**20/08/14**: Much of the front panel functionality has been implemented. Patch memory saving/loading as well. SRAM battery backup added. A CR2032 3V battery powers the SRAMs when main power is off.
 
 **17/08/14**: Started on planning and implementing the intended user interface. A prototype panel PCB has been designed and sent for production. I have settled on trying to implement as much functionality as possible, without making the user interface too complicated. The final product will have the step sequencer showed in the videos above. 
 
