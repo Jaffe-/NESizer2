@@ -119,10 +119,10 @@
 
 typedef struct {
     uint8_t duty;
-    uint8_t volume;
     uint8_t enabled;
 
     // Used internally:
+    uint8_t volume;
     uint16_t period;
 } Square;
 
@@ -134,12 +134,12 @@ typedef struct {
 } Triangle;
 
 typedef struct {
-    uint8_t volume;
     uint8_t loop;
     uint8_t enabled;
     uint8_t hw_env;
 
     // Used internally:
+    uint8_t volume;
     uint8_t period : 4;
 } Noise;
 

@@ -3,12 +3,11 @@
 #include "leds.h"
 #include "input.h"
 
-uint8_t input[24] = {0}; 
-
+uint8_t input[3] = {0}; 
 uint8_t input_analog_value = 0;
 
 // Private for debouncing
-uint8_t last_input[3] = {0};
+static uint8_t last_input[3] = {0};
 
 void input_refresh() 
 /* Rreads one column of switch data each time it is called and auto-increments
@@ -34,10 +33,10 @@ void input_refresh()
 
     if (stage == 1) {	
 	// Expand the switch bits into individual bytes in the input array
-	uint8_t* row = &input[current_row * 8];
+	uint8_t* row = &input[current_row];
 	for (uint8_t i = 0; i < 8; i++) {
 	    if (((switch_data & (1 << i)) == (last_data & (1 << i)))) 
-		row[i] = (switch_data >> i) & 1;
+		*row = (*row & ~(1 << i)) | (switch_data & (1 << i));
 	}
         if (++current_row == 3) current_row = 0;
     }

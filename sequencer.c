@@ -33,9 +33,9 @@ uint8_t* patterns[6] = {BD_pat, SD_pat, HH_pat, TRI_pat, SQ1_pat, SQ2_pat};
 
 uint8_t current_pos = 0;
 
-#define cnt 30
-
 static uint8_t counter;
+
+#define cnt 30
 
 // Note periods
 #define C4 197
@@ -51,7 +51,7 @@ static uint8_t counter;
 #define As4 110
 #define B4 104
 #define C5 98
-#define Cs5 95 // Find correct!
+#define Cs5 Cs4 >> 1 // Find correct!
 
 // "Keyboard" keys when in note entering state
 #define BTN_C 8
@@ -91,160 +91,137 @@ inline uint8_t switch_to_period(uint8_t num)
     return p;
 }
 
-#define pos_to_led(POS) (((POS) < 8) ? ((POS) + 16) : ((POS) + 8))
+#define pos_to_btn(POS) (((POS) < 8) ? ((POS) + 16) : (POS))
 #define btn_to_pos(BTN) (((BTN) < 16) ? (BTN) : ((BTN) - 16))
+
+inline void wait_note()
+{
+    if (button_pressed(BTN_PLAY)) {
+	patterns[current_pattern][current_pos] = 0;
+	state = STATE_PROGRAM;
+    }
+    
+    for (uint8_t i = 8; i < 24; i++) {
+	if (button_pressed(i)) {
+	    patterns[current_pattern][current_pos] = switch_to_period(i);
+	    state = STATE_PROGRAM;
+	}
+    }
+}
+
+inline void program()
+{
+    if (button_pressed(BTN_PLAY)) {
+	state = STATE_PLAY;
+	current_pos = 0;
+    }
+    
+    if (button_pressed(BTN_NEXT) && current_pattern < 5) 
+	current_pattern++;
+    
+    else if (button_pressed(BTN_PREV) && current_pattern > 0)
+	current_pattern--;
+    
+    for (uint8_t i = 8; i < 24; i++) {
+	if (button_pressed(i)) {
+	    if (current_pattern < 3) 
+		patterns[current_pattern][btn_to_pos(i)] ^= 1;
+	    
+	    else {
+		state = STATE_WAIT_NOTE;
+		current_pos = btn_to_pos(i);
+		button_leds[i] = 1; // blink the corresponding LED
+		break;
+	    }
+	}
+    }
+}
+
+inline void play()
+{
+    
+    if (button_pressed(BTN_PLAY)) {
+	state = STATE_PROGRAM;
+	env3.gate = 0;
+	env2.gate = 0;
+	env1.gate = 0;
+	bperiods[2] = 0;
+	
+    }
+    
+    if (counter == cnt/2) {
+	env3.gate = 0;
+	env2.gate = 0;
+	env1.gate = 0;
+	bperiods[2] = 0;
+    }
+    
+    if (counter-- == 0) {
+	counter = cnt;
+	
+	if (BD_pat[current_pos]) {
+	    dmc.sample = kick_c_raw;
+	    dmc.sample_length = kick_c_raw_len;
+	    dmc.sample_enabled = 1;
+	    dmc.current = 0;
+	}
+	
+	if (SD_pat[current_pos]) {
+	    dmc.sample = snare_c_raw;
+	    dmc.sample_length = snare_c_raw_len;
+	    dmc.sample_enabled = 1;
+	    dmc.current = 0;
+	}
+	
+	if (HH_pat[current_pos]) {
+	    env3.gate = 1;
+	}
+	
+	bperiods[2] = TRI_pat[current_pos] << 2;
+	
+	if (SQ1_pat[current_pos]) {
+	    env1.gate = 1;
+	    bperiods[0] = SQ1_pat[current_pos] << 1;
+	}
+	
+	if (SQ2_pat[current_pos]) {
+	    env2.gate = 1;
+	    bperiods[1] = SQ2_pat[current_pos] << 1;
+	}
+	
+	if (++current_pos == 16) current_pos = 0;
+		 
+    }
+}
 
 void sequencer()
 {
+    switch (state) {
+    case STATE_WAIT_NOTE:
+	wait_note(); break;
+    case STATE_PROGRAM:
+	program(); break;
+    case STATE_PLAY:
+	play(); break;
+    }
+
+    // Display the chosen pattern
     leds_7seg_set(3, current_pattern + 1);
 
-    if (state == STATE_WAIT_NOTE) {
-	if (button_pressed(BTN_PLAY)) {
-	    patterns[current_pattern][current_pos] = 0;
-	    state = STATE_PROGRAM;
+    // Put values in upper 16 button LEDs
+    for (uint8_t i = 8; i < 24; i++) {
+	switch (state) {
+	case STATE_PROGRAM:
+	    button_leds[i] = (patterns[current_pattern][btn_to_pos(i)] != 0) * 0xFF;
+	    break;
+	case STATE_WAIT_NOTE:
+	    // Skip the current position led, since it is set to blink
+	    if (i != pos_to_btn(current_pos))
+		button_leds[i] = (patterns[current_pattern][btn_to_pos(i)] != 0) * 0xFF;
+	    break;
+	case STATE_PLAY:
+	    button_leds[i] = (i == pos_to_btn(current_pos)) * 0xFF;
+	    break;
 	}
-
-	for (uint8_t i = 8; i < 24; i++) {
-	    if (button_pressed(i)) {
-		patterns[current_pattern][current_pos] = switch_to_period(i);
-		state = STATE_PROGRAM;
-	    }
-	}
-    }
-
-    else if (state == STATE_PROGRAM) {
-	for (uint8_t i = 8; i < 24; i++)
-	    button_leds[i] = (patterns[current_pattern][btn_to_pos(i)] != 0);
-
-	if (button_pressed(BTN_PLAY)) {
-	    state = STATE_PLAY;
-	    current_pos = 0;
-	    counter = cnt;
-	}
-
-	if (button_pressed(BTN_NEXT) && current_pattern < 5) 
-	    current_pattern++;
-	
-	else if (button_pressed(BTN_PREV) && current_pattern > 0)
-	    current_pattern--;
-	   
-	for (uint8_t i = 8; i < 24; i++) {
-	    if (button_pressed(i)) {
-		if (current_pattern < 3) 
-		    patterns[current_pattern][btn_to_pos(i)] ^= 1;
-
-		else {
-		    state = STATE_WAIT_NOTE;
-		    current_pos = btn_to_pos(i);
-		    counter = 4;
-		    button_leds[i] = 1;
-		    break;
-		}
-	    }
-	}
-    }
-
-    else if (state == STATE_PLAY) {
-	if (button_pressed(BTN_PLAY)) {
-	    state = STATE_PROGRAM;
-	    env3.gate = 0;
-	    env2.gate = 0;
-	    env1.gate = 0;
-	    bperiods[2] = 0;
-
-	}
-
-	if (counter == cnt/2) {
-	    env3.gate = 0;
-	    env2.gate = 0;
-	    env1.gate = 0;
-	    bperiods[2] = 0;
-	}
-
-	if (counter-- == 0) {
-	    counter = cnt;
-	    
-	    if (BD_pat[current_pos]) {
-		dmc.sample = kick_c_raw;
-		dmc.sample_length = kick_c_raw_len;
-		dmc.sample_enabled = 1;
-		dmc.current = 0;
-	    }
-
-	    if (SD_pat[current_pos]) {
-		dmc.sample = snare_c_raw;
-		dmc.sample_length = snare_c_raw_len;
-		dmc.sample_enabled = 1;
-		dmc.current = 0;
-	    }
-
-	    if (HH_pat[current_pos]) {
-		env3.gate = 1;
-	    }
-	
-	    bperiods[2] = TRI_pat[current_pos] << 2;
-    
-	    if (SQ1_pat[current_pos]) {
-		env1.gate = 1;
-		bperiods[0] = SQ1_pat[current_pos] << 1;
-	    }
-
-	    if (SQ2_pat[current_pos]) {
-		env2.gate = 1;
-		bperiods[1] = SQ2_pat[current_pos] << 1;
-	    }
-
-	    button_leds[pos_to_led(current_pos)] = 0;
-	    if (++current_pos == 16) current_pos = 0;
-	    button_leds[pos_to_led(current_pos)] = 0xFF;
-
-	}	 
     }
 }
-
-/*
-void sequencer_leds()
-{
-    if (state == STATE_PROGRAM) 
-	leds_7seg_dot_on(3);
-    else
-	leds_7seg_dot_off(3);
-
-    if (state == STATE_WAIT_NOTE) {
-	if (--counter == 0) {
-	    counter = 60;
-	    if (current_pos < 8) 
-		leds[1] = 1 << current_pos;
-	    else
-		leds[0] = 1 << (current_pos - 8);
-	}
-	if (counter == 30) {
-	    leds[1] = 0;
-	    leds[0] = 0;
-	}
-	    
-    }
-
-    if (state == STATE_PROGRAM) {
-	leds[0] = 0;
-	leds[1] = 0;
-	for (uint8_t i = 0; i < 16; i++) {
-	    if (i < 8) 
-		leds[1] |= ((patterns[current_pattern][i] != 0) << i);
-	    else
-		leds[0] |= ((patterns[current_pattern][i] != 0) << (i - 8));
-	}
-    }
-
-    if (state == STATE_PLAY) {
-	leds[0] = 0;
-	leds[1] = 0;
-	if (current_pos < 8) 
-	    leds[1] = 1 << current_pos;
-	else
-	    leds[0] = 1 << (current_pos - 8);
-    }
-
-}
-
-*/

@@ -10,14 +10,11 @@
 #include "timing.h"
 #include "modulation.h"
 #include "input.h"
-//#include "drummachine.h"
 #include "user_interface.h"
 #include <avr/pgmspace.h>
 #include "memory.h"
-//#include "kick.c"
-//#include "snare.c"
 #include "bus.h"
-//#include "snare_uc.c"
+#include "patch.h"
 
 void update_lfo()
 {
@@ -66,25 +63,22 @@ int main()
 
     sq1_setup();
     sq1.enabled = 1;
-    env1.attack = 10;
-    env1.decay = 10;
-    env1.sustain = 10;
-    env1.release = 10;
-    env1.gate = 1;
-    sq1_update();
-    bperiods[0] = 400;
-
+ 
     sq2_setup();
+    sq2.enabled = 1;
+
     tri_setup();
+    tri.enabled = 1;
+
     noise_setup();
+    noise.enabled = 1;
+
     dmc_setup();
-
-    io_write_changed(SND_CHN);
-
-    env_mod_select[0] = 0;
-
+    dmc.enabled = 1;
+    
     input_setup();
     memory_setup();
+    patch_clean();
 
     task_add(&update_dmc, 1, 0);
     task_add(&update_apu, 10, 1);

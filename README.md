@@ -12,6 +12,8 @@ A second demo: https://www.youtube.com/watch?v=6Rg04oqwLCA
 
 ### Changelog
 
+**20/08/14**: Much of the front panel functionality has been implemented. Patch memory saving/loading as well.
+
 **17/08/14**: Started on planning and implementing the intended user interface. A prototype panel PCB has been designed and sent for production. I have settled on trying to implement as much functionality as possible, without making the user interface too complicated. The final product will have the step sequencer showed in the videos above. 
 
 **14/08/14**: SRAM memory added. I plan to use two 512kx8 SRAM ICs, but in theory the way I have implemented it allows for up to 8MB memory (using two 4MB SRAM ICs, if such a thing exists) 
