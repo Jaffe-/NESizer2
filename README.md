@@ -12,6 +12,8 @@ A second demo: https://www.youtube.com/watch?v=6Rg04oqwLCA
 
 ### Changelog
 
+**22/08/14**: Fixed clock circuit. It turned out to be inadequate for an older 2A03 IC I got off eBay. It now inverts the oscillator output twice, and there's also been added a 1M resistor in parallel with the crystal. 
+
 **20/08/14**: Much of the front panel functionality has been implemented. Patch memory saving/loading as well. SRAM battery backup added. A CR2032 3V battery powers the SRAMs when main power is off.
 
 **17/08/14**: Started on planning and implementing the intended user interface. A prototype panel PCB has been designed and sent for production. I have settled on trying to implement as much functionality as possible, without making the user interface too complicated. The final product will have the step sequencer showed in the videos above. 
@@ -124,6 +126,9 @@ The output signals **SND1** and **SND2** are amplified up to line level and brou
 * LED column: `LEDCOL_ADDR`
 * Row (for both LEDs and switches): `ROW_ADDR`
 * Switch column: `SWITCHCOL_ADDR`
+* SRAM low address: `MEMORY_ADDRLOW_ADDR`
+* SRAM mid address: `MEMORY_ADDRMID_ADDR`
+* SRAM high address: `MEMORY_ADDRHIGH_ADDR`
 
 
 #### Running the 2A03 and synchronizing
