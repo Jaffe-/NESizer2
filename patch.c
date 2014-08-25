@@ -6,6 +6,8 @@
 #include "lfo.h"
 #include "modulation.h"
 
+#define PATCH_OFFSET 0
+
 #define SQ1_SIZE 2
 #define SQ2_SIZE 2
 #define TRI_SIZE 1
@@ -27,6 +29,8 @@
 #define LFO3_OFFSET (LFO2_OFFSET + LFO_SIZE)
 
 #define PATCH_SIZE (SQ1_SIZE + SQ2_SIZE + TRI_SIZE + NOISE_SIZE + DMC_SIZE + 3 * ENV_SIZE + 3 * LFO_SIZE)
+
+const uint16_t PATCH_MEMORY_END = PATCH_OFFSET + (PATCH_MAX + 1 - PATCH_MIN) * PATCH_SIZE;
 
 void patch_clean()
 {
@@ -52,7 +56,7 @@ void patch_save(uint8_t num)
     memory_write(base_address + NOISE_OFFSET + 1, noise.loop);
 
     memory_write(base_address + DMC_OFFSET, dmc.enabled);
-    memory_write(base_address + DMC_OFFSET + 1, dmc.sample);
+    memory_write(base_address + DMC_OFFSET + 1, dmc.sample_number);
     memory_write(base_address + DMC_OFFSET + 2, dmc.sample_loop);
 
     memory_write(base_address + ENV1_OFFSET, env1.attack);
@@ -108,7 +112,7 @@ void patch_load(uint8_t num)
     noise.loop = memory_read(base_address + NOISE_OFFSET + 1);
 
     dmc.enabled = memory_read(base_address + DMC_OFFSET);
-    dmc.sample = memory_read(base_address + DMC_OFFSET + 1);
+    dmc.sample_number = memory_read(base_address + DMC_OFFSET + 1);
     dmc.sample_loop = memory_read(base_address + DMC_OFFSET + 2);
 
     env1.attack = memory_read(base_address + ENV1_OFFSET);
@@ -146,5 +150,4 @@ void patch_load(uint8_t num)
     lfo_mod_matrix[2][0] = memory_read(base_address + LFO3_OFFSET + 3);
     lfo_mod_matrix[2][1] = memory_read(base_address + LFO3_OFFSET + 4);
     lfo_mod_matrix[2][2] = memory_read(base_address + LFO3_OFFSET + 5);
-    
 }

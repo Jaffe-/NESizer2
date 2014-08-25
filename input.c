@@ -6,9 +6,6 @@
 uint8_t input[3] = {0}; 
 uint8_t input_analog_value = 0;
 
-// Private for debouncing
-static uint8_t last_input[3] = {0};
-
 void input_refresh() 
 /* Rreads one column of switch data each time it is called and auto-increments
    the current row

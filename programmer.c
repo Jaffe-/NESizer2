@@ -10,9 +10,6 @@
 #include "modulation.h"
 #include "patch.h"
 
-#define WAIT_CNT 60
-#define SPEED_CNT 10
-
 #define VALTYPE_BOOL 0
 #define VALTYPE_RANGE 1
 #define VALTYPE_INVRANGE 2
@@ -30,75 +27,96 @@ static uint8_t state_changed;
 static uint8_t patchno = 0;
 
 typedef struct {
-    uint8_t button1;   
-    uint8_t button2;
+    uint8_t button;
     uint8_t* target;
     uint8_t type;
     uint8_t min;
     uint8_t max;
-} ButtonCombination;
+} Parameter;
 
-ButtonCombination cur_comb;
+Parameter current_parameter;
 
-// Array of button combination definitions.
+#define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
-const ButtonCombination combinations[] PROGMEM = {
-    // SQ1 combinations:
-    {BTN_SQ1, NO_BTN_DEPRESS, &sq1.enabled, VALTYPE_BOOL, 0, 0},
-    {BTN_SQ1, BTN_DUTY, &sq1.duty, VALTYPE_RANGE, 0, 3},
-    {BTN_SQ1, BTN_A, &env1.attack, VALTYPE_RANGE, 0, 99},
-    {BTN_SQ1, BTN_D, &env1.decay, VALTYPE_RANGE, 0, 99},
-    {BTN_SQ1, BTN_S, &env1.sustain, VALTYPE_RANGE, 0, 15},
-    {BTN_SQ1, BTN_R, &env1.release, VALTYPE_RANGE, 0, 99},
-    {BTN_SQ1, BTN_LFO1, &lfo_mod_matrix[0][0], VALTYPE_RANGE, 0, 60},
-    {BTN_SQ1, BTN_LFO2, &lfo_mod_matrix[1][0], VALTYPE_RANGE, 0, 60},
-    {BTN_SQ1, BTN_LFO3, &lfo_mod_matrix[2][0], VALTYPE_RANGE, 0, 60},
-
-    // SQ2 combinations:
-    {BTN_SQ2, NO_BTN_DEPRESS, &sq2.enabled, VALTYPE_BOOL, 0, 0},
-    {BTN_SQ2, BTN_DUTY, &sq2.duty, VALTYPE_RANGE, 0, 3},
-    {BTN_SQ2, BTN_A, &env2.attack, VALTYPE_RANGE, 0, 99},
-    {BTN_SQ2, BTN_D, &env2.decay, VALTYPE_RANGE, 0, 99},
-    {BTN_SQ2, BTN_S, &env2.sustain, VALTYPE_RANGE, 0, 15},
-    {BTN_SQ2, BTN_R, &env2.release, VALTYPE_RANGE, 0, 99},
-    {BTN_SQ2, BTN_LFO1, &lfo_mod_matrix[0][1], VALTYPE_RANGE, 0, 60},
-    {BTN_SQ2, BTN_LFO2, &lfo_mod_matrix[1][1], VALTYPE_RANGE, 0, 60},
-    {BTN_SQ2, BTN_LFO3, &lfo_mod_matrix[2][1], VALTYPE_RANGE, 0, 60},
-
-    // TRI combinations:
-    {BTN_TRI, NO_BTN_DEPRESS, &tri.enabled, VALTYPE_BOOL, 0, 0},
-    {BTN_TRI, BTN_LFO1, &lfo_mod_matrix[0][2], VALTYPE_RANGE, 0, 60},
-    {BTN_TRI, BTN_LFO2, &lfo_mod_matrix[1][2], VALTYPE_RANGE, 0, 60},
-    {BTN_TRI, BTN_LFO3, &lfo_mod_matrix[2][2], VALTYPE_RANGE, 0, 60},
-
-    // NOISE combinations:
-    {BTN_NOISE, NO_BTN_DEPRESS, &noise.enabled, VALTYPE_BOOL, 0, 0},
-    {BTN_NOISE, BTN_A, &env3.attack, VALTYPE_RANGE, 0, 99},
-    {BTN_NOISE, BTN_D, &env3.decay, VALTYPE_RANGE, 0, 99},
-    {BTN_NOISE, BTN_S, &env3.sustain, VALTYPE_RANGE, 0, 15},
-    {BTN_NOISE, BTN_R, &env3.release, VALTYPE_RANGE, 0, 99},
-    {BTN_NOISE, BTN_LOOP, &noise.loop, VALTYPE_BOOL, 0, 0},
-
-    // DMC
-    {BTN_DMC, NO_BTN_DEPRESS, &dmc.enabled, VALTYPE_BOOL, 0, 0},
-    // TODO: add sample choice
-    
-    // LFOs
-    {BTN_LFO1, BTN_WAVE, &lfo1.waveform, VALTYPE_RANGE, 1, 3},
-    {BTN_LFO1, NO_BTN_DEPRESS, &lfo1.period, VALTYPE_INVRANGE, 0, 99},
-
-    {BTN_LFO2, BTN_WAVE, &lfo2.waveform, VALTYPE_RANGE, 1, 3},
-    {BTN_LFO2, NO_BTN_DEPRESS, &lfo2.period, VALTYPE_INVRANGE, 0, 99},
-
-    {BTN_LFO3, BTN_WAVE, &lfo3.waveform, VALTYPE_RANGE, 1, 3},
-    {BTN_LFO3, NO_BTN_DEPRESS, &lfo3.period, VALTYPE_INVRANGE, 0, 99},
-
-    {BTN_SAVE, NO_BTN_PRESS, &patchno, VALTYPE_RANGE, 0, 99},
-
+const Parameter sq1_parameters[] PROGMEM = {
+    {BTN_DUTY, &sq1.duty, VALTYPE_RANGE, 0, 3},
+    {BTN_A, &env1.attack, VALTYPE_RANGE, 0, 99},
+    {BTN_D, &env1.decay, VALTYPE_RANGE, 0, 99},
+    {BTN_S, &env1.sustain, VALTYPE_RANGE, 0, 15},
+    {BTN_R, &env1.release, VALTYPE_RANGE, 0, 99},
+    {BTN_LFO1, &lfo_mod_matrix[0][0], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO2, &lfo_mod_matrix[0][1], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO3, &lfo_mod_matrix[0][2], VALTYPE_RANGE, 0, 60}
 };
 
-inline void toplevel();
-inline void getvalue();
+const Parameter sq2_parameters[] PROGMEM = {
+    {BTN_DUTY, &sq2.duty, VALTYPE_RANGE, 0, 3},
+    {BTN_A, &env2.attack, VALTYPE_RANGE, 0, 99},
+    {BTN_D, &env2.decay, VALTYPE_RANGE, 0, 99},
+    {BTN_S, &env2.sustain, VALTYPE_RANGE, 0, 15},
+    {BTN_R, &env2.release, VALTYPE_RANGE, 0, 99},
+    {BTN_LFO1, &lfo_mod_matrix[1][0], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO2, &lfo_mod_matrix[1][1], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO3, &lfo_mod_matrix[1][2], VALTYPE_RANGE, 0, 60}
+};
+
+const Parameter tri_parameters[] PROGMEM = {
+    {BTN_LFO1, &lfo_mod_matrix[2][0], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO2, &lfo_mod_matrix[2][1], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO3, &lfo_mod_matrix[2][2], VALTYPE_RANGE, 0, 60}
+};
+
+const Parameter noise_parameters[] PROGMEM = {
+    {BTN_A, &env3.attack, VALTYPE_RANGE, 0, 99},
+    {BTN_D, &env3.decay, VALTYPE_RANGE, 0, 99},
+    {BTN_S, &env3.sustain, VALTYPE_RANGE, 0, 15},
+    {BTN_R, &env3.release, VALTYPE_RANGE, 0, 99},
+    {BTN_LOOP, &noise.loop, VALTYPE_BOOL, 0, 0}
+};
+
+const Parameter dmc_parameters[] PROGMEM = {
+    {BTN_DMC, &dmc.sample_number, VALTYPE_RANGE, 1, 3},
+    {BTN_LOOP, &dmc.sample_loop, VALTYPE_BOOL, 0, 0}
+};
+
+const Parameter lfo1_parameters[] PROGMEM = {
+    {BTN_WAVE, &lfo1.waveform, VALTYPE_RANGE, 1, 3},
+};
+
+const Parameter lfo2_parameters[] PROGMEM = {
+    {BTN_WAVE, &lfo2.waveform, VALTYPE_RANGE, 1, 3},
+};
+
+const Parameter lfo3_parameters[] PROGMEM = {
+    {BTN_WAVE, &lfo3.waveform, VALTYPE_RANGE, 1, 3},
+};
+
+typedef struct {
+    uint8_t button;
+    uint8_t state;
+    const Parameter* parameter_list;
+    uint8_t parameter_list_length;
+    uint8_t* depress_parameter;
+    uint8_t depress_parameter_type;
+} MainButton;
+
+#define BTNSTATE_NOTPRESSED 0
+#define BTNSTATE_PRESSED 1
+#define BTNSTATE_PARAM 2
+
+MainButton main_buttons[] = {
+    {BTN_SQ1, BTNSTATE_NOTPRESSED, sq1_parameters, SIZE(sq1_parameters), &sq1.enabled, VALTYPE_BOOL},
+    {BTN_SQ2, BTNSTATE_NOTPRESSED, sq2_parameters, SIZE(sq2_parameters), &sq2.enabled, VALTYPE_BOOL},
+    {BTN_TRI, BTNSTATE_NOTPRESSED, tri_parameters, SIZE(tri_parameters), &tri.enabled, VALTYPE_BOOL},
+    {BTN_NOISE, BTNSTATE_NOTPRESSED, noise_parameters, SIZE(noise_parameters), &noise.enabled, VALTYPE_BOOL},
+    {BTN_DMC, BTNSTATE_NOTPRESSED, tri_parameters, SIZE(tri_parameters), &dmc.enabled, VALTYPE_BOOL},
+    {BTN_LFO1, BTNSTATE_NOTPRESSED, lfo1_parameters, SIZE(lfo1_parameters), &lfo1.period, VALTYPE_RANGE},
+    {BTN_LFO2, BTNSTATE_NOTPRESSED, lfo2_parameters, SIZE(lfo2_parameters), &lfo2.period, VALTYPE_RANGE},
+    {BTN_LFO3, BTNSTATE_NOTPRESSED, lfo3_parameters, SIZE(lfo3_parameters), &lfo3.period, VALTYPE_RANGE},
+};
+
+static inline void toplevel();
+static inline void getvalue();
 
 void programmer()
 {
@@ -123,9 +141,11 @@ void programmer()
     state_changed = (last_state != state);
 }
 
-inline void toplevel()
-/* Handles the front panel functions when at the top level 
+uint8_t main_button;
 
+static inline void toplevel()
+/* Handles the front panel functions when at the top level 
+   
    The whole thing is basically a large loop going through the array
    of possible button presses and combinations. 
 */
@@ -133,75 +153,115 @@ inline void toplevel()
     // Display the selected patch number
     leds_7seg_two_digit_set(3, 4, patchno);
 
-    if (button_pressed(BTN_UP) && patchno < PATCH_MAX) {
-	patch_load(++patchno);
-	return;  // no need to check for more keypresses
-    }
+    uint8_t last_patchno = patchno;
+    // Handle UP and DOWN presses
+    updown(&patchno, PATCH_MIN, PATCH_MAX);
+    if (patchno != last_patchno) 
+	patch_load(patchno);
 
-    if (button_pressed(BTN_DOWN) && patchno > PATCH_MIN) {
-	patch_load(--patchno);
+    if (button_pressed(BTN_SAVE)) {
+	current_parameter.button = BTN_SAVE;
+	current_parameter.target = &patchno;
+	current_parameter.type = VALTYPE_RANGE;
+	current_parameter.min = PATCH_MIN;
+	current_parameter.max = PATCH_MAX;
+	main_button = BTN_SAVE;
+	state = STATE_GETVALUE;
 	return;
     }
 
-    for (uint8_t i = 0; i < 36; i++) {
-	// Get data out of flash
-	ButtonCombination comb = {
-	    .button1 = pgm_read_byte(&combinations[i].button1),
-	    .button2 = pgm_read_byte(&combinations[i].button2),
-	    .target = (uint8_t*)pgm_read_word(&combinations[i].target),
-	    .type = pgm_read_byte(&combinations[i].type),
-	    .min = pgm_read_byte(&combinations[i].min),
-	    .max = pgm_read_byte(&combinations[i].max)
-	};
+    for (uint8_t i = 0; i < SIZE(main_buttons); i++) {
 	
-	if ((button_on(comb.button1) && !no_btn(comb.button2) && button_on(comb.button2))
-	    || (comb.button2 == NO_BTN_DEPRESS && button_depressed(comb.button1))
-	    || (comb.button2 == NO_BTN_PRESS && button_pressed(comb.button1))) {
-
-	    if (comb.type != VALTYPE_BOOL) { 
-		state = STATE_GETVALUE;
-		cur_comb = comb;
-		
-		button_leds[comb.button1] = 1;
-		leds_set(comb.button1, 0);
-		if (!no_btn(comb.button2)) {
-		    button_leds[comb.button2] = 1;
-		    leds_set(comb.button2, 0);
-		}		    
+	if (button_pressed(main_buttons[i].button)) 
+	    main_buttons[i].state = BTNSTATE_PRESSED;
+	
+	else if (button_depressed(main_buttons[i].button)) {
+	    
+	    // If nothing more happened than pressing the button, a depress should change the channel's
+	    // state in case of the channel buttons, or LFO speed in case of the LFOs.
+	    if (main_buttons[i].state == BTNSTATE_PRESSED) {
+		switch (main_buttons[i].depress_parameter_type) {
+		    
+		case VALTYPE_RANGE:
+		    current_parameter.button = main_buttons[i].button;
+		    current_parameter.target = main_buttons[i].depress_parameter;
+		    current_parameter.type = VALTYPE_INVRANGE;
+		    current_parameter.min = 0;
+		    current_parameter.max = 99;
+		    main_button = main_buttons[i].button;
+		    state = STATE_GETVALUE;
+		    break;
+		    
+		case VALTYPE_BOOL:
+		    *(main_buttons[i].depress_parameter) ^= 1;
+		    
+		}
 	    }
 
-	    else 
-		*comb.target ^= 1;
-	    
-	    break;
-	}
-	
-//	if (comb.type == VALTYPE_BOOL && button_depressed(comb.button1)) {
-//	    *comb.target ^= 1;
-//	    break;
-//	}
+	    for (uint8_t j = 0; j < main_buttons[i].parameter_list_length; j++) {
+		if (pgm_read_byte(&(main_buttons[i].parameter_list[j].type)) == VALTYPE_BOOL) 
+		    button_leds[pgm_read_byte(&(main_buttons[i].parameter_list[j].button))] = 0;
+	    }
 
+	    main_buttons[i].state = BTNSTATE_NOTPRESSED;
+	    
+	}
+
+	if (button_on(main_buttons[i].button))
+	    for (uint8_t j = 0; j < main_buttons[i].parameter_list_length; j++) {
+		Parameter parameter = {.button = pgm_read_byte(&(main_buttons[i].parameter_list[j].button)),
+				       .target = (uint8_t*)pgm_read_word(&(main_buttons[i].parameter_list[j].target)),
+				       .type = pgm_read_byte(&(main_buttons[i].parameter_list[j].type)),
+				       .min = pgm_read_byte(&(main_buttons[i].parameter_list[j].min)),
+				       .max = pgm_read_byte(&(main_buttons[i].parameter_list[j].max))};
+	    
+		if (parameter.type == VALTYPE_BOOL) 
+		    button_leds[parameter.button] = (*parameter.target != 0) * 0xFF;
+	    
+		if (button_pressed(parameter.button)) {
+		    switch (parameter.type) {
+		    case VALTYPE_RANGE:
+		    case VALTYPE_INVRANGE:
+			main_button = main_buttons[i].button;
+			current_parameter = parameter;
+			state = STATE_GETVALUE;
+			break;
+			
+		    case VALTYPE_BOOL:
+			*parameter.target ^= 1;
+			
+		    }
+
+		    main_buttons[i].state = BTNSTATE_PARAM;
+		    
+		    
+		}
+	    }
+	
     }
-    
-    // Unless in the GETVALUE state, LEDs should indicate the state of their corresponding parameter
 }
 
-inline void getvalue()
+static inline void getvalue()
 /* Handles getting a parameter value */
 {
     static uint8_t value;
     static uint8_t last_pot_value;
-    static uint8_t updown_wait_count = 0;
-    static uint8_t updown_speed_count = 0;
     
     // Get analog pot value and scale it to fit the parameter's range
-    uint8_t pot_value = cur_comb.min + input_analog_value * (cur_comb.max + 1 - cur_comb.min) / 256;
+    uint8_t pot_value = current_parameter.min + input_analog_value * (current_parameter.max + 1 - current_parameter.min) / 256;
 
     // If the state just changed to GETVALUE, set the value to the parameter's value
     // and last pot value to the current. 
     if (state_changed) {
-	value = (cur_comb.type == VALTYPE_INVRANGE) ? cur_comb.max - *cur_comb.target : *cur_comb.target;
+	value = (current_parameter.type == VALTYPE_INVRANGE) ? current_parameter.max - *current_parameter.target 
+	                                                     : *current_parameter.target;
 	last_pot_value = pot_value;
+
+	// Make the LEDs blink to indicate which value is being altered
+	button_leds[main_button] = 1;
+	button_leds[current_parameter.button] = 1;
+	leds_set(main_button, 0);
+	leds_set(current_parameter.button, 0);
     }
 
     // A change in the pot should immediately set the value to its value
@@ -211,54 +271,28 @@ inline void getvalue()
     }
 
     // Handle up and down buttons
-    if ((button_on(BTN_UP) && value < cur_comb.max) || (button_on(BTN_DOWN) && value > cur_comb.min)) {
-	// If the button was just pressed, increase/decrease one step and start the wait counter
-	// (to avoid the value rapidly changing if the button is held for too long)
-	if (button_pressed(BTN_UP)) {
-	    value++;
-	    updown_wait_count = 0;
-	}
+    updown(&value, current_parameter.min, current_parameter.max);
 
-	else if (button_pressed(BTN_DOWN)) {
-	    value--;
-	    updown_wait_count = 0;
-	}
-
-	// If the button was not just pressed, increase the wait counter and see if 
-	// we can start to increase the value continuously
-	else {
-	    if (updown_wait_count == WAIT_CNT) {
-		if (updown_speed_count++ == SPEED_CNT) {
-		    updown_speed_count = 0;
-		    value = (button_on(BTN_UP)) ? value + 1 : value - 1;
-		}
-	    }
-	    else 
-		updown_wait_count++;
-	}
-    }
-    
     // Special case for the SAVE button
-    else if (cur_comb.button1 == BTN_SAVE && (button_pressed(BTN_SAVE))) {
+    if (current_parameter.button == BTN_SAVE && (button_pressed(BTN_SAVE))) {
 	patch_save(value);
 	patchno = value;
 
-	button_leds[cur_comb.button1] = 0;
-	button_leds[cur_comb.button2] = 0;
+	button_leds[current_parameter.button] = 0;
 	
 	state = STATE_TOPLEVEL;
     }
 
     // When SET is pressed, store the new value in the parameter and disable LED blinking.
     // If type is VALTYPE_INVRANGE, the value is inverted. 
-    else if (cur_comb.button1 != BTN_SAVE && button_pressed(BTN_SET)) {
-	if (cur_comb.type == VALTYPE_RANGE)
-	    *cur_comb.target = value;
+    else if (current_parameter.button != BTN_SAVE && button_pressed(BTN_SET)) {
+	if (current_parameter.type == VALTYPE_RANGE)
+	    *current_parameter.target = value;
 	else
-	    *cur_comb.target = cur_comb.max - value;
+	    *current_parameter.target = current_parameter.max - value;
 	
-	button_leds[cur_comb.button1] = 0;
-	button_leds[cur_comb.button2] = 0;
+	button_leds[main_button] = 0;
+	button_leds[current_parameter.button] = 0;
 	
 	state = STATE_TOPLEVEL;
     }	    
@@ -267,3 +301,4 @@ inline void getvalue()
     leds_7seg_two_digit_set(3, 4,  value);
 
 }
+

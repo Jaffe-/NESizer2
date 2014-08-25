@@ -35,13 +35,9 @@ void apply_lfos()
 
 void apply_envelopes()
 {
-    Envelope* envelopes[] = {&env1, &env2, &env3};
-    uint8_t* volumes[] = {&(sq1.volume), &(sq2.volume), &(noise.volume)};
-    
-    for (uint8_t i = 0; i < 3; i++) {
-	Envelope* env = envelopes[env_mod_select[i]];
-	*(volumes[i]) = env->value;
-    }
+    sq1.volume = env1.value;
+    sq2.volume = env2.value;
+    noise.volume = env3.value;
 }
 
 void modulation_handler() 

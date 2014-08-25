@@ -12,7 +12,7 @@
 #define BTN_DUTY 8
 #define BTN_LOOP 9
 #define BTN_WAVE 10
-#define BTN_SAMPLE 11
+#define BTN_SAMPLEFREQ 11
 #define BTN_A 12
 #define BTN_D 13
 #define BTN_S 14
@@ -61,3 +61,5 @@ uint8_t prev_input[3];
    any other value: blink
 */
 uint8_t button_leds[24];
+
+void updown(uint8_t* value, uint8_t min, uint8_t max);

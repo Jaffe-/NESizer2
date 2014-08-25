@@ -118,8 +118,8 @@
 #define SQ1_ENABLE_p 0
 
 typedef struct {
-    uint8_t duty;
-    uint8_t enabled;
+    uint8_t enabled;          // BOOL
+    uint8_t duty;             // 4-bit integer
 
     // Used internally:
     uint8_t volume;
@@ -127,16 +127,16 @@ typedef struct {
 } Square;
 
 typedef struct { 
-    uint8_t enabled;
+    uint8_t enabled;          // BOOL 
 
     // Used internally:
     uint16_t period;
 } Triangle;
 
 typedef struct {
-    uint8_t loop;
     uint8_t enabled;
-    uint8_t hw_env;
+    uint8_t loop;             // BOOL: Loop mode (pitched noise) 
+    uint8_t hw_env;           // BOOL: not used?
 
     // Used internally:
     uint8_t volume;
@@ -144,15 +144,17 @@ typedef struct {
 } Noise;
 
 typedef struct {
-    uint8_t data : 7;
     uint8_t enabled;
-    uint8_t sample_enabled : 1;
-    uint8_t sample_loop : 1;
-    uint8_t* sample;
-    uint16_t sample_length;
+    uint8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
+    uint8_t sample_number;     // INTEGER: Index in SRAM sample table 
+    uint8_t sample_type : 1;   // BOOL: 0 - raw 8-bit PCM, 1 - DPCM
 
     // Used internally:
-    uint16_t current;
+    uint16_t current;          
+    uint8_t sample_enabled : 1;
+    const uint8_t* sample;
+    uint16_t sample_length;
+    uint8_t data : 7;
 } DMC;
 
 Square sq1, sq2;

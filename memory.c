@@ -91,3 +91,4 @@ void memory_setup()
     // Set WE high
     PORTC |= WE;
 }
+

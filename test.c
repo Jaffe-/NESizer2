@@ -1,5 +1,5 @@
 #include <avr/io.h>
-#include <avr/delay.h>
+//#include <avr/delay.h>
 #include <util/atomic.h>
 #include "task.h"
 #include "apu.h"
@@ -15,6 +15,7 @@
 #include "memory.h"
 #include "bus.h"
 #include "patch.h"
+#include "sequencer.h"
 
 void update_lfo()
 {
@@ -60,25 +61,16 @@ int main()
 
     io_setup();
     timer_setup();
-
-    sq1_setup();
-    sq1.enabled = 1;
- 
-    sq2_setup();
-    sq2.enabled = 1;
-
-    tri_setup();
-    tri.enabled = 1;
-
-    noise_setup();
-    noise.enabled = 1;
-
-    dmc_setup();
-    dmc.enabled = 1;
-    
     input_setup();
     memory_setup();
-    patch_clean();
+
+    sq1_setup();
+    sq2_setup();
+    tri_setup();
+    noise_setup();
+    dmc_setup();
+
+    patch_load(0);
 
     task_add(&update_dmc, 1, 0);
     task_add(&update_apu, 10, 1);
@@ -87,7 +79,8 @@ int main()
     task_add(&modulation_handler, 10, 4);
     task_add(&leds_refresh, 20, 5); // 20
     task_add(&input_refresh, 80, 6);
-    task_add(&ui_handler, 80, 7);
+    task_add(&sequence_handler, 80, 7);
+    task_add(&ui_handler, 80, 8);
     task_add(&ui_leds_handler, 80, 9);
 
     task_manager();
