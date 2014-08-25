@@ -12,6 +12,8 @@ A second demo: https://www.youtube.com/watch?v=6Rg04oqwLCA
 
 ### Changelog
 
+**25/08/14**: Changed a lot of things in the user interface: Entering pattern notes now also includes a length setting, and octave setting. The upper 16 buttons are converted to "keyboard keys" when waiting for a note. The note is played on the corresponding channel whenever a new setting is made. Patterns are now storable in memory as well. While a pattern is playing the user can switch to patch programming mode and change parameters live. 
+
 **22/08/14**: Fixed clock circuit. It turned out to be inadequate for an older 2A03 IC I got off eBay. It now inverts the oscillator output twice, and there's also been added a 1M resistor in parallel with the crystal. 
 
 **20/08/14**: Much of the front panel functionality has been implemented. Patch memory saving/loading as well. SRAM battery backup added. A CR2032 3V battery powers the SRAMs when main power is off.

@@ -411,8 +411,10 @@ void load_pattern(uint8_t pattern_number)
     uint16_t memory_pointer = PATCH_MEMORY_END + 5 * 32 * pattern_number;
 
     for (uint8_t i = 0; i < 5; i++) {
-	for (uint8_t j = 0; j < 16; j++) 
+	for (uint8_t j = 0; j < 16; j++) {
 	    patterns[i][j] = memory_read(memory_pointer++);
+	    patterns[i][j] |= (memory_read(memory_pointer++)) << 8;
+	}
     }
 }
 
@@ -421,8 +423,10 @@ void save_pattern(uint8_t pattern_number)
     uint16_t memory_pointer = PATCH_MEMORY_END + 5 * 32 * pattern_number;
 
     for (uint8_t i = 0; i < 5; i++) {
-	for (uint8_t j = 0; j < 16; j++)
-	    memory_write(memory_pointer++, patterns[i][j]);
+	for (uint8_t j = 0; j < 16; j++) {
+	    memory_write(memory_pointer++, patterns[i][j] & 0xFF);
+	    memory_write(memory_pointer++, (patterns[i][j] >> 8) & 0xFF);
+	}
     }   
 }
 
