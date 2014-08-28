@@ -1,4 +1,4 @@
-![alt text](https://raw.githubusercontent.com/Jaffe-/NESizer2/master/nesizer.svg "NESIZER")
+![alt text](https://raw.githubusercontent.com/Jaffe-/NESizer2/master/nesizer_black.png "NESIZER")
 (Logo by Vegard Sjonfjell)
 
 ## NESizer2: 2A03 Synthesizer Project
