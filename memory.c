@@ -90,5 +90,8 @@ void memory_setup()
 
     // Set WE high
     PORTC |= WE;
+
+    // Make sure the upper address latch doesn't enable its outputs
+    deselect();
 }
 

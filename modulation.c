@@ -4,9 +4,8 @@
 #include "lfo.h"
 #include "envelope.h"
 
-uint16_t bperiods[3] = {0};
-uint8_t lfo_mod_matrix[3][3] = {{0}};
-uint8_t env_mod_select[3] = {0};
+uint16_t bperiods[4] = {0};
+uint8_t lfo_mod_matrix[4][3] = {{0}};
 
 void apply_lfos()
 {
@@ -14,7 +13,7 @@ void apply_lfos()
     LFO* lfos[] = {&lfo1, &lfo2, &lfo3};
     uint16_t* periods[] = {&(sq1.period), &(sq2.period), &(tri.period)};
 
-    for (uint8_t i = 0; i < 3; i++) {
+    for (uint8_t i = 0; i < 4; i++) {
 	uint8_t* intensities = lfo_mod_matrix[i];
 	int16_t sum = 0;
 	uint8_t cnt = 0;
@@ -29,7 +28,10 @@ void apply_lfos()
 	if (cnt > 0) 
 	    sum /= cnt;
 
-	*(periods[i]) = bperiods[i] + sum;
+	if (i < 3) 
+	    *(periods[i]) = bperiods[i] + sum;
+	else
+	    noise.period = bperiods[i] + (sum >> 4);
     }
 }
 

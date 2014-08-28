@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sample.h"
+
 /* The channels */
 
 #define CHN_SQ1 0
@@ -146,14 +148,11 @@ typedef struct {
 typedef struct {
     uint8_t enabled;
     uint8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
-    uint8_t sample_number;     // INTEGER: Index in SRAM sample table 
-    uint8_t sample_type : 1;   // BOOL: 0 - raw 8-bit PCM, 1 - DPCM
+    uint8_t sample_number;
+    Sample sample;
 
     // Used internally:
-    uint16_t current;          
     uint8_t sample_enabled : 1;
-    const uint8_t* sample;
-    uint16_t sample_length;
     uint8_t data : 7;
 } DMC;
 
@@ -174,7 +173,6 @@ void noise_setup();
 void noise_update();
 void dmc_setup();
 void dmc_update();
-void dmc_update_sample_dpcm();
-void dmc_update_sample_raw();
+void dmc_update_sample();
 void apu_refresh_channel(uint8_t);
 void apu_refresh_all();

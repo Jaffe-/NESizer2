@@ -67,6 +67,9 @@ const Parameter tri_parameters[] PROGMEM = {
 };
 
 const Parameter noise_parameters[] PROGMEM = {
+    {BTN_LFO1, &lfo_mod_matrix[3][0], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO2, &lfo_mod_matrix[3][1], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO3, &lfo_mod_matrix[3][2], VALTYPE_RANGE, 0, 60},
     {BTN_A, &env3.attack, VALTYPE_RANGE, 0, 99},
     {BTN_D, &env3.decay, VALTYPE_RANGE, 0, 99},
     {BTN_S, &env3.sustain, VALTYPE_RANGE, 0, 15},

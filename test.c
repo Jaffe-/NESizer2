@@ -1,6 +1,4 @@
 #include <avr/io.h>
-//#include <avr/delay.h>
-#include <util/atomic.h>
 #include "task.h"
 #include "apu.h"
 #include "2a03_io.h"
@@ -11,11 +9,11 @@
 #include "modulation.h"
 #include "input.h"
 #include "user_interface.h"
-#include <avr/pgmspace.h>
 #include "memory.h"
 #include "bus.h"
 #include "patch.h"
 #include "sequencer.h"
+#include "sample.h"
 
 void update_lfo()
 {
@@ -34,7 +32,7 @@ void update_env()
 void update_dmc()
 {
     if (dmc.enabled && dmc.sample_enabled) 
-	dmc_update_sample_dpcm();
+	dmc_update_sample();
 }
 
 void update_apu()
@@ -43,15 +41,6 @@ void update_apu()
 
     apu_refresh_channel(chn);
     if (++chn == 5) chn = 0;
-}
-
-void tst()
-{
-    static uint32_t address = 0x80800;
-    
-    leds_7seg_two_digit_set(3, 4, memory_read(address));
-    //leds[0] = memory_read(address);
-    address = (address == 0x80800) ? 80000 : address + 1;
 }
 
 int main() 
@@ -84,4 +73,5 @@ int main()
     task_add(&ui_leds_handler, 80, 9);
 
     task_manager();
+
 }

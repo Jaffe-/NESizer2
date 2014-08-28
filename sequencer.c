@@ -9,8 +9,7 @@
 #include "envelope.h"
 #include "patch.h"
 #include "memory.h"
-#include "snare.c"
-#include "kick.c"
+#include "sample.h"
 
 #define STATE_PROGRAM 0
 #define STATE_PLAY 1
@@ -337,23 +336,14 @@ static void play_note(uint8_t channel, uint16_t value, uint8_t count)
 
     case CHN_NOISE:
 	env3.gate = 1;
-	noise.period = (octave << 4) | note;
+	bperiods[3] = (octave << 4) | note;
 	noise_counter = length * count / 4;
 	break;
 
     case CHN_DMC:
-	if (note == 1) {
-	    dmc.sample = kick_c_raw;
-	    dmc.sample_length = sizeof(kick_c_raw);
+	sample_load(&dmc.sample, note);
+	if (dmc.sample.size != 0)
 	    dmc.sample_enabled = 1;
-	    dmc.current = 0;
-	}
-	else if (note == 2){
-	    dmc.sample = snare_c_raw;
-	    dmc.sample_length = sizeof(snare_c_raw);
-	    dmc.sample_enabled = 1;
-	    dmc.current = 0;
-	}
 	dmc.sample_loop = 0;
 	break;
     }

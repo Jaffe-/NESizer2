@@ -1,3 +1,6 @@
+![alt text](https://raw.githubusercontent.com/Jaffe-/NESizer2/master/nesizer.svg "NESIZER")
+(Logo by Vegard Sjonfjell)
+
 ## NESizer2: 2A03 Synthesizer Project
 
 The main idea of this project is to use an isolated NES 2A03 CPU/APU IC as a stand-alone synthesizer, controlled by an Atmega168 microcontroller. (The project is named NESizer2 after a failed attempt to create a NES synthesizer using only the 2A03 alone, with its own ROM, RAM and I/O logic.)
@@ -11,6 +14,8 @@ A second demo: https://www.youtube.com/watch?v=6Rg04oqwLCA
 
 
 ### Changelog
+
+**29/08/14**: The NESIZER now has a logo! Done some fixes on the SRAM battery backup circuitry, I'm still battling some data corruption during power-off and power-on. Sample playback has been moved from flash to SRAM. 
 
 **25/08/14**: Changed a lot of things in the user interface: Entering pattern notes now also includes a length setting, and octave setting. The upper 16 buttons are converted to "keyboard keys" when waiting for a note. The note is played on the corresponding channel whenever a new setting is made. Patterns are now storable in memory as well. While a pattern is playing the user can switch to patch programming mode and change parameters live. 
 

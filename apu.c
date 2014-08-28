@@ -3,6 +3,7 @@
 #include "2a03_io.h"
 #include "apu.h"
 #include "tools/deltacompress.h"
+#include "sample.h"
 
 /* 
 APU abstraction layer 
@@ -128,21 +129,19 @@ void dmc_update()
     register_update(DMC_RAW, dmc.data);
 }
 
-void dmc_update_sample_raw()
+inline void dmc_update_sample_raw()
 {
-    if (dmc.sample != 0) {
-        dmc.data = pgm_read_byte(&dmc.sample[dmc.current++]) >> 1;
+    dmc.data = sample_read_byte(&dmc.sample) >> 1;
 
-	register_update(DMC_RAW, dmc.data);
-	io_register_write(DMC_RAW, dmc.data);
-
-	if (dmc.current == dmc.sample_length) {
-	    dmc.current = 0;
-	    if (!dmc.sample_loop)
-		dmc.sample_enabled = 0;
-	}
-	
+    register_update(DMC_RAW, dmc.data);
+    io_register_write(DMC_RAW, dmc.data);
+    
+    if (++dmc.sample.bytes_read == dmc.sample.size) {
+        sample_reset(&dmc.sample);
+	if (!dmc.sample_loop)
+	    dmc.sample_enabled = 0;
     }
+	
 }
 
 void dmc_update_sample_dpcm() 
@@ -151,32 +150,37 @@ void dmc_update_sample_dpcm()
     static int8_t accumulator;
     static uint8_t flag;
 
-    if (dmc.sample != 0) {
-	if (dmc.current == 0) {
-	    accumulator = pgm_read_byte(&dmc.sample[dmc.current++]); 
-	    flag = 1;
-	}
-	else if (!flag) {
-	    data = pgm_read_byte(&dmc.sample[dmc.current]);
-	    accumulator += delta_table[data & 0x0F];
-	}
-	else {
-	    accumulator += delta_table[(data >> 4) & 0x0F];
-	    dmc.current++;
-	}
-	flag ^= 1;
-	    
-	dmc.data = accumulator >> 1;
-
-	register_update(DMC_RAW, dmc.data);
-	io_register_write(DMC_RAW, dmc.data);
-
-	if (dmc.current == dmc.sample_length) {
-	    dmc.current = 0;
-	    if (!dmc.sample_loop)
-		dmc.sample_enabled = 0;
-	}
+    if (dmc.sample.bytes_read == 0) {
+	accumulator = sample_read_byte(&dmc.sample); 
+	flag = 1;
     }
+    else if (!flag) {
+	data = sample_read_byte(&dmc.sample);
+	accumulator += delta_table[data & 0x0F];
+    }
+    else {
+	accumulator += delta_table[(data >> 4) & 0x0F];
+    }
+    flag ^= 1;
+    
+    dmc.data = accumulator >> 1;
+    
+    register_update(DMC_RAW, dmc.data);
+    io_register_write(DMC_RAW, dmc.data);
+    
+    if (dmc.sample.bytes_read == dmc.sample.size) {
+	sample_reset(&dmc.sample);
+	if (!dmc.sample_loop)
+	    dmc.sample_enabled = 0;
+    }
+}
+
+void dmc_update_sample()
+{
+    if (dmc.sample.type == SAMPLE_TYPE_RAW)
+	dmc_update_sample_raw();
+    else
+	dmc_update_sample_dpcm();
 }
 
 void apu_refresh_channel(uint8_t ch_number)
