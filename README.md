@@ -113,8 +113,9 @@ There are two SRAM ICs of 512KByte each, thus a 20 bit address is needed to addr
 
 The write enable (/WE) line of the SRAM ICs is connected to pin 4 of **PORTC**. This pin must be kept high at all times except when a write is to performed. When an address is set up and a desired value is put on the databus, this pin is pulled low and thereafter pulled high to write the value to the address in memory. 
 
-The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium battery. Diodes are placed in series between each voltage source and the supply inputs to prevent current from going from voltage source one to the other. 
+The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium battery. Diodes are placed in series between each voltage source and the supply inputs to prevent current from going from going to the battery, or from the battery to the rest of the circuit when power is off. A 1k resistor is placed in series with the lithium battery to reduce current when the SRAM is on. 
 
+In order to reduce the chances of data corruption during power-on or power-off, a transistor switch is used to put the chip select signals high when the main supply voltage goes down, so that the random behavior of the latches and /WE output from the Atmega doesn't cause random writes to the SRAMs. 
 
 #### Audio signal amplification
 
