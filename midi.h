@@ -18,5 +18,7 @@ typedef struct {
 
 void midi_setup();
 void midi_handler();
-uint8_t midi_buffer_state();
+uint8_t midi_buffer_nonempty();
 MIDIMessage midi_buffer_read();
+uint8_t midi_buffer_read_byte();
+uint8_t midi_buffer_bytes_remaining();

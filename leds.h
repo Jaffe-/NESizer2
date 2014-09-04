@@ -4,6 +4,8 @@
 #define leds_set_rowcol(ROW, COL, VAL) leds[ROW] = (leds[ROW] & ~(1 << COL)) | (VAL << COL)
 #define leds_set(NUM, VAL) leds_set_rowcol(NUM / 8, NUM % 8, VAL)
 
+#define LEDS_7SEG_MINUS 10
+
 // Global variables
 uint8_t leds[5];
 uint8_t row_mirror;

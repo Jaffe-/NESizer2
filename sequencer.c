@@ -319,24 +319,24 @@ static void play_note(uint8_t channel, uint16_t value, uint8_t count)
     switch (channel) {
     case CHN_SQ1:
 	env1.gate = 1;
-	bperiods[0] = period;
+	periods[0] = period;
 	sq1_counter = length * count / 4;
 	break;
 	
     case CHN_SQ2:
 	env2.gate = 1;
-	bperiods[1] = period;
+	periods[1] = period;
 	sq2_counter = length * count / 4;
 	break;
 	
     case CHN_TRI:
-	bperiods[2] = period;
+	periods[2] = period;
 	tri_counter = length * count / 4;
 	break;
 
     case CHN_NOISE:
 	env3.gate = 1;
-	bperiods[3] = (octave << 4) | note;
+	periods[3] = (octave << 4) | note;
 	noise_counter = length * count / 4;
 	break;
 
@@ -363,7 +363,7 @@ void sequence_handler()
 
     if (tri_counter > 0) {
 	if (--tri_counter == 0)
-	    bperiods[2] = 0;
+	    periods[2] = 0;
     }
 
     if (noise_counter > 0) {
@@ -391,7 +391,7 @@ static inline void play()
 	env3.gate = 0;
 	env2.gate = 0;
 	env1.gate = 0;
-	bperiods[2] = 0;	
+	periods[2] = 0;	
     }
 }
 

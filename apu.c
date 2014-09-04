@@ -131,12 +131,12 @@ void dmc_update()
 
 inline void dmc_update_sample_raw()
 {
-    dmc.data = sample_read_byte(&dmc.sample) >> 1;
+    dmc.data = sample_read_byte(&dmc.sample);
 
     register_update(DMC_RAW, dmc.data);
     io_register_write(DMC_RAW, dmc.data);
     
-    if (++dmc.sample.bytes_read == dmc.sample.size) {
+    if (dmc.sample.bytes_done == dmc.sample.size) {
         sample_reset(&dmc.sample);
 	if (!dmc.sample_loop)
 	    dmc.sample_enabled = 0;
@@ -150,7 +150,7 @@ void dmc_update_sample_dpcm()
     static int8_t accumulator;
     static uint8_t flag;
 
-    if (dmc.sample.bytes_read == 0) {
+    if (dmc.sample.bytes_done == 0) {
 	accumulator = sample_read_byte(&dmc.sample); 
 	flag = 1;
     }
@@ -168,7 +168,7 @@ void dmc_update_sample_dpcm()
     register_update(DMC_RAW, dmc.data);
     io_register_write(DMC_RAW, dmc.data);
     
-    if (dmc.sample.bytes_read == dmc.sample.size) {
+    if (dmc.sample.bytes_done == dmc.sample.size) {
 	sample_reset(&dmc.sample);
 	if (!dmc.sample_loop)
 	    dmc.sample_enabled = 0;

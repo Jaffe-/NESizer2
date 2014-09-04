@@ -19,16 +19,18 @@ Timer triggers inerrupt at X kHz
     sei();
     
     // CTC operation
-    TCCR0A = 0b10;
+    TCCR0A = 0b10 << WGM00;
 
-    OCR0A = F_CPU / (8.0 * F_INTERRUPT);
+    // Set period
+    //OCR0A = F_CPU / (8.0 * F_INTERRUPT);
+    OCR0A = 156;
 
     // Enable compare match interrupt
-    TIMSK0 = 0b10;
+    TIMSK0 = 1 << OCIE0A;
 
     // Normal operation, clock prescaler 8
-    TCCR0B |= 0b10000010;
-    
+//    TCCR0B |= 0b10000010;
+    TCCR0B = (1 << FOC0A) | (0b010 << CS00); 
 }
 
 ISR(TIMER0_COMPA_vect)
@@ -37,5 +39,8 @@ ISR(TIMER0_COMPA_vect)
  */
 {
     ticks++;
+//    if (dmc.enabled && dmc.sample_enabled) 
+//	dmc_update_sample();
+
 }
 

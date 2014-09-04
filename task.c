@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include "task.h"
 #include "timing.h"
+#include "apu.h"
 
 Task tasks[16];
 uint8_t num_tasks = 0;
@@ -17,18 +18,27 @@ void task_manager()
 
     while (1) {
 	while (ticks == last_tick);
+
+	// Update task counters
+	for (uint8_t i = 0; i < num_tasks; i++) 
+	    tasks[i].counter += ticks - last_tick;
+
+	last_tick = ticks;
     
 	for (uint8_t i = 0; i < num_tasks; i++) {
+	    if (ticks != last_tick) 
+		break;
+
 	    Task* task = &tasks[i];
-	    task->counter += ticks - last_tick; 
+	    //task->counter += diff; 
 	    if (task->counter >= task->period) {
 		task->counter = 0;
-		if (task->enable)
+		if (task->enable) {
 		    task->handler();
+		}
 	    }
 	}
 
-	last_tick = ticks;
     }
 }
 

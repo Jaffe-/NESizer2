@@ -5,32 +5,20 @@
 #define BTN_TRI 18
 #define BTN_NOISE 19
 #define BTN_DMC 20
-#define BTN_LFO1 21
-#define BTN_LFO2 22
-#define BTN_LFO3 23
-
-#define BTN_DUTY 8
-#define BTN_LOOP 9
-#define BTN_WAVE 10
-#define BTN_SAMPLEFREQ 11
-#define BTN_A 12
-#define BTN_D 13
-#define BTN_S 14
-#define BTN_R 15
 
 #define BTN_SAVE 0
 #define BTN_SET 1
-#define BTN_PRG 2
-#define BTN_SEQ 3
-#define BTN_SYS 4
-#define BTN_MIDI 5
+#define BTN_PROGRAM 2
+#define BTN_PATTERN 3
+#define BTN_TRACK 4
+#define BTN_SETTINGS 5
 #define BTN_UP 6
 #define BTN_DOWN 7
 
-#define MODE_PROGRAMMER 0
-#define MODE_SEQUENCER 1
-#define MODE_SETTINGS 2
-#define MODE_MIDI 3
+#define MODE_PROGRAM 0
+#define MODE_PATTERN 1
+#define MODE_TRACK 2
+#define MODE_SETTINGS 3
 
 #define button_row(BTN) ((BTN) / 8)
 #define button_col(BTN) ((BTN) % 8)
@@ -50,6 +38,9 @@
 
 void ui_handler();
 void ui_leds_handler();
+
+// The current mode (PROGRAM, PATTERN, TRACK or SETTINGS)
+uint8_t mode;
 
 // Previous inputs
 uint8_t prev_input[3];

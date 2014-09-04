@@ -83,6 +83,42 @@ uint8_t memory_read(uint32_t address)
     return value;
 }
 
+void memory_write_word(uint32_t address, uint16_t value)
+{
+    memory_write(address++, value & 0xFF);
+    memory_write(address, (value >> 8) & 0xFF);
+}
+
+uint16_t memory_read_word(uint32_t address)
+{
+    uint16_t value = memory_read(address++);
+    value |= (uint16_t)memory_read(address) << 8;
+    return value;
+}
+
+void memory_write_dword(uint32_t address, uint32_t value)
+{
+    memory_write(address++, value & 0xFF);
+    memory_write(address++, (value >> 8) & 0xFF);
+    memory_write(address++, (value >> 16) & 0xFF);
+    memory_write(address, (value >> 24) & 0xFF);
+}
+
+uint32_t memory_read_dword(uint32_t address)
+{
+    uint32_t value = memory_read(address++);
+    value |= (uint32_t)memory_read(address++) << 8;
+    value |= (uint32_t)memory_read(address++) << 16;
+    value |= (uint32_t)memory_read(address) << 24;
+    return value;
+}
+
+void memory_clean()
+{
+    for (uint32_t i = 0; i < MEMORY_SIZE; i++) 
+	memory_write(i, 0);
+}
+
 void memory_setup()
 {
     // Set WE (pin 5) as output

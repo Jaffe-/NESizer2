@@ -11,7 +11,7 @@
 uint8_t leds[5] = {0};
 uint8_t row_mirror = 0;
 
-const uint8_t leds_7seg_values[10] = {0b01110111,
+const uint8_t leds_7seg_values[11] = {0b01110111,
 				      0b00010100,
 				      0b10110011,
 				      0b10110110,
@@ -20,7 +20,8 @@ const uint8_t leds_7seg_values[10] = {0b01110111,
 				      0b11100111,
 				      0b00110100,
 				      0b11110111,
-				      0b11110100};
+				      0b11110100,
+				      0b10000000};
 
 void leds_refresh() 
 /* This function is intended to be called by the task handler

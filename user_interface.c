@@ -10,49 +10,15 @@
 #include "timing.h"
 #include "sequencer.h"
 #include "programmer.h"
+#include "settings.h"
 
-#define WAIT_CNT 60
-#define SPEED_CNT 10
 #define BLINK_CNT 30
 
-static uint8_t mode = MODE_PROGRAMMER;
+uint8_t mode = MODE_PROGRAM;
 
 uint8_t prev_input[3] = {0};
 uint8_t button_leds[24] = {0};
 
-void updown(uint8_t* value, uint8_t min, uint8_t max)
-/* Handles up/down buttons when selecting values */
-{
-    static uint8_t updown_wait_count = 0;
-    static uint8_t updown_speed_count = 0;
-
-    if ((button_on(BTN_UP) && *value < max) || (button_on(BTN_DOWN) && *value > min)) {
-	// If the button was just pressed, increase/decrease one step and start the wait counter
-	// (to avoid the value rapidly changing if the button is held for too long)
-	if (button_pressed(BTN_UP)) {
-	    (*value)++;
-	    updown_wait_count = 0;
-	}
-	
-	else if (button_pressed(BTN_DOWN)) {
-	    (*value)--;
-	    updown_wait_count = 0;
-	}
-	
-	// If the button was not just pressed, increase the wait counter and see if 
-	// we can start to increase the value continuously
-	else {
-	    if (updown_wait_count == WAIT_CNT) {
-		if (updown_speed_count++ == SPEED_CNT) {
-		    updown_speed_count = 0;
-		    *value = (button_on(BTN_UP)) ? *value + 1 : *value - 1;
-		}
-	    }
-	    else 
-		updown_wait_count++;
-	}
-    }
-}
 
 void ui_handler()
 {
@@ -61,17 +27,23 @@ void ui_handler()
     last_mode = mode;
 
     // Some manual checks:
-    if (button_pressed(BTN_PRG)) 
-	mode = MODE_PROGRAMMER;
-    else if (button_pressed(BTN_SEQ))
-	mode = MODE_SEQUENCER;
-    else if (button_pressed(BTN_SYS))
-	mode = MODE_SETTINGS;
+    if (!((last_mode == MODE_PROGRAM && !programmer_mode_switchable()) ||
+	  (last_mode == MODE_SETTINGS && !settings_mode_switchable()))) {
+	if (button_pressed(BTN_PROGRAM)) 
+	    mode = MODE_PROGRAM;
+	else if (button_pressed(BTN_PATTERN))
+	    mode = MODE_PATTERN;
+	else if (button_pressed(BTN_TRACK))
+	    mode = MODE_TRACK;
+	else if (button_pressed(BTN_SETTINGS))
+	    mode = MODE_SETTINGS;
+    }
 
     switch (mode) {
-    case MODE_PROGRAMMER: programmer(); break;
-    case MODE_SEQUENCER: sequencer(); break;
-    case MODE_SETTINGS: break;
+    case MODE_PROGRAM: programmer(); break;
+    case MODE_PATTERN: sequencer(); break;
+    case MODE_TRACK: break;
+    case MODE_SETTINGS: settings(); break;
     }
 
     // When mode switches, clear all button LEDs
@@ -84,9 +56,10 @@ void ui_handler()
     }
 
     // Indicate which mode is chosen
-    button_leds[BTN_PRG] = (mode == MODE_PROGRAMMER) * 0xFF;
-    button_leds[BTN_SEQ] = (mode == MODE_SEQUENCER) * 0xFF;
-    button_leds[BTN_SYS] = (mode == MODE_SETTINGS) * 0xFF;
+    button_leds[BTN_PROGRAM] = (mode == MODE_PROGRAM) * 0xFF;
+    button_leds[BTN_PATTERN] = (mode == MODE_PATTERN) * 0xFF;
+    button_leds[BTN_TRACK] = (mode == MODE_TRACK) * 0xFF;
+    button_leds[BTN_SETTINGS] = (mode == MODE_SETTINGS) * 0xFF;
 
     prev_input[0] = input[0];
     prev_input[1] = input[1];
