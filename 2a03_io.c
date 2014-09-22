@@ -742,6 +742,8 @@ void io_setup()
     // Wait for reset cycle to complete
     _delay_ms(1);
 
+    io_register_write(0x17, 0);
+
 /*
     // Set program counter to $4018
     sync();

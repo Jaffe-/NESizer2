@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <avr/delay.h>
 #include "task.h"
 #include "apu.h"
 #include "2a03_io.h"
@@ -17,6 +18,7 @@
 #include "sample.h"
 #include "midi.h"
 #include "midi_interpreter.h"
+#include "portamento.h"
 
 void update_lfo()
 {
@@ -34,6 +36,7 @@ void update_env()
 
 void update_dmc()
 {
+//    dmc_update_sample();
     if (dmc.enabled && dmc.sample_enabled) 
 	dmc_update_sample();
 }
@@ -63,6 +66,7 @@ void update_apu()
 
 int main() 
 {
+
     DDRB = ADDR_m;
     bus_set_address(CPU_ADDR);
 
@@ -80,11 +84,15 @@ int main()
 
     patch_load(0);
 
+    mod_periods[0] = 400;
+    mod_periods[1] = 400;
+    
     task_add(&update_dmc, 1, 0);
     task_add(&midi_handler, 5, 0);
     task_add(&update_apu, 10, 1);
     task_add(&update_lfo, 10, 2);
     task_add(&update_env, 10, 3);
+    task_add(&portamento_handler, 10, 3);
     task_add(&modulation_handler, 10, 4);
     task_add(&midi_interpreter_handler, 10, 5);
     task_add(&leds_refresh, 20, 5); // 20
@@ -94,5 +102,4 @@ int main()
     task_add(&ui_leds_handler, 80, 9);
 
     task_manager();
-
 }

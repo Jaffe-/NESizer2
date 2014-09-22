@@ -1,6 +1,7 @@
 #pragma once
 
 #define WE 0b10000
+#define MEM_EN 0b10000000
 
 #define we_low() PORTC &= ~WE
 #define we_high() PORTC |= WE

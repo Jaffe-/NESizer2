@@ -39,8 +39,5 @@ ISR(TIMER0_COMPA_vect)
  */
 {
     ticks++;
-//    if (dmc.enabled && dmc.sample_enabled) 
-//	dmc_update_sample();
-
 }
 

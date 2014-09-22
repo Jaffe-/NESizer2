@@ -77,23 +77,23 @@ void patch_save(uint8_t num)
     memory_write(base_address + LFO1_OFFSET, lfo1.period & 0xFF);
     memory_write(base_address + LFO1_OFFSET + 1, lfo1.period >> 8);
     memory_write(base_address + LFO1_OFFSET + 2, lfo1.waveform);
-    memory_write(base_address + LFO1_OFFSET + 3, lfo_mod_matrix[0][0]);
-    memory_write(base_address + LFO1_OFFSET + 4, lfo_mod_matrix[0][1]);
-    memory_write(base_address + LFO1_OFFSET + 5, lfo_mod_matrix[0][2]);
+    memory_write(base_address + LFO1_OFFSET + 3, mod_lfo_modmatrix[0][0]);
+    memory_write(base_address + LFO1_OFFSET + 4, mod_lfo_modmatrix[0][1]);
+    memory_write(base_address + LFO1_OFFSET + 5, mod_lfo_modmatrix[0][2]);
 
     memory_write(base_address + LFO2_OFFSET, lfo2.period & 0xFF);
     memory_write(base_address + LFO2_OFFSET + 1, lfo2.period >> 8);
     memory_write(base_address + LFO2_OFFSET + 2, lfo2.waveform);
-    memory_write(base_address + LFO2_OFFSET + 3, lfo_mod_matrix[1][0]);
-    memory_write(base_address + LFO2_OFFSET + 4, lfo_mod_matrix[1][1]);
-    memory_write(base_address + LFO2_OFFSET + 5, lfo_mod_matrix[1][2]);
+    memory_write(base_address + LFO2_OFFSET + 3, mod_lfo_modmatrix[1][0]);
+    memory_write(base_address + LFO2_OFFSET + 4, mod_lfo_modmatrix[1][1]);
+    memory_write(base_address + LFO2_OFFSET + 5, mod_lfo_modmatrix[1][2]);
 
     memory_write(base_address + LFO3_OFFSET, lfo3.period & 0xFF);
     memory_write(base_address + LFO3_OFFSET + 1, lfo3.period >> 8);
     memory_write(base_address + LFO3_OFFSET + 2, lfo3.waveform);
-    memory_write(base_address + LFO3_OFFSET + 3, lfo_mod_matrix[2][0]);
-    memory_write(base_address + LFO3_OFFSET + 4, lfo_mod_matrix[2][1]);
-    memory_write(base_address + LFO3_OFFSET + 5, lfo_mod_matrix[2][2]);
+    memory_write(base_address + LFO3_OFFSET + 3, mod_lfo_modmatrix[2][0]);
+    memory_write(base_address + LFO3_OFFSET + 4, mod_lfo_modmatrix[2][1]);
+    memory_write(base_address + LFO3_OFFSET + 5, mod_lfo_modmatrix[2][2]);
 }
 
 void patch_load(uint8_t num)
@@ -133,21 +133,21 @@ void patch_load(uint8_t num)
     lfo1.period = memory_read(base_address + LFO1_OFFSET);
     lfo1.period |= memory_read(base_address + LFO1_OFFSET + 1) << 8;
     lfo1.waveform = memory_read(base_address + LFO1_OFFSET + 2);
-    lfo_mod_matrix[0][0] = memory_read(base_address + LFO1_OFFSET + 3);
-    lfo_mod_matrix[0][1] = memory_read(base_address + LFO1_OFFSET + 4);
-    lfo_mod_matrix[0][2] = memory_read(base_address + LFO1_OFFSET + 5);
+    mod_lfo_modmatrix[0][0] = memory_read(base_address + LFO1_OFFSET + 3);
+    mod_lfo_modmatrix[0][1] = memory_read(base_address + LFO1_OFFSET + 4);
+    mod_lfo_modmatrix[0][2] = memory_read(base_address + LFO1_OFFSET + 5);
 
     lfo2.period = memory_read(base_address + LFO2_OFFSET);
     lfo2.period |= memory_read(base_address + LFO2_OFFSET + 1) << 8;
     lfo2.waveform = memory_read(base_address + LFO2_OFFSET + 2);
-    lfo_mod_matrix[1][0] = memory_read(base_address + LFO2_OFFSET + 3);
-    lfo_mod_matrix[1][1] = memory_read(base_address + LFO2_OFFSET + 4);
-    lfo_mod_matrix[1][2] = memory_read(base_address + LFO2_OFFSET + 5);
+    mod_lfo_modmatrix[1][0] = memory_read(base_address + LFO2_OFFSET + 3);
+    mod_lfo_modmatrix[1][1] = memory_read(base_address + LFO2_OFFSET + 4);
+    mod_lfo_modmatrix[1][2] = memory_read(base_address + LFO2_OFFSET + 5);
 
     lfo3.period = memory_read(base_address + LFO3_OFFSET);
     lfo3.period |= memory_read(base_address + LFO3_OFFSET + 1) << 8;
     lfo3.waveform = memory_read(base_address + LFO3_OFFSET + 2);
-    lfo_mod_matrix[2][0] = memory_read(base_address + LFO3_OFFSET + 3);
-    lfo_mod_matrix[2][1] = memory_read(base_address + LFO3_OFFSET + 4);
-    lfo_mod_matrix[2][2] = memory_read(base_address + LFO3_OFFSET + 5);
+    mod_lfo_modmatrix[2][0] = memory_read(base_address + LFO3_OFFSET + 3);
+    mod_lfo_modmatrix[2][1] = memory_read(base_address + LFO3_OFFSET + 4);
+    mod_lfo_modmatrix[2][2] = memory_read(base_address + LFO3_OFFSET + 5);
 }

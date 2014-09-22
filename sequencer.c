@@ -10,6 +10,7 @@
 #include "patch.h"
 #include "memory.h"
 #include "sample.h"
+#include "assigner.h"
 
 #define STATE_PROGRAM 0
 #define STATE_PLAY 1
@@ -19,89 +20,6 @@
 #define BTN_PLAY 0
 
 #define cnt 30
-
-// Note periods
-#define Gs1 2005
-#define A1 1892
-#define As1 1786
-#define B1 1686
-
-#define C2 1591
-#define Cs2 1502
-#define D2 1417
-#define Ds2 1338
-#define E2 1262
-#define F2 1192
-#define Fs2 1125
-#define G2 1062 
-#define Gs2 1002
-#define A2 946
-#define As2 892
-#define B2 842
-
-#define C3 795
-#define Cs3 750
-#define D3 708
-#define Ds3 668
-#define E3 631
-#define F3 595
-#define Fs3 562
-#define G3 530
-#define Gs3 500
-#define A3 472
-#define As3 446
-#define B3 421
-
-#define C4 397
-#define Cs4 375
-#define D4 354
-#define Ds4 334
-#define E4 315
-#define F4 297
-#define Fs4 280
-#define G4 265
-#define Gs4 250
-#define A4 237
-#define As4 222
-#define B4 210
-
-#define C5 198
-#define Cs5 187
-#define D5 176
-#define Ds5 166
-#define E5 157
-#define F5 148
-#define Fs5 140
-#define G5 132
-#define Gs5 124
-#define A5 117
-#define As5 111
-#define B5 104
-
-#define C6 99
-#define Cs6 93
-#define D6 88
-#define Ds6 83
-#define E6 78
-#define F6 74
-#define Fs6 69
-#define G6 65
-#define Gs6 62
-#define A6 58
-#define As6 55
-#define B6 52
-
-#define C7 49
-
-const uint16_t period_table[7][12] PROGMEM = {
-    {0, 0, 0, 0, 0, 0, 0, 0, Gs1, A1, As1, B1},
-    {C2, Cs2, D2, Ds2, E2, F2, Fs2, G2, Gs2, A2, As2, B2},
-    {C3, Cs3, D3, Ds3, E3, F3, Fs3, G3, Gs3, A3, As3, B3},
-    {C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4},
-    {C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5},
-    {C6, Cs6, D6, Ds6, E6, F6, Fs6, G6, Gs6, A6, As6, B6},
-    {C7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-};
 
 // "Keyboard" keys when in note entering state
 #define BTN_NOTE_C 8
@@ -126,9 +44,9 @@ DMC array stores sample numbers.
 NOISE array stores lengths only.
 TRI and SQ arrays store in the following format:
 
-XXOOONNNN
+XXNNNNNNN
 
-where XX is a 2-bit length value, OOO is a 3-bit octave value and NNNN is the note number.
+where XX is a 2-bit length value, NNNNNNN is the MIDI note number.
 */
 
 uint16_t DMC_pat[16] = {0};
@@ -169,28 +87,15 @@ inline uint8_t switch_to_note(uint8_t num)
     return 0xFF;
 }
 
-inline uint16_t note_to_period(uint8_t octave, uint8_t note)
-{
-    if (note == 12) {
-	octave++;
-	note = 0;
-    }
-    return pgm_read_word(&(period_table[octave][note]));
-}
-
+/*
 inline uint16_t switch_to_period(uint8_t octave, uint8_t num) 
 {
-    return note_to_period(octave, switch_to_note(num));
-}
+    return note_to_period(octave * 12 + switch_to_note(num));
+    }*/
 
 inline uint8_t note_length(uint16_t value) 
 {
     return (value >> 8) & 0x0F;
-}
-
-inline uint8_t note_octave(uint16_t value)
-{
-    return (value >> 4) & 0x0F;
 }
 
 inline uint8_t note_value(uint16_t value)
@@ -198,14 +103,14 @@ inline uint8_t note_value(uint16_t value)
     return value & 0x0F;
 }
 
-static uint16_t pack_note_value(uint8_t octave, uint8_t note, uint8_t length)
+static uint16_t pack_note_value(uint8_t note, uint8_t length)
 {
-    return note | (octave << 4) | (length << 8);
+    return note | (length << 8);
 }
 
-static void insert_pattern_note(uint8_t channel, uint8_t position, uint8_t octave, uint8_t note, uint8_t length)
+static void insert_pattern_note(uint8_t channel, uint8_t position, uint8_t note, uint8_t length)
 {
-    patterns[channel][position] = pack_note_value(octave, note, length);
+    patterns[channel][position] = pack_note_value(note, length);
 }
 
 static void clear_pattern_note(uint8_t channel, uint8_t position)
@@ -213,7 +118,7 @@ static void clear_pattern_note(uint8_t channel, uint8_t position)
     patterns[channel][position] = 0;
 }
 
-static void play_note(uint8_t channel, uint16_t value, uint8_t count);
+static void seq_play_note(uint8_t channel, uint16_t value, uint8_t count);
 
 #define pos_to_btn(POS) (((POS) < 8) ? ((POS) + 16) : (POS))
 #define btn_to_pos(BTN) (((BTN) < 16) ? (BTN) : ((BTN) - 16))
@@ -249,7 +154,7 @@ static inline void wait_note()
     }
 
     else if (button_pressed(BTN_SET)) {
-	insert_pattern_note(current_channel, current_pos, octave, note, length);
+	insert_pattern_note(current_channel, current_pos, octave * 12 + note, length);
 	state = STATE_PROGRAM;
     }
 
@@ -274,7 +179,7 @@ static inline void wait_note()
     }
 
     if (change) 
-	play_note(current_channel, pack_note_value(octave, note, length), cnt); 
+	seq_play_note(current_channel, pack_note_value(note, length), cnt); 
 }
 
 static inline void program()
@@ -305,46 +210,30 @@ static inline void program()
     }
 }
 
-static void play_note(uint8_t channel, uint16_t value, uint8_t count)
+static void seq_play_note(uint8_t channel, uint16_t value, uint8_t count)
 {
     if (value == 0) 
 	return;
 
-    uint8_t octave = note_octave(value);
-    uint8_t note = note_value(value);
     uint8_t length = note_length(value);
-    
-    uint16_t period = note_to_period(octave, note);
+
+    play_note(channel, note_value(value));
 	
     switch (channel) {
     case CHN_SQ1:
-	env1.gate = 1;
-	periods[0] = period;
 	sq1_counter = length * count / 4;
 	break;
 	
     case CHN_SQ2:
-	env2.gate = 1;
-	periods[1] = period;
 	sq2_counter = length * count / 4;
 	break;
 	
     case CHN_TRI:
-	periods[2] = period;
 	tri_counter = length * count / 4;
 	break;
 
     case CHN_NOISE:
-	env3.gate = 1;
-	periods[3] = (octave << 4) | note;
 	noise_counter = length * count / 4;
-	break;
-
-    case CHN_DMC:
-	sample_load(&dmc.sample, note);
-	if (dmc.sample.size != 0)
-	    dmc.sample_enabled = 1;
-	dmc.sample_loop = 0;
 	break;
     }
 }
@@ -363,7 +252,7 @@ void sequence_handler()
 
     if (tri_counter > 0) {
 	if (--tri_counter == 0)
-	    periods[2] = 0;
+	    mod_periods[2] = 0;
     }
 
     if (noise_counter > 0) {
@@ -375,7 +264,7 @@ void sequence_handler()
 	if (counter == cnt) {
 	    for (uint8_t i = CHN_SQ1; i <= CHN_DMC; i++) {
 		uint16_t note_value = patterns[i][current_pos];
-		play_note(i, note_value, cnt);
+		seq_play_note(i, note_value, cnt);
 	    }
 	    if (++current_pos == 16) current_pos = 0;
 	    counter = 0;
@@ -391,7 +280,7 @@ static inline void play()
 	env3.gate = 0;
 	env2.gate = 0;
 	env1.gate = 0;
-	periods[2] = 0;	
+	mod_periods[2] = 0;	
     }
 }
 

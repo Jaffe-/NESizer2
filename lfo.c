@@ -8,6 +8,8 @@ LFO lfo1 = {0};
 LFO lfo2 = {0};
 LFO lfo3 = {0};
 
+static uint8_t A4_period = 237;
+
 void lfo_update(LFO* lfo)
 {
     lfo->counter++;
@@ -34,10 +36,8 @@ int16_t lfo_value(LFO* lfo, uint8_t intensity)
 {
     if (intensity == 0) 
 	return 0;
-    if (intensity < 60) 
-        return lfo->value / (60 - intensity);
     else
-	return lfo->value * (intensity - 58);
+	return lfo->value;
 }
 
 

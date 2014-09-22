@@ -10,6 +10,7 @@
 #include "lfo.h"
 #include "modulation.h"
 #include "patch.h"
+#include "portamento.h"
 
 #define BTN_LFO1 21
 #define BTN_LFO2 22
@@ -18,9 +19,10 @@
 #define BTN_DUTY 8
 #define BTN_LOOP 8
 #define BTN_WAVE 9
-#define BTN_PORTAMENTO 9
+#define BTN_GLIDE 9
 #define BTN_DETUNE 10
-#define BTN_OCTAVE 11
+#define BTN_ENVMOD 11
+#define BTN_OCTAVE 0
 #define BTN_SAMPLEFREQ 11
 #define BTN_A 12
 #define BTN_D 13
@@ -28,8 +30,6 @@
 #define BTN_R 15
 
 static uint8_t state = STATE_TOPLEVEL;
-
-static uint8_t octave_shift[3] = {2, 2, 2};
 
 Parameter current_parameter;
 
@@ -41,11 +41,12 @@ const Parameter sq1_parameters[] PROGMEM = {
     {BTN_D, &env1.decay, VALTYPE_RANGE, 0, 99},
     {BTN_S, &env1.sustain, VALTYPE_RANGE, 0, 15},
     {BTN_R, &env1.release, VALTYPE_RANGE, 0, 99},
-    {BTN_LFO1, &lfo_mod_matrix[0][0], VALTYPE_RANGE, 0, 60},
-    {BTN_LFO2, &lfo_mod_matrix[0][1], VALTYPE_RANGE, 0, 60},
-    {BTN_LFO3, &lfo_mod_matrix[0][2], VALTYPE_RANGE, 0, 60},
-    {BTN_DETUNE, &detune[0], VALTYPE_POLRANGE, 0, 18},
-    {BTN_OCTAVE, &octave_shift[0], VALTYPE_POLRANGE, 0, 4}
+    {BTN_LFO1, &mod_lfo_modmatrix[0][0], VALTYPE_RANGE, 0, 99},
+    {BTN_LFO2, &mod_lfo_modmatrix[0][1], VALTYPE_RANGE, 0, 99},
+    {BTN_LFO3, &mod_lfo_modmatrix[0][2], VALTYPE_RANGE, 0, 99},
+    {BTN_DETUNE, &mod_detune[0], VALTYPE_POLRANGE, 0, 18},
+    {BTN_GLIDE, &portamento_values[0], VALTYPE_RANGE, 0, 99},
+    {BTN_ENVMOD, &mod_envmod[0], VALTYPE_POLRANGE, 0, 18}
 };
 
 const Parameter sq2_parameters[] PROGMEM = {
@@ -54,30 +55,33 @@ const Parameter sq2_parameters[] PROGMEM = {
     {BTN_D, &env2.decay, VALTYPE_RANGE, 0, 99},
     {BTN_S, &env2.sustain, VALTYPE_RANGE, 0, 15},
     {BTN_R, &env2.release, VALTYPE_RANGE, 0, 99},
-    {BTN_LFO1, &lfo_mod_matrix[1][0], VALTYPE_RANGE, 0, 60},
-    {BTN_LFO2, &lfo_mod_matrix[1][1], VALTYPE_RANGE, 0, 60},
-    {BTN_LFO3, &lfo_mod_matrix[1][2], VALTYPE_RANGE, 0, 60},
-    {BTN_DETUNE, &detune[1], VALTYPE_POLRANGE, 0, 18},
-    {BTN_OCTAVE, &octave_shift[0], VALTYPE_POLRANGE, 0, 4}
+    {BTN_LFO1, &mod_lfo_modmatrix[1][0], VALTYPE_RANGE, 0, 99},
+    {BTN_LFO2, &mod_lfo_modmatrix[1][1], VALTYPE_RANGE, 0, 99},
+    {BTN_LFO3, &mod_lfo_modmatrix[1][2], VALTYPE_RANGE, 0, 99},
+    {BTN_DETUNE, &mod_detune[1], VALTYPE_POLRANGE, 0, 18},
+    {BTN_GLIDE, &portamento_values[1], VALTYPE_RANGE, 0, 99},
+    {BTN_ENVMOD, &mod_envmod[1], VALTYPE_POLRANGE, 0, 18}
 };
 
 const Parameter tri_parameters[] PROGMEM = {
-    {BTN_LFO1, &lfo_mod_matrix[2][0], VALTYPE_RANGE, 0, 60},
-    {BTN_LFO2, &lfo_mod_matrix[2][1], VALTYPE_RANGE, 0, 60},
-    {BTN_LFO3, &lfo_mod_matrix[2][2], VALTYPE_RANGE, 0, 60},
-    {BTN_DETUNE, &detune[2], VALTYPE_POLRANGE, 0, 18},
-    {BTN_OCTAVE, &octave_shift[0], VALTYPE_POLRANGE, 0, 4}
+    {BTN_LFO1, &mod_lfo_modmatrix[2][0], VALTYPE_RANGE, 0, 99},
+    {BTN_LFO2, &mod_lfo_modmatrix[2][1], VALTYPE_RANGE, 0, 99},
+    {BTN_LFO3, &mod_lfo_modmatrix[2][2], VALTYPE_RANGE, 0, 99},
+    {BTN_DETUNE, &mod_detune[2], VALTYPE_POLRANGE, 0, 18},
+    {BTN_GLIDE, &portamento_values[2], VALTYPE_RANGE, 0, 99},
+    {BTN_ENVMOD, &mod_envmod[2], VALTYPE_POLRANGE, 0, 18}
 };
 
 const Parameter noise_parameters[] PROGMEM = {
-    {BTN_LFO1, &lfo_mod_matrix[3][0], VALTYPE_RANGE, 0, 60},
-    {BTN_LFO2, &lfo_mod_matrix[3][1], VALTYPE_RANGE, 0, 60},
-    {BTN_LFO3, &lfo_mod_matrix[3][2], VALTYPE_RANGE, 0, 60},
+    {BTN_LFO1, &mod_lfo_modmatrix[3][0], VALTYPE_RANGE, 0, 99},
+    {BTN_LFO2, &mod_lfo_modmatrix[3][1], VALTYPE_RANGE, 0, 99},
+    {BTN_LFO3, &mod_lfo_modmatrix[3][2], VALTYPE_RANGE, 0, 99},
     {BTN_A, &env3.attack, VALTYPE_RANGE, 0, 99},
     {BTN_D, &env3.decay, VALTYPE_RANGE, 0, 99},
     {BTN_S, &env3.sustain, VALTYPE_RANGE, 0, 15},
     {BTN_R, &env3.release, VALTYPE_RANGE, 0, 99},
-    {BTN_LOOP, &noise.loop, VALTYPE_BOOL, 0, 0}
+    {BTN_LOOP, &noise.loop, VALTYPE_BOOL, 0, 0},
+    {BTN_ENVMOD, &mod_envmod[3], VALTYPE_POLRANGE, 0, 8}
 };
 
 const Parameter dmc_parameters[] PROGMEM = {
@@ -86,15 +90,15 @@ const Parameter dmc_parameters[] PROGMEM = {
 };
 
 const Parameter lfo1_parameters[] PROGMEM = {
-    {BTN_WAVE, &lfo1.waveform, VALTYPE_RANGE, 1, 3},
+    {BTN_WAVE, &lfo1.waveform, VALTYPE_RANGE, 1, 3}
 };
 
 const Parameter lfo2_parameters[] PROGMEM = {
-    {BTN_WAVE, &lfo2.waveform, VALTYPE_RANGE, 1, 3},
+    {BTN_WAVE, &lfo2.waveform, VALTYPE_RANGE, 1, 3}
 };
 
 const Parameter lfo3_parameters[] PROGMEM = {
-    {BTN_WAVE, &lfo3.waveform, VALTYPE_RANGE, 1, 3},
+    {BTN_WAVE, &lfo3.waveform, VALTYPE_RANGE, 1, 3}
 };
 
 MainButton main_buttons[] = {

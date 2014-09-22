@@ -8,7 +8,12 @@ static uint8_t buffer[BUFFER_SIZE];
 static uint8_t buffer_write_pos = 0;
 static uint8_t buffer_read_pos = 0;
 
-static const uint8_t data_bytes_count[] PROGMEM = {2, 2, 2, 2, 1, 1, 2, 0};
+// Length of messages, excluding the status byte
+static const uint8_t message_lengths[] PROGMEM = {
+    2, 2, 2, 2, 1, 1, 2, 0,
+    1, 1, 2, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+};
 
 static uint8_t buffer_written = 0;
 static uint8_t buffer_read = 0;
@@ -55,24 +60,32 @@ void midi_handler()
     }  
 }
 
-static inline uint8_t message_command(uint8_t status)
+static inline uint8_t message_length(uint8_t command)
 {
-    return (status >> 4) & 0x07;
-}
-
-static inline uint8_t message_channel(uint8_t status)
-{
-    return status & 0x0F;
-}
-
-static inline uint8_t message_length(uint8_t status)
-{
-    return pgm_read_byte(&data_bytes_count[message_command(status)]);
+    return pgm_read_byte(&message_lengths[command]);
 }
 
 static inline uint8_t is_status_byte(uint8_t byte)
 {
     return (byte & 0x80) != 0;
+}
+
+static inline uint8_t get_command(uint8_t status) 
+{
+    if ((status & 0xF0) != 0xF0) 
+	return (status >> 4) & 0x07;
+    else
+	return (status & 0x0F) + 0x08;
+}
+
+static inline uint8_t get_channel(uint8_t status)
+{
+    return status & 0x0F;
+}
+
+uint8_t midi_is_channel_message(uint8_t command)
+{
+    return command < 8;
 }
 
 uint8_t midi_buffer_bytes_remaining()
@@ -84,32 +97,31 @@ uint8_t midi_buffer_bytes_remaining()
 uint8_t midi_buffer_nonempty()
 /* Returns 1 if the buffer has unread messages */
 {
-    return ((buffer_read < buffer_written) && (buffer_read <= buffer_written - message_length(buffer[buffer_read_pos])));
+    return ((buffer_read < buffer_written) && (buffer_read <= buffer_written - message_length(get_command(buffer[buffer_read_pos]))));
 }
 
 MIDIMessage midi_buffer_read()
 /* Gets the next message from the buffer and puts the data in a struct object */
 {
     MIDIMessage msg = {0};
-    
+
     uint8_t status;
     // If for some reason the read position doesn't point to the first byte of a message,
     // skip to the next one.
     while (!((status = midi_buffer_read_byte()) & 0x80));
-//    status = buffer_read_byte();
 
-    // Split out the channel and command parts
-    msg.command = message_command(status);
-    msg.channel = message_channel(status);
-    
+    msg.command = get_command(status);
+
+    if (midi_is_channel_message(msg.command)) 
+	msg.channel = get_channel(status);
+
     // Get first databyte, if any
-    if (message_length(status) > 0)
+    if (message_length(msg.command) > 0)
 	msg.data1 = midi_buffer_read_byte();
     
     // Check the command to see if there is one or two bytes following the status byte
-    if (message_length(status) > 1)
+    if (message_length(msg.command) > 1)
 	msg.data2 = midi_buffer_read_byte();
         
     return msg;
 }
-

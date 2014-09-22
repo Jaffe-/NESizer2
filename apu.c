@@ -5,12 +5,126 @@
 #include "tools/deltacompress.h"
 #include "sample.h"
 
+#define SQ1_bm 1
+#define SQ2_bm 0b10
+#define TRI_bm 0b100
+#define NOISE_bm 0b1000
+#define DMC_bm 0b10000
+
+
+/* The APU registers */
+
+#define SQ1_VOL 0x00
+#define SQ1_SWEEP  0x01
+#define SQ1_LO 0x02
+#define SQ1_HI 0x03
+
+#define SQ2_VOL 0x04
+#define SQ2_SWEEP 0x05
+#define SQ2_LO 0x06
+#define SQ2_HI 0x07
+
+#define TRI_LINEAR 0x08
+#define TRI_LO 0x0A
+#define TRI_HI 0x0B
+
+#define NOISE_VOL 0x0C
+#define NOISE_LO 0x0E
+#define NOISE_HI 0x0F
+
+#define DMC_FREQ 0x10
+#define DMC_RAW   0x11
+#define DMC_START 0x12
+#define DMC_LEN 0x13
+
+#define SND_CHN 0x15
+
+
+/* Common bit masks and positions */
+
+#define VOLUME_m 0b00001111
+#define PERIOD_HI_m 0b00000111
+
+#define VOLUME_p 0
+#define PERIOD_HI_p 0
+
+#define LENGTH_CNTR_LOAD_p 3
+
+
+/* Square channels */
+
+// flags
+#define SQ_LENGTH_CNTR_DISABLE 0b00100000
+#define SQ_CONSTANT_VOLUME 0b00010000
+
+// bit positions
+#define SQ_DUTY_p 6
+#define SQ_VOLUME_p 0
+#define SQ_LENGTH_CNTR_LOAD_p 3
+
+// masks
+#define SQ_DUTY_m 0b11000000
+
+
+/* Triangle channel */
+
+// flags
+#define TRI_LENGTH_CNTR_DISABLE 0b10000000
+
+// bit positions
+#define TRI_LINEAR_RELOAD_bp 0
+#define TRI_LENGTH_CNTR_LOAD_bp 3
+
+
+/* Noise channel */
+
+// flags
+#define NOISE_LENGTH_CNTR_DISABLE 0b00100000
+#define NOISE_CONSTANT_VOLUME 0b00010000
+
+// bit positions
+#define NOISE_LENGTH_CNTR_LOAD_bp 3
+#define NOISE_LOOP_p 7
+#define NOISE_PERIOD_p 0
+#define NOISE_HW_ENV_p 4
+
+// masks
+#define NOISE_LOOP_m 0b10000000
+#define NOISE_PERIOD_m 0b00001111
+#define NOISE_HW_ENV_m 0b00010000
+
+/* DMC channel */
+
+// flags
+#define DMC_IRQ_ENABLE 0b10000000
+#define DMC_LOOP_SAMPLE 0b01000000
+
+
+/* Control register */
+
+#define DMC_ENABLE_m 0b00010000
+#define NOISE_ENABLE_m 0b00001000
+#define TRI_ENABLE_m 0b00000100
+#define SQ2_ENABLE_m 0b00000010
+#define SQ1_ENABLE_m 0b00000001
+
+#define DMC_ENABLE_p 4
+#define NOISE_ENABLE_p 3
+#define TRI_ENABLE_p 2
+#define SQ2_ENABLE_p 1
+#define SQ1_ENABLE_p 0
+
 /* 
 APU abstraction layer 
 
 Contains functions for putting channel data in registers. 
 
 */
+
+Square sq1 = {0}, sq2 = {0};
+Triangle tri = {0};
+Noise noise = {0};
+DMC dmc = {0};
 
 inline void register_update(uint8_t reg, uint8_t val)
 {
@@ -22,22 +136,23 @@ inline void register_update(uint8_t reg, uint8_t val)
 inline void sq_setup(uint8_t n)
 {
     register_update(SQ1_VOL + n * 4, SQ_LENGTH_CNTR_DISABLE | SQ_CONSTANT_VOLUME);
+    register_update(SQ1_SWEEP + n * 4, 0x08);
     register_update(SQ1_HI + n * 4, 1 << LENGTH_CNTR_LOAD_p);
 }
 
-inline void sq_update(uint8_t n, Square sq)
+inline void sq_update(uint8_t n, Square* sq)
 {
     register_update(SQ1_VOL + n * 4, (io_reg_buffer[SQ1_VOL + n * 4] & ~(SQ_DUTY_m | VOLUME_m)) 
-		                     | sq.volume << VOLUME_p
-		                     | sq.duty << SQ_DUTY_p);
+		                     | sq->volume << VOLUME_p
+		                     | sq->duty << SQ_DUTY_p);
 
-    register_update(SQ1_LO + n * 4, sq.period & 0xFF);
+    register_update(SQ1_LO + n * 4, sq->period & 0xFF);
 
     // Need to check if sq.enabled is true to decide the value of the length counter. 
     // It is set to zero whenever the corresponding SND_CHN bit is cleared, and this needs
     // to be reflected in the register mirror.
-    register_update(SQ1_HI + n * 4, ((sq.enabled) ? 0b1000 : 0) 
-		                    | (sq.period >> 8) << PERIOD_HI_p);
+    register_update(SQ1_HI + n * 4, ((sq->enabled) ? 0b1000 : 0) 
+		                    | (((sq->period >> 8) & 0x07) << PERIOD_HI_p));
 
 }
 
@@ -56,7 +171,7 @@ void sq1_update()
     register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~SQ1_ENABLE_m) 
 		             | sq1.enabled << SQ1_ENABLE_p);
 
-    sq_update(0, sq1);
+    sq_update(0, &sq1);
 }
 
 void sq2_update()
@@ -64,7 +179,7 @@ void sq2_update()
     register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~SQ2_ENABLE_m) 
 		             | sq2.enabled << SQ2_ENABLE_p);
 
-    sq_update(1, sq2);
+    sq_update(1, &sq2);
 }
 
 
@@ -73,7 +188,7 @@ void sq2_update()
 void tri_setup()
 {
     register_update(TRI_LINEAR, TRI_LENGTH_CNTR_DISABLE | 1);
-    register_update(TRI_HI, 0b1000);
+//    register_update(TRI_HI, 0b0000);
 }
 
 void tri_update()
@@ -83,8 +198,8 @@ void tri_update()
 
     register_update(TRI_LO, tri.period & 0xFF);
 
-    register_update(TRI_HI, ((tri.enabled) ? 0b1000 : 0) 
-		            | (tri.period >> 8) << PERIOD_HI_p);
+    register_update(TRI_HI, ((tri.enabled & ~tri.silenced) ? 0b1000 : 0) 
+		            | ((tri.period >> 8) & 0x07) << PERIOD_HI_p);
 
 }
 
@@ -117,6 +232,7 @@ void noise_update()
 void dmc_setup()
 {
     register_update(DMC_FREQ, 0);
+    register_update(DMC_RAW, 0);
     register_update(DMC_START, 0);
     register_update(DMC_LEN, 0);
 }
@@ -138,7 +254,7 @@ inline void dmc_update_sample_raw()
     
     if (dmc.sample.bytes_done == dmc.sample.size) {
         sample_reset(&dmc.sample);
-	if (!dmc.sample_loop)
+	if (!dmc.sample_loop) 
 	    dmc.sample_enabled = 0;
     }
 	
@@ -170,17 +286,21 @@ void dmc_update_sample_dpcm()
     
     if (dmc.sample.bytes_done == dmc.sample.size) {
 	sample_reset(&dmc.sample);
-	if (!dmc.sample_loop)
+	if (!dmc.sample_loop) {
 	    dmc.sample_enabled = 0;
+	    io_register_write(DMC_RAW, 0);
+	}
     }
 }
 
 void dmc_update_sample()
 {
+
     if (dmc.sample.type == SAMPLE_TYPE_RAW)
 	dmc_update_sample_raw();
     else
 	dmc_update_sample_dpcm();
+
 }
 
 void apu_refresh_channel(uint8_t ch_number)
@@ -214,9 +334,9 @@ void apu_refresh_channel(uint8_t ch_number)
 	io_write_changed(NOISE_HI);
 	break;
 
-    case CHN_DMC:
-	io_write_changed(DMC_RAW);
-	break;
+//    case CHN_DMC:
+//	io_write_changed(DMC_RAW);
+//	break;
     }
    
 }

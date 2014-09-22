@@ -7,124 +7,104 @@
 #include "sequencer.h"
 #include "modulation.h"
 #include "leds.h"
+#include "portamento.h"
+#include "assigner.h"
+
+#define STATE_MESSAGE 0
+#define STATE_SYSEX 1
 
 uint8_t midi_channels[5];
-uint8_t notes[5];
+static uint8_t notes[5];
 
-static inline uint16_t midi_note_to_period(uint8_t midi_note)
-{
-    uint8_t note = midi_note % 12;
-    uint8_t octave = (midi_note - note) / 12 - 2;
-    return pgm_read_word(&period_table[octave][note]);
-}
+static uint8_t state = STATE_MESSAGE;
+static uint8_t state_changed = 0;
 
 static inline uint8_t get_midi_channel(uint8_t channel)
 {
     return midi_channels[channel] - 1;
 }
 
-static void play_note(uint8_t channel, uint8_t note)
+static inline void interpret_message()
 {
-    notes[channel] = note;
+    while (midi_buffer_nonempty()) {
+	MIDIMessage msg = midi_buffer_read();
 
-    uint16_t period = midi_note_to_period(note);
+	if (midi_is_channel_message(msg.command)) {
+	    for (uint8_t i = 0; i < 5; i++) {
+		if (get_midi_channel(i) == msg.channel) {
+		    switch (msg.command) {
+			
+		    case MIDI_CMD_NOTE_ON:
+			notes[i] = msg.data1;
+			play_note(i, msg.data1);
+			break;
+			
+		    case MIDI_CMD_NOTE_OFF:
+			if (notes[i] == msg.data1)
+			    stop_note(i);
+			break;
+			
+		    case MIDI_CMD_PITCH_BEND:
+			break;
+		    }
+		}
+	    }
+	}
 
-    switch (channel) {
-    case CHN_SQ1:
-	env1.gate = 1;
-	periods[0] = period;
-	break;
-	
-    case CHN_SQ2:
-	env2.gate = 1;
-	periods[1] = period;
-	break;
-	
-    case CHN_TRI:
-	tri.enabled = 1;
-	periods[2] = period;
-	break;
-
-    case CHN_NOISE:
-	env3.gate = 1;
-	periods[3] = note - 24;
-	break;
-
-    case CHN_DMC:
-	sample_load(&dmc.sample, note - 24);
-	if (dmc.sample.size != 0)
-	    dmc.sample_enabled = 1;
-	dmc.sample_loop = 0;
-	break;
+	else {
+	    switch (msg.command) {
+	    case MIDI_CMD_SYSEX:
+		state = STATE_SYSEX;
+		state_changed = 1;
+		break;
+		
+	    case MIDI_CMD_TIMECODE:
+		break;
+		
+	    case MIDI_CMD_SONGPOS:
+		break;
+	    
+	    case MIDI_CMD_SONGSEL:
+		break;
+		
+	    case MIDI_CMD_TUNEREQUEST:
+		break;
+		
+	    case MIDI_CMD_SYSEX_END:
+		break;
+		
+	    case MIDI_CMD_CLOCK:
+		break;
+		
+	    case MIDI_CMD_START:
+		break;
+		
+	    case MIDI_CMD_CONTINUE:
+		break;
+		
+	    case MIDI_CMD_STOP:
+		break;
+		
+	    case MIDI_CMD_ACTIVESENSE:
+		break;
+		
+	    case MIDI_CMD_RESET:
+		break;
+	    }
+	}
     }
 }
-
-static void stop_note(uint8_t channel)
-{
-    switch (channel) {
-    case CHN_SQ1:
-	env1.gate = 0;
-	break;
-	
-    case CHN_SQ2:
-	env2.gate = 0;
-	break;
-	
-    case CHN_TRI:
-	periods[3] = 0;
-	break;
-
-    case CHN_NOISE:
-	env3.gate = 0;
-	break;
-
-    case CHN_DMC:
-	dmc.sample_enabled = 0;
-    }
-}
-
-#define STATE_MESSAGE 0
-#define STATE_SYSEX 1
 
 #define SYSEX_STOP 0b11110111
 #define SYSEX_CMD_SAMPLE_LOAD 1
 
 void midi_interpreter_handler()
 {
-    static uint8_t state = STATE_MESSAGE;
-    static uint8_t state_changed = 0;
     static uint8_t sysex_command = 0;
     static Sample sample = {0};
 
     if (state == STATE_MESSAGE) {
-	while (midi_buffer_nonempty()) {
-	    MIDIMessage msg = midi_buffer_read();
-	    
-	    if (msg.command == MIDI_CMD_SYSEX) {
-		state = STATE_SYSEX;
-		state_changed = 1;
-	    }
-	    else {
-		for (uint8_t i = 0; i < 5; i++) {
-		    if (get_midi_channel(i) == msg.channel) {
-			switch (msg.command) {
-			    
-			case MIDI_CMD_NOTE_ON:
-			    play_note(i, msg.data1);
-			    break;
-			    
-			case MIDI_CMD_NOTE_OFF:
-			    if (notes[i] == msg.data1)
-				stop_note(i);
-			    break;
-			    
-			case MIDI_CMD_PITCH_BEND:
-			    break;
-			}
-		    }
-		}
-	    }
-	}
+	interpret_message();
     }
 
     else if (state == STATE_SYSEX) {
@@ -148,23 +128,19 @@ void midi_interpreter_handler()
 	}
 	
 	if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
-	    if (sample.bytes_done < sample.size) {
-		while(midi_buffer_bytes_remaining() >= 1) {
-		    uint8_t val = midi_buffer_read_byte();
-		    if ((val & 0x80) == 0) {
-			// Simply read buffer and write serially to the sample SRAM
+	    while(midi_buffer_bytes_remaining() >= 1) {
+		uint8_t val = midi_buffer_read_byte();
+		if ((val & 0x80) == 0) {
+		    // Simply read buffer and write serially to the sample SRAM
+		    if (sample.bytes_done < sample.size) 
 			sample_write_serial(&sample, val);
-		    }
-		    else {
-			state = STATE_MESSAGE;
-			break;
-		    }
+		}
+		// When the end of sysex message is received, return to message mode
+		else if (val == SYSEX_STOP) {
+		    state = STATE_MESSAGE;
+		    break;
 		}
 	    }
-	    else {
-		state = STATE_MESSAGE;
-	    }
-	}
-	
+	}	
     }
 }

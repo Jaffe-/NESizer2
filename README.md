@@ -94,9 +94,21 @@ The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium batte
 
 In order to reduce the chances of data corruption during power-on or power-off, a transistor switch is used to put the chip select signals high when the main supply voltage goes down, so that the random behavior of the latches and /WE output from the Atmega doesn't cause random writes to the SRAMs. 
 
+
+#### MIDI
+
+The MIDI input circuit is the standard circuit suggested in the MIDI standard, using an optocoupler (6N138) to isolate the MIDI current loop from the circuit. The incoming signal goes to the RX input of the Atmega. 
+
+
 #### Audio signal amplification
 
-The output signals **SND1** and **SND2** are amplified up to line level and brought out on a stereo jack. There is also a mono mix made of the two with the same mixing ratio as in the NES, which is also amplified to line level. A somewhat shitty LM324 op-amp is used for all those purposes, in lack of a better one.
+The output signals **SND1** and **SND2** are amplified up to line level using an op-amp in a non-inverting configuration. A small 125mV DC offset is added to make sure no clipping at the lower end occurs.
+
+Gain for the square channels output is approximately 3.2, while gain of the triangle/noise/dmc output is 4.3. These values have been found through testing to give a signal which is approximately 0 dBm for both channels.
+
+The two sound outputs are also mixed at the 20/12 ratio used in the NES by an op-amp non-inverting summer. The gain on this summer is around 5.7. 
+
+All the outputs are AC coupled at the output.
 
 
 ### Software
@@ -195,7 +207,22 @@ Functions for using the SRAM are available in `memory.c`, `memory.h`. Even thoug
 The functions `memory_write(<address>, <value>)` and `memory_read(<address>)` are used to access the RAMs. 
 
 
+#### MIDI
+
+Low level MIDI communication is implemented in `midi.c`, `midi.h`. The Atmega's USART takes care of receiving MIDI data. In the function `midi_setup`, the USART is configured to use 1 start bit, 8 data bits and 1 stop bit, and to use a baud rate of 31250, which is the MIDI standard baud rate. 
+
+The function `midi_handler` is intended to be registered as a task handler. It checks the state of the Atmega's USART receive buffer and reads new data into a ring buffer. 
+
+Reading and interpreting the data is done by the functions in `midi_interpreter.c`, `midi_interpreter.h`. 
+
+
 ### Changelog
+
+**22/09/14**: Glide/portamento works. I'm now working on the CPU PCB, and am currently going through the circuit to make sure everything is right. Some redesign has been done on the amplifier section.
+
+**11/09/14**: New LFO modulation implementation. Noise envelope modulation of triangle pitch added.
+
+**05/09/14**: MIDI is now fairly stable, next up is adding more MIDI commands. Uploading samples for the DMC channel via MIDI sysex works, but it is a bit buggy. Detuning of the square and triangle channels has been added. I plan on adding portamento/glide as well. 
 
 **31/08/14**: Started implementing MIDI input support. So far SQ1 responds to incoming note on/off messages!
 

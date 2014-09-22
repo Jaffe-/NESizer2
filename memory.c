@@ -124,6 +124,9 @@ void memory_setup()
     // Set WE (pin 5) as output
     DDRC |= WE;
 
+    // Set MEM_EN pin as output
+    DDRB |= MEM_EN;
+
     // Set WE high
     PORTC |= WE;
 
