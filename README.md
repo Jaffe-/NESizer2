@@ -102,13 +102,15 @@ The MIDI input circuit is the standard circuit suggested in the MIDI standard, u
 
 #### Audio signal amplification
 
-The output signals **SND1** and **SND2** are amplified up to line level using an op-amp in a non-inverting configuration. A small 125mV DC offset is added to make sure no clipping at the lower end occurs.
+The output signals **SND1** and **SND2** are amplified up to line level using an op-amp in a non-inverting configuration. A 100mV DC offset is added to make sure no clipping at the lower end occurs when under high load. 
 
-Gain for the square channels output is approximately 3.2, while gain of the triangle/noise/dmc output is 4.3. These values have been found through testing to give a signal which is approximately 0 dBm for both channels.
+Gain for the square channels output is approximately 4.9, while gain of the triangle/noise/dmc output is 5.7. These values give a signal which is approximately 1.6 V peak to peak for both channels.
 
-The two sound outputs are also mixed at the 20/12 ratio used in the NES by an op-amp non-inverting summer. The gain on this summer is around 5.7. 
+The two sound outputs are also mixed at the 12:20 ratio used in the NES by an op-amp non-inverting summer. The gain on this summer is 5.7, also giving an output signal of about 1.6 V p-p.  
 
-All the outputs are AC coupled at the output.
+The TLC074 is chosen as the op-amp, but any op-amp capable of going fairly close to the rails should be ok. With the 100mV offset added, the lowest output voltage will be at least 500mV. The maximum voltage output (not peak to peak) by the 2A03 is about 600 mV on the SND2 output. This is amplified to about 3.5 V, so the op-amp should be able to work within the range 0.5 V to 3.5 V.
+
+All the outputs are AC coupled to remove any of the high DC offsets present at the op-amp outputs. 
 
 
 ### Software
@@ -217,6 +219,8 @@ Reading and interpreting the data is done by the functions in `midi_interpreter.
 
 
 ### Changelog
+
+**02/10/14**: Prototype PCB finished, waiting for them to arrive. 
 
 **22/09/14**: Glide/portamento works. I'm now working on the CPU PCB, and am currently going through the circuit to make sure everything is right. Some redesign has been done on the amplifier section.
 
