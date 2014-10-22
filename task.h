@@ -7,5 +7,5 @@ typedef struct {
     uint8_t enable : 1;
 } Task;
 
-void task_add(void (*)(), uint16_t, uint8_t);
+void task_add(void (*)(), uint16_t);
 void task_manager();

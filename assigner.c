@@ -139,7 +139,7 @@ void play_note(uint8_t channel, uint8_t note)
 	break;
 
     case CHN_DMC:
-	sample_load(&dmc.sample, note - 24);
+	sample_load(&dmc.sample, note - 60);
 	if (dmc.sample.size != 0)
 	    dmc.sample_enabled = 1;
 	dmc.sample_loop = 0;

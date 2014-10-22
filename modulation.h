@@ -5,5 +5,6 @@ uint8_t mod_lfo_modmatrix[4][3];
 uint8_t mod_detune[3];
 uint8_t mod_envmod[4];
 
-void modulation_handler();
+void mod_calculate();
+void mod_apply();
 int8_t get_envmod(uint8_t chn);

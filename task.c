@@ -42,11 +42,11 @@ void task_manager()
     }
 }
 
-void task_add(void (*handler)(), uint16_t period, uint8_t delay)
+void task_add(void (*handler)(), uint16_t period)
 {
     tasks[num_tasks].handler = handler;
     tasks[num_tasks].period = period;
-    tasks[num_tasks].counter = delay;
+    tasks[num_tasks].counter = 0;
     tasks[num_tasks].enable = 1;
     num_tasks++;
 }

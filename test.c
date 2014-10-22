@@ -52,6 +52,8 @@ inline void apu_update_channel(uint8_t chn)
 	tri_update(); break;
     case CHN_NOISE:
 	noise_update(); break;
+    case CHN_DMC:
+	dmc_update(); break;
     }
 }
 
@@ -61,12 +63,11 @@ void update_apu()
 
     apu_update_channel(chn);
     apu_refresh_channel(chn);
-    if (++chn == 4) chn = 0;
+    if (++chn == 5) chn = 0;
 }
 
 int main() 
 {
-
     DDRB = ADDR_m;
     bus_set_address(CPU_ADDR);
 
@@ -84,22 +85,19 @@ int main()
 
     patch_load(0);
 
-    mod_periods[0] = 400;
-    mod_periods[1] = 400;
-    
-    task_add(&update_dmc, 1, 0);
-    task_add(&midi_handler, 5, 0);
-    task_add(&update_apu, 10, 1);
-    task_add(&update_lfo, 10, 2);
-    task_add(&update_env, 10, 3);
-    task_add(&portamento_handler, 10, 3);
-    task_add(&modulation_handler, 10, 4);
-    task_add(&midi_interpreter_handler, 10, 5);
-    task_add(&leds_refresh, 20, 5); // 20
-    task_add(&input_refresh, 80, 6);
-    task_add(&sequence_handler, 80, 7);
-    task_add(&ui_handler, 80, 8);
-    task_add(&ui_leds_handler, 80, 9);
-
+    task_add(&update_dmc, 1);
+    task_add(&midi_handler, 5);
+    task_add(&update_apu, 10);
+    task_add(&update_lfo, 10);
+    task_add(&update_env, 10);
+    task_add(&portamento_handler, 10);
+    task_add(&midi_interpreter_handler, 10);
+    task_add(&mod_calculate, 10);
+    task_add(&mod_apply, 10);
+    task_add(&leds_refresh, 20); // 20
+    task_add(&input_refresh, 80);
+    task_add(&sequence_handler, 80);
+    task_add(&ui_handler, 80);
+    task_add(&ui_leds_handler, 80);
     task_manager();
 }
