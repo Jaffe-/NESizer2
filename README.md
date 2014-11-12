@@ -90,9 +90,7 @@ There are two SRAM ICs of 512KByte each, thus a 20 bit address is needed to addr
 
 The write enable (/WE) line of the SRAM ICs is connected to pin 4 of **PORTC**. This pin must be kept high at all times except when a write is to performed. When an address is set up and a desired value is put on the databus, this pin is pulled low and thereafter pulled high to write the value to the address in memory. 
 
-The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium battery. Diodes are placed in series between each voltage source and the supply inputs to prevent current from going from going to the battery, or from the battery to the rest of the circuit when power is off. A 1k resistor is placed in series with the lithium battery to reduce current when the SRAM is on. 
-
-In order to reduce the chances of data corruption during power-on or power-off, a transistor switch is used to put the chip select signals high when the main supply voltage goes down, so that the random behavior of the latches and /WE output from the Atmega doesn't cause random writes to the SRAMs. 
+The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium battery to keep the memories powered at all times. Two non-volatile SRAM controller ICs DS1210, one for each chip, are used for this. These chips basically take care of switching from battery to VCC and back during power on and power off, and keep the CE signals high until the circuitry is in stable operation.
 
 
 #### MIDI
@@ -100,18 +98,15 @@ In order to reduce the chances of data corruption during power-on or power-off, 
 The MIDI input circuit is the standard circuit suggested in the MIDI standard, using an optocoupler (6N138) to isolate the MIDI current loop from the circuit. The incoming signal goes to the RX input of the Atmega. 
 
 
-#### Audio signal amplification
+#### Output audio path
 
-The output signals **SND1** and **SND2** are amplified up to line level using an op-amp in a non-inverting configuration. A 100mV DC offset is added to make sure no clipping at the lower end occurs when under high load. 
+There are two nearly identical output paths for the two 2A03 sound outputs, differing only in the gain applied to the signal.
+ 
+The signal is first passed through a volume control and a high pass filter with a cutoff frequency of about 480 kHz to suppress some of the 2A03's digital noise at f_2A03 / 3. The 2A03 output is AC coupled into the audio path to reduce nosie when turning the volume potentiometer, and to remove any DC offset from the DMC channel (which can cause pops when playing samples). 
 
-Gain for the square channels output is approximately 4.9, while gain of the triangle/noise/dmc output is 5.7. These values give a signal which is approximately 1.6 V peak to peak for both channels.
+The filtered and attenuated signal is AC coupled to the gain stage, consisting of an op-amp in a non-inverting amplifier configuration. A 0.36V bias is added to bring the signal within the op-amp's linear range. The gain for SND1 is approximately 5.7, and the gain for SND2 is approximately 7.8. This brings each signal to around 2V peak to peak. The output from the op-amp is AC coupled to the output jack to remove the high DC offsets present after amplification. 
 
-The two sound outputs are also mixed at the 12:20 ratio used in the NES by an op-amp non-inverting summer. The gain on this summer is 5.7, also giving an output signal of about 1.6 V p-p.  
-
-The TLC074 is chosen as the op-amp, but any op-amp capable of going fairly close to the rails should be ok. With the 100mV offset added, the lowest output voltage will be at least 500mV. The maximum voltage output (not peak to peak) by the 2A03 is about 600 mV on the SND2 output. This is amplified to about 3.5 V, so the op-amp should be able to work within the range 0.5 V to 3.5 V.
-
-All the outputs are AC coupled to remove any of the high DC offsets present at the op-amp outputs. 
-
+A mix of the two outputs is also made passively, with a ratio of approximately 3 : 5, as in the NES. The mixed signal is buffered by an emitter follower to keep its amplitude relatively constant when the output is loaded. The output on the second jack can be switched between the ordinary output or this mix. 
 
 ### Software
 
@@ -219,6 +214,8 @@ Reading and interpreting the data is done by the functions in `midi_interpreter.
 
 
 ### Changelog
+
+**11/11/14**: Main board PCB received and assembled. Everything worked well, but some noise and leakage between channels was detected. The audio path has now been redesigned.
 
 **02/10/14**: Prototype PCB finished, waiting for them to arrive. 
 
