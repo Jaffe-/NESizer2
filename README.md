@@ -1,5 +1,4 @@
 ![alt text](https://raw.githubusercontent.com/Jaffe-/NESizer2/master/nesizer_black.png "NESIZER")
-(Logo by Vegard Sjonfjell)
 
 ## NESizer2: 2A03 Synthesizer Project
 
@@ -77,7 +76,9 @@ Apart from this and the usual power supply connections, there are no further con
 
 #### LED and switch matrices
 
-These are both pretty standard. The LED matrix is a row scan matrix with 8 columns and 5 rows. The switch matrix is also a row scan matrix with 8 columns and 3 rows. The lower five bits of a 74HC573 latch are used to hold the selected LED row, and the upper three bits are used to hold the selected switch row. This latch is accessed through the data bus by selecting address 2. 
+These are both pretty standard. The LED matrix is a column scan matrix with 8 columns and 5 rows. The 74HC/HCT573 can source a maximum of 35mA from each pin, so to achieve a 10 mA current through each LED, each column has an NPN transistor to switch a larger current. The row latch sinks the current, as each pin there will only receive the 10 mA from each LED in the active column.  
+
+The switch matrix is a row scan matrix with 8 columns and 3 rows. The lower five bits of a 74HC573 latch are used to hold the selected LED row, and the upper three bits are used to hold the selected switch row. This latch is accessed through the data bus by selecting address 2. 
 
 The LED column is specified by writing to a 74HC573 latch connected to the data bus and selected with address 1. (Note that in order to light an LED at row *x* and column *y*, a 1 must be written at bit position *y* in the column latch, while a 0 must be written to bit position *x* of the row latch. This is because the column latch is sourcing the current while the row latch is sinking it.) 
 
@@ -104,7 +105,7 @@ There are two nearly identical output paths for the two 2A03 sound outputs, diff
  
 The signal is first passed through a volume control and a high pass filter with a cutoff frequency of about 480 kHz to suppress some of the 2A03's digital noise at f_2A03 / 3. The 2A03 output is AC coupled into the audio path to reduce nosie when turning the volume potentiometer, and to remove any DC offset from the DMC channel (which can cause pops when playing samples). 
 
-The filtered and attenuated signal is AC coupled to the gain stage, consisting of an op-amp in a non-inverting amplifier configuration. A 0.36V bias is added to bring the signal within the op-amp's linear range. The gain for SND1 is approximately 5.7, and the gain for SND2 is approximately 7.8. This brings each signal to around 2V peak to peak. The output from the op-amp is AC coupled to the output jack to remove the high DC offsets present after amplification. 
+The filtered and attenuated signal is AC coupled to the gain stage, consisting of an op-amp in a non-inverting amplifier configuration. A 0.36V bias is added to bring the signal within the op-amp's linear range. The gain for SND1 is approximately 9.3, and the gain for SND2 is approximately 12. This brings each signal to around 2V peak to peak. The output from the op-amp is AC coupled to the output jack to remove the high DC offsets present after amplification. 
 
 A mix of the two outputs is also made passively, with a ratio of approximately 3 : 5, as in the NES. The mixed signal is buffered by an emitter follower to keep its amplitude relatively constant when the output is loaded. The output on the second jack can be switched between the ordinary output or this mix. 
 
