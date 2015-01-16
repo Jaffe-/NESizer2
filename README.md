@@ -216,6 +216,8 @@ Reading and interpreting the data is done by the functions in `midi_interpreter.
 
 ### Changelog
 
+**16/01/15**: Fixed some serious issues with the SRAM circuitry. The unused battery inputs on the DS1210s are grounded, as described in the data sheet, so memory no longer ceases to read correctly a short while after power on. The enable signal of the decoder is now used to deactivate the decoder's outputs before changing the address bits, and turning them on again afterwards. This was to fix a bug where an unintended component was intermittently selected while the address bits were changing. 
+
 **11/11/14**: Main board PCB received and assembled. Everything worked well, but some noise and leakage between channels was detected. The audio path has now been redesigned.
 
 **02/10/14**: Prototype PCB finished, waiting for them to arrive. 
