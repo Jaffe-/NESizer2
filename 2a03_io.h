@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 // The 6502 opcodes needed
 #define LDA_imm 0xA9
 #define STA_abs 0x8D

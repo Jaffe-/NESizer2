@@ -85,3 +85,9 @@ void envelope_update(Envelope* env)
     else return;
 }
 
+void envelope_update_handler()
+{
+    envelope_update(&env1);
+    envelope_update(&env2);
+    envelope_update(&env3);
+}

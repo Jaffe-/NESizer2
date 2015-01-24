@@ -1,27 +1,41 @@
+/* 
+   NESIZER
+   LED interface
+
+   (c) Johan Fjeldtvedt
+
+   Low level LED control. 
+*/
+
 #include <avr/io.h>
 #include "leds.h"
 #include "bus.h"
 
 #define isone(VAL) ((VAL) != 0)
 
-/* 
-   LED matrix interface
-*/
-
 uint8_t leds[5] = {0};
 uint8_t row_mirror = 0;
 
-const uint8_t leds_7seg_values[11] = {0b01110111,
-				      0b00010100,
-				      0b10110011,
-				      0b10110110,
-				      0b11010100,
-				      0b11100110,
-				      0b11100111,
-				      0b00110100,
-				      0b11110111,
-				      0b11110100,
-				      0b10000000};
+static const uint8_t leds_7seg_values[16] =
+{0b11111100, // 0
+ 0b01100000, // 1
+ 0b11011010, // 2
+ 0b11110010, // 3
+ 0b01100110, // 4
+ 0b10110110, // 5
+ 0b10111110, // 6
+ 0b11100000, // 7
+ 0b11111110, // 8
+ 0b11110110, // 9
+ 0b11101110, // A
+ 0b00111110, // b
+ 0b10011100, // C
+ 0b01111010, // d
+ 0b10011110, // E
+ 0b10001110, // F
+ 0b00000001, // dot
+ 0b00000010, // minus
+};
 
 void leds_refresh() 
 /* This function is intended to be called by the task handler
@@ -39,17 +53,17 @@ void leds_refresh()
 	                  | (isone(leds[4] & current_col) << 4));
     
     // Address the row latch and put on bus
-    bus_set_address(ROW_ADDR);
-    bus_set_value(row_mirror);
+    bus_select(ROW_ADDRESS);
+    bus_write(row_mirror);
     
     // Switch to column latch, the row value is latched when this happens
-    bus_set_address(LEDCOL_ADDR);
+    bus_select(LEDCOL_ADDRESS);
     
     // Activate desired column
-    bus_set_value(current_col);
-
+    bus_write(current_col);
+    
     // Switch to some other address to latch the previous value
-    bus_set_address(NO_ADDR);
+    bus_deselect();
 
     current_col = (current_col == 0x80) ? 1 : current_col << 1;
 }
@@ -61,12 +75,12 @@ void leds_7seg_set(uint8_t row, uint8_t val)
 
 void leds_7seg_dot_on(uint8_t row) 
 {
-    leds[row] |= 0b1000;
+    leds[row] |= leds_7seg_values[LEDS_7SEG_DOT];
 }
 
 void leds_7seg_dot_off(uint8_t row)
 {
-    leds[row] &= ~(0b1000);
+    leds[row] &= ~leds_7seg_values[LEDS_7SEG_DOT];
 }
 
 void leds_7seg_clear(uint8_t row)
@@ -78,4 +92,11 @@ void leds_7seg_two_digit_set(uint8_t row1, uint8_t row2, uint8_t value)
 {
     leds_7seg_set(row2, value % 10);
     leds_7seg_set(row1, value / 10);
+}
+
+// For debugging use
+void leds_7seg_two_digit_set_hex(uint8_t row1, uint8_t row2, uint8_t value)
+{
+    leds_7seg_set(row2, value % 16);
+    leds_7seg_set(row1, value / 16);
 }

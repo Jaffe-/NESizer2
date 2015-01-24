@@ -24,3 +24,4 @@ LFO lfo3;
 
 void lfo_update(LFO* lfo);
 int16_t lfo_value(LFO* lfo, uint8_t intensity);
+void lfo_update_handler();

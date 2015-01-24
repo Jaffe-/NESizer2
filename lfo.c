@@ -1,8 +1,8 @@
-#include <avr/io.h>
-#include <avr/pgmspace.h>
 #include "lfo.h"
+#include <avr/pgmspace.h>
+#include <stdint.h>
 #include "apu.h" 
-#include "sine.c"
+#include "data/sine.c"
 
 LFO lfo1 = {0};
 LFO lfo2 = {0};
@@ -40,4 +40,10 @@ int16_t lfo_value(LFO* lfo, uint8_t intensity)
 	return lfo->value;
 }
 
+void lfo_update_handler()
+{
+    lfo_update(&lfo1);
+    lfo_update(&lfo2);
+    lfo_update(&lfo3);
+}
 

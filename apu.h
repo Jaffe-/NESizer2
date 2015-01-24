@@ -67,3 +67,5 @@ void dmc_update();
 void dmc_update_sample();
 void apu_refresh_channel(uint8_t);
 void apu_refresh_all();
+void apu_update_handler();
+void apu_dmc_update_handler();

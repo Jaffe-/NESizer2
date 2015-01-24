@@ -1,10 +1,8 @@
-#include "constants.h"
+#include "2a03_io.h"
 #include <avr/io.h>
 #include <util/delay.h>
-#include "2a03_io.h"
-#include "leds.h"
-#include "bus.h"
 #include <util/atomic.h>
+#include "bus.h"
 
 /* 
    2a03_io.c 
@@ -671,10 +669,10 @@ inline void register_write(uint8_t reg, uint8_t value)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	// Put STA_zp on bus before deactivating CPU latch
-	bus_set_value(STA_zp);
+	bus_write(STA_zp);
 	
 	// Open latch gates
-	bus_set_address(CPU_ADDR);
+	bus_select(CPU_ADDRESS);
 
 	// Wait for 6502 to reach the third cycle of its idle STA
 	// instruction. 
@@ -685,7 +683,7 @@ inline void register_write(uint8_t reg, uint8_t value)
 
 	// Finally, latch the bus value by switching to a
 	// different address
-	bus_set_address(NO_ADDR);
+	bus_deselect();
     }
 
     // Reflect change in mirror
@@ -715,17 +713,12 @@ void io_setup()
    (non-interruptive) state.
 */
 {
-    // Configure upper 6 bits of PORTD as output:
-    DDRD = DATA_PORTD_m;
-
     // Configure the /RES pin on PORT C as output and set /RES high, also set
     // bits 0, 1 as output
-    DDRC = RES | DATA_PORTC_m;
-    PORTC = RES | RW;
+    DDRC |= RES;
+    PORTC |= RES | RW;
 
-    bus_set_output();
-
-    bus_set_value(STA_zp);
+    bus_write(STA_zp);
 
     // Reset the 2A03:
 
@@ -744,46 +737,5 @@ void io_setup()
 
     io_register_write(0x17, 0);
 
-/*
-    // Set program counter to $4018
-    sync();
-    reset_pc();
-
-    // Send SEI instruction:
-    sync();
-
-    asm volatile(
-	// Write SEI to 6502:
-	"mov r24, %[portd_reg]\n"      // get PORTD with upper 6 bits cleared
-	"ori r24, 0x78\n"              // or with upper 6 bits of value
-	"mov r25, %[portc_reg]\n"      // get PORTC with lower 2 bits cleared
-	"nop\n"
-	"out %[portd_addr], r24\n"     // Output these values
-	"out %[portc_addr], r25\n"
-
-	// Write STA_zp:
-	"mov r24, %[portd_reg]\n"
-	"ori r24, %[sta_zp_hi]\n"
-	"mov r25, %[portc_reg]\n"
-	"ori r25, %[sta_zp_lo]\n"
-	"nop\n"
-	"nop\n"
-	"nop\n"
-	"nop\n"
-	"nop\n"
-	"nop\n"
-	"out %[portd_addr], r24\n"
-	"out %[portc_addr], r25\n"
-		
-	:
-	: [portd_addr] "I" (_SFR_IO_ADDR(PORTD)), 
-	  [portc_addr] "I" (_SFR_IO_ADDR(PORTC)),
-	  [portd_reg] "r" (PORTD & 0x03), 
-	  [portc_reg] "r" (PORTC & 0xFC),
-	  [sta_zp_hi] "M" (STA_zp & 0xFC),
-	  [sta_zp_lo] "M" (STA_zp & 0x03)
-	: "r24", "r25"
-    );
-*/
 }
 

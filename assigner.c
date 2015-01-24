@@ -1,3 +1,11 @@
+/*
+  NESIZER 
+
+  Note assigner
+
+  Assigns notes to channels
+ */
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "modulation.h"

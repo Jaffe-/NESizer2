@@ -33,6 +33,7 @@ typedef struct {
 } Envelope;
 
 void envelope_update(Envelope* env);
+void envelope_update_handler();
 
 Envelope env1;
 Envelope env2;

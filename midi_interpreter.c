@@ -1,10 +1,19 @@
+/*
+  NESIZER
+  MIDI Interpreter 
+  
+  (c) Johan Fjeldtvedt
+
+  Interprets MIDI messages and acts accordingly.
+ */
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "midi_interpreter.h"
 #include "midi.h"
 #include "envelope.h"
 #include "lfo.h"
-#include "sequencer.h"
+#include "ui_sequencer.h"
 #include "modulation.h"
 #include "leds.h"
 #include "portamento.h"

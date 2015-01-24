@@ -1,5 +1,7 @@
 #pragma once
 
+#include <avr/io.h>
+
 #define WE 0b10000
 #define MEM_EN 0b10000000
 
@@ -18,6 +20,7 @@ uint8_t memory_read(uint32_t address);
 uint16_t memory_read_word(uint32_t address);
 uint32_t memory_read_dword(uint32_t address);
 uint8_t memory_read_sequential();
+void memory_write_sequential(uint8_t value);
 
 void memory_setup();
 void memory_clean();

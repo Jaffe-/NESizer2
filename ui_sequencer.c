@@ -1,9 +1,8 @@
+#include "ui_sequencer.h"
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-#include "sequencer.h"
-#include "user_interface.h"
+#include "ui.h"
 #include "input.h"
-#include "leds.h"
 #include "apu.h"
 #include "modulation.h"
 #include "envelope.h"
@@ -327,7 +326,7 @@ static inline void toplevel()
 
     // Has the current pattern number been changed? In that case, load the new patterns into RAM
     uint8_t last_pattern = current_pattern;
-    updown(&current_pattern, 0, 99);
+    ui_updown(&current_pattern, 0, 99);
     if (current_pattern != last_pattern) {
 	if (!save_flag) 
 	    load_pattern(current_pattern);

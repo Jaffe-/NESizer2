@@ -1,9 +1,20 @@
+/* 
+   NESIZER
+   APU abstraction layer
+
+   (c) Johan Fjeldtvedt
+
+   Contains abstractions of the low level I/O functionality in 2a03_io.
+*/
+
+#include "apu.h"
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "2a03_io.h"
-#include "apu.h"
 #include "tools/deltacompress.h"
-#include "sample.h"
+
+
+/* APU channel bit masks */
 
 #define SQ1_bm 1
 #define SQ2_bm 0b10
@@ -12,7 +23,7 @@
 #define DMC_bm 0b10000
 
 
-/* The APU registers */
+/* The APU registers (discarding the 0x40 upper byte) */
 
 #define SQ1_VOL 0x00
 #define SQ1_SWEEP  0x01
@@ -253,7 +264,6 @@ inline void dmc_update_sample_raw()
     if (dmc.sample.bytes_done == dmc.sample.size) {
         sample_reset(&dmc.sample);
 
-//	io_register_write(DMC_RAW, 0);
 	if (!dmc.sample_loop) 
 	    dmc.sample_enabled = 0;
     }
@@ -333,10 +343,6 @@ void apu_refresh_channel(uint8_t ch_number)
 	io_write_changed(NOISE_LO);
 	io_write_changed(NOISE_HI);
 	break;
-
-    case CHN_DMC:
-	io_write_changed(DMC_RAW);
-//	break;
     }
    
 }
@@ -345,4 +351,35 @@ void apu_refresh_all()
 {
     for (uint8_t i = CHN_SQ1; i <= CHN_DMC; i++) 
 	apu_refresh_channel(i);
+}
+
+inline void apu_update_channel(uint8_t chn)
+{
+    switch (chn) {
+    case CHN_SQ1:
+	sq1_update(); break;
+    case CHN_SQ2:
+	sq2_update(); break;
+    case CHN_TRI:
+	tri_update(); break;
+    case CHN_NOISE:
+	noise_update(); break;
+    }
+}
+
+// Task handler for updating APU channels
+void apu_update_handler()
+{
+    static uint8_t chn = CHN_SQ1;
+
+    apu_update_channel(chn);
+    apu_refresh_channel(chn);
+    if (++chn == 4) chn = 0;
+}
+
+// Update handler for the DMC specifically
+void apu_dmc_update_handler()
+{
+    if (dmc.enabled && dmc.sample_enabled) 
+	dmc_update_sample();
 }
