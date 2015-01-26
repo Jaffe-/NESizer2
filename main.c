@@ -27,7 +27,7 @@
 #include "ui_sequencer.h"
 #include "sample.h"
 #include "midi.h"
-#include "midi_interpreter.h"
+#include "midi_io.h"
 #include "portamento.h"
 
 int main() 
@@ -38,7 +38,7 @@ int main()
     input_setup();
     memory_setup();
     timer_setup();
-    midi_setup();
+    midi_io_setup();
 
     // Set up APU channels:
     sq1_setup();
@@ -51,12 +51,12 @@ int main()
 
     // Register task handlers:
     task_add(&apu_dmc_update_handler, 1);
-    task_add(&midi_handler, 5);
+    task_add(&midi_io_handler, 5);
     task_add(&apu_update_handler, 10);
     task_add(&lfo_update_handler, 10);
     task_add(&envelope_update_handler, 10);
     task_add(&portamento_handler, 10);
-    task_add(&midi_interpreter_handler, 10);
+    task_add(&midi_handler, 10);
     task_add(&mod_calculate, 10);
     task_add(&mod_apply, 10);
     task_add(&leds_refresh, 20); // 20

@@ -1,127 +1,155 @@
+/*
+  NESIZER
+  MIDI Interpreter 
+  
+  (c) Johan Fjeldtvedt
+
+  Interprets MIDI messages and acts accordingly.
+ */
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "midi.h"
+#include "midi_io.h"
+#include "envelope.h"
+#include "lfo.h"
+#include "ui_sequencer.h"
+#include "modulation.h"
 #include "leds.h"
+#include "portamento.h"
+#include "assigner.h"
 
-#define BUFFER_SIZE 32
-static uint8_t buffer[BUFFER_SIZE];
-static uint8_t buffer_write_pos = 0;
-static uint8_t buffer_read_pos = 0;
+#define STATE_MESSAGE 0
+#define STATE_SYSEX 1
 
-// Length of messages, excluding the status byte
-static const uint8_t message_lengths[] PROGMEM = {
-    2, 2, 2, 2, 1, 1, 2, 0,
-    0, 1, 2, 1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0
-};
+uint8_t midi_channels[5];
+static uint8_t notes[5];
 
-static uint8_t buffer_written = 0;
-static uint8_t buffer_read = 0;
+static uint8_t state = STATE_MESSAGE;
+static uint8_t state_changed = 0;
 
-uint8_t midi_buffer_read_byte()
+static inline uint8_t get_midi_channel(uint8_t channel)
 {
-    uint8_t value = buffer[buffer_read_pos++];
-   
-    if (buffer_read_pos == BUFFER_SIZE) buffer_read_pos = 0;
+    return midi_channels[channel] - 1;
+}
 
-    buffer_read++;
+static inline void interpret_message()
+{
+    while (midi_io_buffer_nonempty()) {
+	MIDIMessage msg = midi_io_read();
 
-    // If we have caught up with the number of writes, reset both counters (to keep them from
-    // overflowing)
-    if (buffer_read == buffer_written) {
-	buffer_read = 0;
-	buffer_written = 0;
+	if (midi_is_channel_message(msg.command)) {
+	    for (uint8_t i = 0; i < 5; i++) {
+		if (get_midi_channel(i) == msg.channel) {
+		    switch (msg.command) {
+			
+		    case MIDI_CMD_NOTE_ON:
+			notes[i] = msg.data1;
+			play_note(i, msg.data1);
+			break;
+			
+		    case MIDI_CMD_NOTE_OFF:
+			if (notes[i] == msg.data1)
+			    stop_note(i);
+			break;
+			
+		    case MIDI_CMD_PITCH_BEND:
+			break;
+		    }
+		}
+	    }
+	}
+
+	else {
+	    switch (msg.command) {
+	    case MIDI_CMD_SYSEX:
+		state = STATE_SYSEX;
+		state_changed = 1;
+		break;
+		
+	    case MIDI_CMD_TIMECODE:
+		break;
+		
+	    case MIDI_CMD_SONGPOS:
+		break;
+	    
+	    case MIDI_CMD_SONGSEL:
+		break;
+		
+	    case MIDI_CMD_TUNEREQUEST:
+		break;
+		
+	    case MIDI_CMD_SYSEX_END:
+		break;
+		
+	    case MIDI_CMD_CLOCK:
+		break;
+		
+	    case MIDI_CMD_START:
+		break;
+		
+	    case MIDI_CMD_CONTINUE:
+		break;
+		
+	    case MIDI_CMD_STOP:
+		break;
+		
+	    case MIDI_CMD_ACTIVESENSE:
+		break;
+		
+	    case MIDI_CMD_RESET:
+		break;
+	    }
+	}
     }
-
-    return value;
 }
 
-void midi_setup()
-{
-    // Enable receiver and set frame to 8 data bits
-    UBRR0H = 0;
-    // 20 MHz / (16 * 31250) = 39
-    UBRR0L = 39;
-
-    UCSR0B = (1 << RXEN0);
-    UCSR0C = (0b11 << UCSZ00);
-}
+#define SYSEX_STOP 0b11110111
+#define SYSEX_CMD_SAMPLE_LOAD 1
 
 void midi_handler()
-/* Task handler for putting incoming MIDI data in buffer */
 {
-    while (UCSR0A & (1 << RXC0)) {
-	buffer[buffer_write_pos++] = UDR0;
+    static uint8_t sysex_command = 0;
+    static Sample sample = {0};
+
+    if (state == STATE_MESSAGE) {
+	interpret_message();
+    }
+
+    else if (state == STATE_SYSEX) {
+	// When the state just changed, we need to look at the first few bytes
+	// to determine what sysex message we're dealing with
+	if (state_changed) {
+	    if (midi_io_bytes_remaining() >= 6) {
+		sysex_command = midi_io_read_byte();
+
+		if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+		    uint8_t sample_number = midi_io_read_byte();
+		    sample.type = midi_io_read_byte();
+		    sample.size = midi_io_read_byte();
+		    sample.size |= (uint32_t)midi_io_read_byte() << 7;
+		    sample.size |= (uint32_t)midi_io_read_byte() << 14;
+		    sample_new(&sample, sample_number);
+		}
+		
+		state_changed = 0;
+	    }
+	}
 	
-	if (buffer_write_pos == BUFFER_SIZE) 
-	    buffer_write_pos = 0;
-	
-	buffer_written++;
-    }  
-}
-
-static inline uint8_t message_length(uint8_t command)
-{
-    return pgm_read_byte(&message_lengths[command]);
-}
-
-static inline uint8_t is_status_byte(uint8_t byte)
-{
-    return (byte & 0x80) != 0;
-}
-
-static inline uint8_t get_command(uint8_t status) 
-{
-    if ((status & 0xF0) != 0xF0) 
-	return (status >> 4) & 0x07;
-    else
-	return (status & 0x0F) + 0x08;
-}
-
-static inline uint8_t get_channel(uint8_t status)
-{
-    return status & 0x0F;
-}
-
-uint8_t midi_is_channel_message(uint8_t command)
-{
-    return command < 8;
-}
-
-uint8_t midi_buffer_bytes_remaining()
-/* Returns the raw unread buffer length */
-{
-    return buffer_written - buffer_read;
-}
-
-uint8_t midi_buffer_nonempty()
-/* Returns 1 if the buffer has unread messages */
-{
-    return ((buffer_read < buffer_written) && (buffer_read <= buffer_written - message_length(get_command(buffer[buffer_read_pos]))));
-}
-
-MIDIMessage midi_buffer_read()
-/* Gets the next message from the buffer and puts the data in a struct object */
-{
-    MIDIMessage msg = {0};
-
-    uint8_t status;
-    // If for some reason the read position doesn't point to the first byte of a message,
-    // skip to the next one.
-    while (!((status = midi_buffer_read_byte()) & 0x80));
-
-    msg.command = get_command(status);
-
-    if (midi_is_channel_message(msg.command)) 
-	msg.channel = get_channel(status);
-
-    // Get first databyte, if any
-    if (message_length(msg.command) > 0)
-	msg.data1 = midi_buffer_read_byte();
-    
-    // Check the command to see if there is one or two bytes following the status byte
-    if (message_length(msg.command) > 1)
-	msg.data2 = midi_buffer_read_byte();
-        
-    return msg;
+	if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+	    while(midi_io_bytes_remaining() >= 1) {
+		uint8_t val = midi_io_read_byte();
+		if ((val & 0x80) == 0) {
+		    // Simply read buffer and write serially to the sample SRAM
+		    if (sample.bytes_done < sample.size) 
+			sample_write_serial(&sample, val);
+		}
+		// When the end of sysex message is received, return to message mode
+		else if (val == SYSEX_STOP) {
+		    state = STATE_MESSAGE;
+		    break;
+		}
+	    }
+	}	
+    }
 }

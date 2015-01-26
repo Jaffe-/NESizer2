@@ -26,105 +26,22 @@
 
 #define NUM_BLOCKS (MEMORY_SIZE - BLOCK_START) / BLOCK_SIZE
 
-uint16_t sample_blocks_used = 0;
 
-static inline uint16_t get_next_block(uint16_t block)
-{
-    // Find the next block from the block table
-    return memory_read_word(BLOCKTABLE_START + block * 2) - 1;
-}
+/* Internal functions */
 
-static inline void link_blocks(uint16_t block, uint16_t next_block)
-/* Write the next block number at the block's location in the block table */
-{
-    memory_write_word(BLOCKTABLE_START + block * 2, next_block + 1); 
-}
+static inline uint16_t get_next_block(uint16_t block);
+static inline void link_blocks(uint16_t block, uint16_t next_block);
+static inline void write_to_block(uint16_t block, uint16_t pos, uint8_t value);
+static inline uint8_t read_from_block(uint16_t block, uint16_t pos);
+static uint16_t allocate_block();
+static inline void free_block(uint16_t block);
+static inline uint32_t index_address(uint8_t index);
+static void write_to_index(Sample* sample, uint8_t index);
+static void read_from_index(Sample* sample, uint8_t index);
+static void remove_from_index(uint8_t index);
+static inline uint8_t index_occupied(uint8_t index);
 
-static inline void write_to_block(uint16_t block, uint16_t pos, uint8_t value)
-{
-    if (pos == 0)
-	memory_set_address(BLOCK_START + (uint32_t)block * BLOCK_SIZE);
-    memory_write_sequential(value);
-}
-
-static inline uint8_t read_from_block(uint16_t block, uint16_t pos)
-{
-    // Need to update the address only when starting on a new block:
-    if (pos == 0)
-	memory_set_address(BLOCK_START + (uint32_t)block * BLOCK_SIZE);
-	
-    // Otherwise, just read sequentially from the block:
-    return memory_read_sequential();
-}
-
-static inline uint16_t allocate_block()
-{
-    for (uint16_t i = 0; i < NUM_BLOCKS; i++) {
-	uint16_t block_entry = memory_read_word(BLOCKTABLE_START + i * 2); 
-	if (block_entry == 0) {
-	    // Mark the block as in use 
-	    memory_write_word(BLOCKTABLE_START + i * 2, 0xFFFF);
-
-	    sample_blocks_used++;
-
-	    // Return allocated block number
-	    return i;
-	}
-    }	
-    
-    // Return error code if no free block was found
-    return 0xFFFF;
-}
-
-static inline void free_block(uint16_t block)
-{
-    // Write 0 to block table to indicate that the block is now free
-    memory_write_word(BLOCKTABLE_START + block * 2, 0);
-
-    sample_blocks_used--;
-}
-
-static inline uint32_t index_address(uint8_t index)
-{
-    return INDEX_START + (uint16_t)index * INDEX_ENTRY_SIZE;
-}
-
-void write_to_index(Sample* sample, uint8_t index)
-{
-    uint32_t address = index_address(index);
-
-    // Mark index as occupied
-    memory_write(address++, 1);
-
-    memory_write(address++, sample->type);
-
-    memory_write_dword(address, sample->size);
-    
-    address += 4;
-    memory_write_word(address, sample->first_block);
-}
-
-void read_from_index(Sample* sample, uint8_t index)
-{
-    uint32_t address = index_address(index) + 1;
-   
-    sample->type = memory_read(address++);
-
-    sample->size = memory_read_dword(address);
-    
-    address += 4;
-    sample->first_block = memory_read_word(address);
-}
-
-void remove_from_index(uint8_t index)
-{
-    memory_write(index_address(index), 0);
-}
-
-uint8_t index_occupied(uint8_t index)
-{
-    return memory_read(index_address(index));
-}
+/* Public functions */
 
 void sample_clean()
 /* Writes the sample index at the start of the sample area */
@@ -205,3 +122,106 @@ void sample_delete(uint8_t index)
 
     remove_from_index(index);
 }
+
+uint8_t sample_occupied(uint8_t index)
+{
+    return index_occupied(index);
+}
+
+
+/* Internal function definitions */
+
+static inline uint16_t get_next_block(uint16_t block)
+{
+    // Find the next block from the block table
+    return memory_read_word(BLOCKTABLE_START + block * 2) - 1;
+}
+
+static inline void link_blocks(uint16_t block, uint16_t next_block)
+/* Write the next block number at the block's location in the block table */
+{
+    memory_write_word(BLOCKTABLE_START + block * 2, next_block + 1); 
+}
+
+static inline void write_to_block(uint16_t block, uint16_t pos, uint8_t value)
+{
+    if (pos == 0)
+	memory_set_address(BLOCK_START + (uint32_t)block * BLOCK_SIZE);
+    memory_write_sequential(value);
+}
+
+static inline uint8_t read_from_block(uint16_t block, uint16_t pos)
+{
+    // Need to update the address only when starting on a new block:
+    if (pos == 0)
+	memory_set_address(BLOCK_START + (uint32_t)block * BLOCK_SIZE);
+	
+    // Otherwise, just read sequentially from the block:
+    return memory_read_sequential();
+}
+
+static uint16_t allocate_block()
+{
+    for (uint16_t i = 0; i < NUM_BLOCKS; i++) {
+	uint16_t block_entry = memory_read_word(BLOCKTABLE_START + i * 2); 
+	if (block_entry == 0) {
+	    // Mark the block as in use 
+	    memory_write_word(BLOCKTABLE_START + i * 2, 0xFFFF);
+
+	    // Return allocated block number
+	    return i;
+	}
+    }	
+    
+    // Return error code if no free block was found
+    return 0xFFFF;
+}
+
+static inline void free_block(uint16_t block)
+{
+    // Write 0 to block table to indicate that the block is now free
+    memory_write_word(BLOCKTABLE_START + block * 2, 0);
+}
+
+static inline uint32_t index_address(uint8_t index)
+{
+    return INDEX_START + (uint16_t)index * INDEX_ENTRY_SIZE;
+}
+
+static void write_to_index(Sample* sample, uint8_t index)
+{
+    uint32_t address = index_address(index);
+
+    // Mark index as occupied
+    memory_write(address++, 1);
+
+    memory_write(address++, sample->type);
+
+    memory_write_dword(address, sample->size);
+    
+    address += 4;
+    memory_write_word(address, sample->first_block);
+}
+
+static void read_from_index(Sample* sample, uint8_t index)
+{
+    uint32_t address = index_address(index) + 1;
+   
+    sample->type = memory_read(address++);
+
+    sample->size = memory_read_dword(address);
+    
+    address += 4;
+    sample->first_block = memory_read_word(address);
+}
+
+static void remove_from_index(uint8_t index)
+{
+    memory_write(index_address(index), 0);
+}
+
+static inline uint8_t index_occupied(uint8_t index)
+{
+    return memory_read(index_address(index));
+}
+

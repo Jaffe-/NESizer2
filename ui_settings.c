@@ -6,19 +6,19 @@
 #include "input.h"
 #include "leds.h"
 #include "ui.h"
-#include "midi_interpreter.h"
+#include "midi.h"
 #include "patch.h"
 #include "sample.h"
 #include "memory.h"
 #include "leds.h"
 
 #define BTN_MIDI_CHN 5
+#define BTN_BLOCKSTATS 6
 #define BTN_PATCH_CLEAR 8
-#define BTN_PATTERN_CLEAR 9
+#define BTN_PATCH_FORMAT 9
+#define BTN_SAMPLE_DELETE 10
 #define BTN_SAMPLE_FORMAT 11
-#define BTN_TEST 12
 #define BTN_MEMCLEAN 13
-#define BTN_TEST2 14
 
 #define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
@@ -31,7 +31,38 @@ void settings()
 
 static inline void toplevel()
 {    
-    if (button_on(BTN_MIDI_CHN)) {
+    static uint8_t cur_index = 0;
+    static uint8_t index_state;
+
+    leds_7seg_two_digit_set(3, 4, cur_index);
+    if (index_state)
+	leds_7seg_dot_on(3);
+    else
+	leds_7seg_dot_off(3);
+
+    uint8_t last_index = cur_index;
+    ui_updown(&cur_index, 0, 99);
+    if (cur_index != last_index) {
+	index_state = sample_occupied(cur_index);
+    }
+    
+    if (button_pressed(BTN_MEMCLEAN))
+	memory_clean();
+
+    if (button_pressed(BTN_PATCH_FORMAT)) {
+	for (uint8_t i = 0; i < 100; i++)
+	    patch_initialize(i);
+    }
+
+    if (button_pressed(BTN_PATCH_CLEAR)) {
+//	patch_initialize();
+    }
+
+    if (button_pressed(BTN_SAMPLE_DELETE)) {
+	sample_delete(cur_index);
+    }
+    
+    else if (button_on(BTN_MIDI_CHN)) {
 	uint8_t chn = 0xFF;
 	for (uint8_t i = 0; i < 5; i++) {
 	    if (button_pressed(i)) {

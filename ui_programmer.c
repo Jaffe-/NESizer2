@@ -267,6 +267,7 @@ static inline void toplevel_handler()
 		ui_getvalue_session.button2 = 0xFF;
 		ui_getvalue_session.parameter = parameter;
 		mode |= MODE_GETVALUE;
+		return;
 	    }
 	}
     }

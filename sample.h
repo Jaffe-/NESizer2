@@ -16,15 +16,11 @@ typedef struct {
     uint32_t bytes_done;
 } Sample;
 
-uint16_t sample_blocks_used;
-
 void sample_clean();
 void sample_new(Sample* sample, uint8_t index);
 void sample_load(Sample* sample, uint8_t index);
 void sample_reset(Sample* sample);
 uint8_t sample_read_byte(Sample* sample);
 void sample_delete(uint8_t index);
-uint8_t index_occupied(uint8_t index);
-
+uint8_t sample_occupied(uint8_t index);
 void sample_write_serial(Sample* sample, uint8_t value);
-void sample_write_flash(Sample* sample, uint8_t index, const uint8_t* data);

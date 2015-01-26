@@ -16,7 +16,7 @@
 uint8_t leds[5] = {0};
 uint8_t row_mirror = 0;
 
-static const uint8_t leds_7seg_values[16] =
+static const uint8_t leds_7seg_values[18] =
 {0b11111100, // 0
  0b01100000, // 1
  0b11011010, // 2

@@ -12,7 +12,7 @@
 #define PATCH_SIZE 64
 
 void patch_initialize(uint8_t num)
-/* Initializes patch memory by writing initial values to the patches */
+/* Initializes patch memory by writing initial values to the patch memory */
 {
     uint16_t address = PATCH_SIZE * num;
 
