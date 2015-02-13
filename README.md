@@ -43,7 +43,6 @@ The Atmega168 accesses the 2A03, LED matrix, switch matrix and SRAM through a si
 - 4: memory, lower part of address
 - 5: memory, middle part of address
 - 6: memory high part of address
-- 7: unused/"idle" address
 
 
 #### 2A03 setup
@@ -76,7 +75,7 @@ Apart from this and the usual power supply connections, there are no further con
 
 #### LED and switch matrices
 
-These are both pretty standard. The LED matrix is a column scan matrix with 8 columns and 5 rows. The 74HC/HCT573 can source a maximum of 35mA from each pin, so to achieve a 10 mA current through each LED, each column has an NPN transistor to switch a larger current. The row latch sinks the current, as each pin there will only receive the 10 mA from each LED in the active column.  
+These are both pretty standard. The LED matrix is a column scan matrix with 8 columns and 5 rows. 
 
 The switch matrix is a row scan matrix with 8 columns and 3 rows. The lower five bits of a 74HC573 latch are used to hold the selected LED row, and the upper three bits are used to hold the selected switch row. This latch is accessed through the data bus by selecting address 2. 
 
