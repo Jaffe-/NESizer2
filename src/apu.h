@@ -11,40 +11,40 @@
 #define CHN_DMC 4
 
 typedef struct {
-    uint8_t enabled;          // BOOL
-    uint8_t duty;             // 2-bit integer
+  uint8_t enabled;          // BOOL
+  uint8_t duty;             // 2-bit integer
 
-    // Used internally:
-    uint8_t volume;
-    uint16_t period;
+  // Used internally:
+  uint8_t volume;
+  uint16_t period;
 } Square;
 
 typedef struct { 
-    uint8_t enabled;          // BOOL 
-    uint8_t silenced;          // BOOL
+  uint8_t enabled;          // BOOL 
+  uint8_t silenced;          // BOOL
 
-    // Used internally:
-    uint16_t period;
+  // Used internally:
+  uint16_t period;
 } Triangle;
 
 typedef struct {
-    uint8_t enabled;
-    uint8_t loop;             // BOOL: Loop mode (pitched noise) 
+  uint8_t enabled;
+  uint8_t loop;             // BOOL: Loop mode (pitched noise) 
 
-    // Used internally:
-    uint8_t volume : 4;
-    uint8_t period : 4;
+  // Used internally:
+  uint8_t volume : 4;
+  uint8_t period : 4;
 } Noise;
 
 typedef struct {
-    uint8_t enabled;
-    uint8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
-    uint8_t sample_number;
-    Sample sample;
+  uint8_t enabled;
+  uint8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
+  uint8_t sample_number;
+  Sample sample;
 
-    // Used internally:
-    uint8_t sample_enabled : 1;
-    uint8_t data : 7;
+  // Used internally:
+  uint8_t sample_enabled : 1;
+  uint8_t data : 7;
 } DMC;
 
 Square sq1, sq2;
@@ -69,3 +69,4 @@ void apu_refresh_channel(uint8_t);
 void apu_refresh_all();
 void apu_update_handler();
 void apu_dmc_update_handler();
+void apu_setup();

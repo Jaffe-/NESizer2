@@ -383,3 +383,13 @@ void apu_dmc_update_handler()
     if (dmc.enabled && dmc.sample_enabled) 
 	dmc_update_sample();
 }
+
+// Setup routine
+void apu_setup()
+{
+  sq1_setup();
+  sq2_setup();
+  tri_setup();
+  noise_setup();
+  dmc_setup();
+}
