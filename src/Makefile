@@ -14,7 +14,7 @@ OBJ = $(SRC:.c=.o)
  
 # Compiler / Linker flags:
 #CFLAGS = -mmcu=$(MCU) -Wall -Os -std=gnu99 -D F_CPU=$(F_CPU) -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
-CFLAGS = -mmcu=$(MCU) -Wall -Os -std=gnu99 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+CFLAGS = -mmcu=$(MCU) -Wall -O3 -std=gnu99 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 LDFLAGS = -mmcu=$(MCU) -Wl,-Map=$(TARGET).map
  
 ###################################

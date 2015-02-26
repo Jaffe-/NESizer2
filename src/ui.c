@@ -149,13 +149,7 @@ void ui_getvalue_handler()
  */
 {
     static uint8_t value;
-    static uint8_t last_pot_value;
     
-    // Get analog pot value and scale it to fit the parameter's range
-    uint8_t pot_value = ui_getvalue_session.parameter.min
-	                + input_analog_value * (ui_getvalue_session.parameter.max + 1
-						- ui_getvalue_session.parameter.min) / 256;
-
     // If the state just changed to GETVALUE, set the value to the parameter's value
     // and last pot value to the current. 
     if (ui_getvalue_session.state == SESSION_INACTIVE) {
@@ -163,8 +157,6 @@ void ui_getvalue_handler()
 	    ui_getvalue_session.parameter.max - *ui_getvalue_session.parameter.target 
 	    : *ui_getvalue_session.parameter.target;
 	
-	last_pot_value = pot_value;
-
 	button_leds[ui_getvalue_session.button1] = 1;
 	leds_set(ui_getvalue_session.button1, 0);
 
@@ -174,12 +166,6 @@ void ui_getvalue_handler()
 	}
 
 	ui_getvalue_session.state = SESSION_ACTIVE;
-    }
-
-    // A change in the pot should immediately set the value to its value
-    if (pot_value != last_pot_value) {
-	value = pot_value;
-	last_pot_value = pot_value;
     }
 
     // Handle up and down buttons

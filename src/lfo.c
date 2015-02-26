@@ -12,23 +12,23 @@ static uint8_t A4_period = 237;
 
 void lfo_update(LFO* lfo)
 {
-    lfo->counter++;
-    if (lfo->counter == lfo->period) {
+    if (++lfo->counter == lfo->period) {
 	lfo->counter = 0;
 
 	switch (lfo->waveform) {
 	case LFO_SINE:
-	    lfo->value = pgm_read_byte(&sine_table[lfo->position]) - 0x80;
+	    lfo->value = pgm_read_byte_near(&sine_table[lfo->position]);
 	    break;
 	case LFO_RAMP_DOWN:
-	    lfo->value = lfo->position - 0x80;
+	    lfo->value = 4 * lfo->position - 0x80;
 	    break;
 	case LFO_RAMP_UP:
-	    lfo->value = 0x80 - lfo->position;
+	    lfo->value = 0x80 - 4 * lfo->position;
 	    break;
 	}
 
-	lfo->position += 4;
+	if (++lfo->position == 64)
+	  lfo->position = 0;
     }
 }
 
@@ -41,9 +41,9 @@ int16_t lfo_value(LFO* lfo, uint8_t intensity)
 }
 
 void lfo_update_handler()
-{
-    lfo_update(&lfo1);
-    lfo_update(&lfo2);
-    lfo_update(&lfo3);
+{  
+  lfo_update(&lfo1);
+  lfo_update(&lfo2);
+  lfo_update(&lfo3);
 }
 

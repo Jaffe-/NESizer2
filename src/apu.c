@@ -11,7 +11,7 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "2a03_io.h"
-#include "tools/deltacompress.h"
+#include "../tools/deltacompress.h"
 
 
 /* APU channel bit masks */
@@ -258,7 +258,7 @@ inline void dmc_update_sample_raw()
 {
     dmc.data = sample_read_byte(&dmc.sample);
 
-    register_update(DMC_RAW, dmc.data);
+    //register_update(DMC_RAW, dmc.data);
     io_register_write(DMC_RAW, dmc.data);
     
     if (dmc.sample.bytes_done == dmc.sample.size) {

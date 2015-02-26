@@ -8,7 +8,7 @@
 #define we_low() PORTC &= ~WE
 #define we_high() PORTC |= WE
 
-#define MEMORY_SIZE 0x80000
+#define MEMORY_SIZE 0x80000UL
 
 void memory_set_address(uint32_t address);
 

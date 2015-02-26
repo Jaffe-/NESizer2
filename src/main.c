@@ -35,7 +35,6 @@ int main()
     // Set up low level systems:
     bus_setup();
     io_setup();
-    input_setup();
     memory_setup();
     timer_setup();
     midi_io_setup();
@@ -47,6 +46,7 @@ int main()
     noise_setup();
     dmc_setup();
 
+    // Load first patch
     patch_load(0);
     
     // Register task handlers:
@@ -65,6 +65,6 @@ int main()
     task_add(&ui_handler, 80);
     task_add(&ui_leds_handler, 80);
 
-    task_manager();
-       
+    task_manager();       
+
 }
