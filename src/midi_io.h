@@ -22,6 +22,8 @@
 #define MIDI_CMD_ACTIVESENSE 0x16
 #define MIDI_CMD_RESET 0x17
 
+#define midi_is_channel_message(cmd) ((cmd) < 8)
+
 typedef struct {
     uint8_t command;
     uint8_t channel;
@@ -32,7 +34,7 @@ typedef struct {
 void midi_io_setup();
 void midi_io_handler();
 uint8_t midi_io_buffer_nonempty();
-MIDIMessage midi_io_read();
-uint8_t midi_io_buffer_read();
-uint8_t midi_io_buffer_bytes_remaining();
-uint8_t midi_is_channel_message(uint8_t command);
+MIDIMessage midi_io_read_message();
+uint8_t midi_io_read_byte();
+uint8_t midi_io_bytes_remaining();
+//uint8_t midi_is_channel_message(uint8_t command);
