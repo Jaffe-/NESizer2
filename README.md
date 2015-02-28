@@ -90,7 +90,7 @@ There are two SRAM ICs of 512KByte each, thus a 20 bit address is needed to addr
 
 The write enable (/WE) line of the SRAM ICs is connected to pin 4 of **PORTC**. This pin must be kept high at all times except when a write is to performed. When an address is set up and a desired value is put on the databus, this pin is pulled low and thereafter pulled high to write the value to the address in memory. 
 
-The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium battery to keep the memories powered at all times. Two non-volatile SRAM controller ICs DS1210, one for each chip, are used for this. These chips basically take care of switching from battery to VCC and back during power on and power off, and keep the CE signals high until the circuitry is in stable operation.
+The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium battery to keep the memories powered at all times. A Maxim DS1210 IC is used for this; it handles switching over from the 5V supply to the battery when power is shut off, and also takes care of pulling chip enable signals up during unstable voltages during power-on/off. Since there are two SRAMs, the DS1210's CE (chip enable) input is grounded and its CEO (chip enable output) signal is used to switch two PNP transistors instead. These transistors switch the respective CE signals for each SRAM IC. 
 
 
 #### MIDI
@@ -105,24 +105,24 @@ There are two nearly identical output paths for the two 2A03 sound outputs, diff
 The signal is first passed through a volume control and a high pass filter with a cutoff frequency of about 480 kHz to suppress some of the 2A03's digital noise at f_2A03 / 3. The 2A03 output is AC coupled into the audio path to reduce nosie when turning the volume potentiometer, and to remove any DC offset from the DMC channel (which can cause pops when playing samples). 
 
 The filtered and attenuated signal is AC coupled to the gain stage, consisting of an op-amp in a non-inverting amplifier configuration. A 0.36V bias is added to bring the signal within the op-amp's linear range. The gain for SND1 is approximately 9.3, and the gain for SND2 is approximately 12. This brings each signal to around 2V peak to peak. The output from the op-amp is AC coupled to the output jack to remove the high DC offsets present after amplification. 
-
 A mix of the two outputs is also made passively, with a ratio of approximately 3 : 5, as in the NES. The mixed signal is buffered by an emitter follower to keep its amplitude relatively constant when the output is loaded. The output on the second jack can be switched between the ordinary output or this mix. 
+
 
 ### Software
 
 #### Databus communication
 
-`bus.h` contains utility macros for using the bus system. The target component is adressed using `bus_set_address(<address>)`. A value is put on the bus using `bus_set_value(<value>)`. Changing bus direction to input or output is done by `bus_set_input()` and `bus_set_output()`, respectively. Values are read from the bus using `bus_read_value()`. 
+`bus.h` contains utility macros for using the bus system. The target component is adressed using `bus_select(<address>)`. A value is put on the bus using `bus_write(<value>)`. Changing bus direction to input or output is done by `bus_dir_input()` and `bus_dir_output()`, respectively. Values are read from the bus using `bus_read()`. 
 
 `bus.h` also contains definitions of the adresses:
 
-* 2A03: `CPU_ADDR`
-* LED column: `LEDCOL_ADDR`
-* Row (for both LEDs and switches): `ROW_ADDR`
-* Switch column: `SWITCHCOL_ADDR`
-* SRAM low address: `MEMORY_ADDRLOW_ADDR`
-* SRAM mid address: `MEMORY_ADDRMID_ADDR`
-* SRAM high address: `MEMORY_ADDRHIGH_ADDR`
+* 2A03: `CPU_ADDRESS`
+* LED column: `LEDCOL_ADDRESS`
+* Row (for both LEDs and switches): `ROW_ADDRESS`
+* Switch column: `SWITCHCOL_ADDRESS`
+* SRAM low address: `MEMORY_LOW_ADDRESS`
+* SRAM mid address: `MEMORY_MID_ADDRESS`
+* SRAM high address: `MEMORY_HIGH_ADDRESS`
 
 
 #### Running the 2A03 and synchronizing
@@ -206,14 +206,18 @@ The functions `memory_write(<address>, <value>)` and `memory_read(<address>)` ar
 
 #### MIDI
 
-Low level MIDI communication is implemented in `midi.c`, `midi.h`. The Atmega's USART takes care of receiving MIDI data. In the function `midi_setup`, the USART is configured to use 1 start bit, 8 data bits and 1 stop bit, and to use a baud rate of 31250, which is the MIDI standard baud rate. 
+Low level MIDI communication is implemented in `midi_io.c`, `midi_.h`. The Atmega's USART takes care of receiving MIDI data. In the function `midi_io_setup`, the USART is configured to use 1 start bit, 8 data bits and 1 stop bit, and to use a baud rate of 31250, which is the MIDI standard baud rate. 
 
-The function `midi_handler` is intended to be registered as a task handler. It checks the state of the Atmega's USART receive buffer and reads new data into a ring buffer. 
+The function `midi_io_handler` is intended to be registered as a task handler. It checks the state of the Atmega's USART receive buffer and reads new data into a ring buffer. 
 
-Reading and interpreting the data is done by the functions in `midi_interpreter.c`, `midi_interpreter.h`. 
+Reading and interpreting the data is done by the functions in `midi.c`, `midi.h`. 
 
 
 ### Changelog
+
+**28/02/15**: Rationalized the SRAM backup circuitry by replacing one of the DS1210s with two transistors and four resistors. The single DS1210 now has CE tied to ground and uses /CEO to switch two PNP transistors which connect /CE1 and /CE2 to their respective SRAM ICs.
+
+**26/02/15**: Modulation is now done with cents instead of frequency as the 'unit of measurement'. This gives a consistant modulation effect across the octaves. It also turned out that using cents makes computing the corresponding timer period change simpler.  
 
 **16/01/15**: Fixed some serious issues with the SRAM circuitry. The unused battery inputs on the DS1210s are grounded, as described in the data sheet, so memory no longer ceases to read correctly a short while after power on. The enable signal of the decoder is now used to deactivate the decoder's outputs before changing the address bits, and turning them on again afterwards. This was to fix a bug where an unintended component was intermittently selected while the address bits were changing. 
 
