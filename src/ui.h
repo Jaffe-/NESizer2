@@ -34,6 +34,7 @@
 #define MODE_TRACK 2
 #define MODE_SETTINGS 3
 #define MODE_GETVALUE 0x80
+#define MODE_TRANSFER 0x40
 
 #define button_row(BTN) ((BTN) / 8)
 #define button_col(BTN) ((BTN) % 8)

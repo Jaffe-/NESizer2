@@ -13,6 +13,7 @@
 #include "midi_io.h"
 #include "envelope.h"
 #include "lfo.h"
+#include "ui.h"
 #include "ui_sequencer.h"
 #include "modulation.h"
 #include "leds.h"
@@ -21,12 +22,16 @@
 
 #define STATE_MESSAGE 0
 #define STATE_SYSEX 1
+#define STATE_TRANSFER 2
 
 uint8_t midi_channels[5];
 static uint8_t notes[5];
 
 static uint8_t state = STATE_MESSAGE;
-static uint8_t state_changed = 0;
+static uint8_t sysex_command;
+
+inline void midi_transfer();
+static inline void initiate_transfer();
 
 static inline uint8_t get_midi_channel(uint8_t channel)
 {
@@ -64,7 +69,6 @@ static inline void interpret_message()
       switch (msg.command) {
       case MIDI_CMD_SYSEX:
 	state = STATE_SYSEX;
-	state_changed = 1;
 	break;
 		
       case MIDI_CMD_TIMECODE:
@@ -106,12 +110,10 @@ static inline void interpret_message()
 
 #define SYSEX_STOP 0b11110111
 #define SYSEX_CMD_SAMPLE_LOAD 1
+#define SYSEX_CMD_FIRMWARE_LOAD 2
 
 void midi_handler()
-{
-  static uint8_t sysex_command = 0;
-  static Sample sample = {0};
-  
+{  
   if (state == STATE_MESSAGE) {
     interpret_message();
   }
@@ -119,39 +121,81 @@ void midi_handler()
   else if (state == STATE_SYSEX) {
     // When the state just changed, we need to look at the first few bytes
     // to determine what sysex message we're dealing with
-    if (state_changed) {
-      if (midi_io_bytes_remaining() >= 6) {
-	sysex_command = midi_io_read_byte();
+    if (midi_io_bytes_remaining() >= 6) {
+      sysex_command = midi_io_read_byte();
+      
+      if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+	
+	// Read sample descriptor and store in sample object
+	uint8_t sample_number = midi_io_read_byte();
+	sample.type = midi_io_read_byte();
+	sample.size = midi_io_read_byte();
+	sample.size |= (uint32_t)midi_io_read_byte() << 7;
+	sample.size |= (uint32_t)midi_io_read_byte() << 14;
+	sample_new(sample_number);
 
-	if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
-
-	  // Read sample descriptor and store in sample object
-	  uint8_t sample_number = midi_io_read_byte();
-	  sample.type = midi_io_read_byte();
-	  sample.size = midi_io_read_byte();
-	  sample.size |= (uint32_t)midi_io_read_byte() << 7;
-	  sample.size |= (uint32_t)midi_io_read_byte() << 14;
-	  sample_new(&sample, sample_number);
-	}
-		
-	state_changed = 0;
+	initiate_transfer();
+      }
+      
+      else if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
+	  // To do
+	state = STATE_TRANSFER;
       }
     }
-    
-    if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
-      while(midi_io_bytes_remaining() >= 1) {
-	uint8_t val = midi_io_read_byte();
-	if ((val & 0x80) == 0) {
-	  // Read buffer and write serially to the sample SRAM
-	  if (sample.bytes_done < sample.size) 
-	    sample_write_serial(&sample, val);
+  }
+
+  else if (state == STATE_TRANSFER)
+    midi_transfer();  
+}
+
+uint8_t midi_transfer_progress = 0;
+static uint8_t dmc_state;
+
+void midi_transfer()
+{
+  static uint8_t nibble_flag = 0;
+  static uint8_t temp_val = 0;
+  
+  while (midi_io_bytes_remaining() >= 1) {
+    uint8_t val = midi_io_read_byte();
+
+    if (val == SYSEX_STOP) {
+      mode &= ~MODE_TRANSFER;
+      state = STATE_MESSAGE;
+      dmc.enabled = dmc_state;
+    }
+
+    else if ((val & 0x80) == 0) {
+      if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
+	if (nibble_flag == 0) 
+	  temp_val = val << 4;
+	else {
+	  temp_val |= val;
+	  // TODO: Write data to firmware memory
 	}
-	// When the end of sysex message is received, return to message mode
-	else if (val == SYSEX_STOP) {
-	  state = STATE_MESSAGE;
-	  break;
+	nibble_flag ^= 1;
+      }
+      
+      else if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+	if (sample.bytes_done < sample.size) {
+	  sample_write_serial(val);
+	  midi_transfer_progress = (sample.bytes_done * (uint32_t)16) / sample.size;
 	}
       }
-    }	
+    }
   }
+}
+
+static inline void initiate_transfer()
+{
+  // Set UI mode to transfer (which turns the button LEDs into a status bar
+  // for the duration of the transfer)
+  mode |= MODE_TRANSFER;
+
+  // Disable DMC
+  dmc_state = dmc.enabled;
+  dmc.enabled = 0;
+
+  state = STATE_TRANSFER;
+  midi_transfer_progress = 0;
 }

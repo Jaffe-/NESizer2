@@ -30,7 +30,7 @@ int main()
   
   // Load first patch
   patch_load(0);
-
+  
   // The task manager takes over from here
   task_manager();
 }

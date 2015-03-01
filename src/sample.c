@@ -36,12 +36,14 @@ static inline uint8_t read_from_block(uint16_t block, uint16_t pos);
 static uint16_t allocate_block();
 static inline void free_block(uint16_t block);
 static inline uint32_t index_address(uint8_t index);
-static void write_to_index(Sample* sample, uint8_t index);
-static void read_from_index(Sample* sample, uint8_t index);
+static void write_to_index(uint8_t index);
+static void read_from_index(uint8_t index);
 static void remove_from_index(uint8_t index);
 static inline uint8_t index_occupied(uint8_t index);
 
-/* Public functions */
+/* Public */
+
+Sample sample = {0};    // Holds the current sample being written or read
 
 void sample_clean()
 /* Writes the sample index at the start of the sample area */
@@ -52,65 +54,64 @@ void sample_clean()
   }
 }
 
-void sample_reset(Sample* sample)
+void sample_reset()
 {
   // Reset counters
-  sample->current_position = 0;
-  sample->current_block = sample->first_block;
-  sample->bytes_done = 0;
+  sample.current_position = 0;
+  sample.current_block = sample.first_block;
+  sample.bytes_done = 0;
 }
 
-void sample_load(Sample* sample, uint8_t index)
+void sample_load(uint8_t index)
 {
   // Read sample data from index table
-  read_from_index(sample, index);
-
-  sample_reset(sample);
+  read_from_index(index);
+  
+  sample_reset();
 }
 
-uint8_t sample_read_byte(Sample* sample)
+uint8_t sample_read_byte()
 {
-  uint8_t value = read_from_block(sample->current_block, sample->current_position);
+  uint8_t value = read_from_block(sample.current_block, sample.current_position);
 
-  if (++sample->current_position == BLOCK_SIZE) {
-    sample->current_position = 0;
-    sample->current_block = get_next_block(sample->current_block);
+  if (++sample.current_position == BLOCK_SIZE) {
+    sample.current_position = 0;
+    sample.current_block = get_next_block(sample.current_block);
   }
 
-  sample->bytes_done++;
+  sample.bytes_done++;
 
   return value;
 }
 
-void sample_new(Sample* sample, uint8_t index)
+void sample_new(uint8_t index)
 {
-  sample->first_block = allocate_block();
-  sample_reset(sample);
+  sample.first_block = allocate_block();
+  sample_reset();
 
   if (index_occupied(index)) 
     sample_delete(index);
 
-  write_to_index(sample, index);
+  write_to_index(index);
 }
 
-void sample_write_serial(Sample* sample, uint8_t value) 
+void sample_write_serial(uint8_t value) 
 {
-  write_to_block(sample->current_block, sample->current_position, value);
+  write_to_block(sample.current_block, sample.current_position, value);
     
-  sample->bytes_done++;
+  sample.bytes_done++;
 
-  if (++sample->current_position == BLOCK_SIZE) {
-    sample->current_position = 0;
+  if (++sample.current_position == BLOCK_SIZE) {
+    sample.current_position = 0;
     uint16_t new_block = allocate_block();
-    link_blocks(sample->current_block, new_block);
-    sample->current_block = new_block;
+    link_blocks(sample.current_block, new_block);
+    sample.current_block = new_block;
   }
 }
 
 void sample_delete(uint8_t index)
 {
-  Sample sample;
-  read_from_index(&sample, index);
+  read_from_index(index);
     
   uint16_t block = sample.first_block;
     
@@ -188,31 +189,32 @@ static inline uint32_t index_address(uint8_t index)
   return INDEX_START + (uint16_t)index * INDEX_ENTRY_SIZE;
 }
 
-static void write_to_index(Sample* sample, uint8_t index)
+static void write_to_index(uint8_t index)
 {
   uint32_t address = index_address(index);
 
   // Mark index as occupied
   memory_write(address++, 1);
 
-  memory_write(address++, sample->type);
+  memory_write(address++, sample.type);
 
-  memory_write_dword(address, sample->size);
+  memory_write_dword(address, sample.size);
     
   address += 4;
-  memory_write_word(address, sample->first_block);
+
+  memory_write_word(address, sample.first_block);
 }
 
-static void read_from_index(Sample* sample, uint8_t index)
+static void read_from_index(uint8_t index)
 {
   uint32_t address = index_address(index) + 1;
    
-  sample->type = memory_read(address++);
+  sample.type = memory_read(address++);
 
-  sample->size = memory_read_dword(address);
+  sample.size = memory_read_dword(address);
     
   address += 4;
-  sample->first_block = memory_read_word(address);
+  sample.first_block = memory_read_word(address);
 }
 
 static void remove_from_index(uint8_t index)

@@ -10,6 +10,16 @@
 
 #define MEMORY_SIZE 0x80000UL
 
+typedef union {
+  uint8_t bytes[4];
+  uint32_t value;
+} val32_t;
+
+typedef union {
+  uint8_t bytes[2];
+  uint16_t value;
+} val16_t;
+
 void memory_set_address(uint32_t address);
 
 void memory_write(uint32_t address, uint8_t value);

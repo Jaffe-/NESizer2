@@ -4,7 +4,7 @@
   Note assigner
 
   Assigns notes to channels
- */
+*/
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -14,6 +14,7 @@
 //#include "lfo.h"
 #include "envelope.h"
 #include "assigner.h"
+#include "sample.h"
 
 // Note periods
 
@@ -90,13 +91,13 @@
 #define C7 49
 
 const uint16_t period_table[7][12] PROGMEM = {
-    {0, 0, 0, 0, 0, 0, 0, 0, Gs1, A1, As1, B1},
-    {C2, Cs2, D2, Ds2, E2, F2, Fs2, G2, Gs2, A2, As2, B2},
-    {C3, Cs3, D3, Ds3, E3, F3, Fs3, G3, Gs3, A3, As3, B3},
-    {C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4},
-    {C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5},
-    {C6, Cs6, D6, Ds6, E6, F6, Fs6, G6, Gs6, A6, As6, B6},
-    {C7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+  {0, 0, 0, 0, 0, 0, 0, 0, Gs1, A1, As1, B1},
+  {C2, Cs2, D2, Ds2, E2, F2, Fs2, G2, Gs2, A2, As2, B2},
+  {C3, Cs3, D3, Ds3, E3, F3, Fs3, G3, Gs3, A3, As3, B3},
+  {C4, Cs4, D4, Ds4, E4, F4, Fs4, G4, Gs4, A4, As4, B4},
+  {C5, Cs5, D5, Ds5, E5, F5, Fs5, G5, Gs5, A5, As5, B5},
+  {C6, Cs6, D6, Ds6, E6, F6, Fs6, G6, Gs6, A6, As6, B6},
+  {C7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
 uint16_t note_to_period(uint8_t channel, uint8_t note)
@@ -106,77 +107,79 @@ uint16_t note_to_period(uint8_t channel, uint8_t note)
    The channel parameter is used to adjust the period for the triangle channel
 */
 {
-    uint8_t note_num = note % 12;
-    uint8_t octave = (note - note_num) / 12 - 2;
+  uint8_t note_num = note % 12;
+  uint8_t octave = (note - note_num) / 12 - 2;
 
-    if (channel == CHN_TRI) 
-	octave += 1;
+  if (channel == CHN_TRI) 
+    octave += 1;
 
-    return pgm_read_word(&period_table[octave][note_num]);
+  return pgm_read_word(&period_table[octave][note_num]);
 }
 
 static uint8_t notes[5];
 
 void play_note(uint8_t channel, uint8_t note)
 {
-    //   notes[channel] = note;
+  //   notes[channel] = note;
 
-    uint16_t period = note_to_period(channel, note);
+  uint16_t period = note_to_period(channel, note);
 
-    switch (channel) {
-    case CHN_SQ1:
-	env1.gate = 1;
-	portamento_targets[0] = period;
-	break;
+  switch (channel) {
+  case CHN_SQ1:
+    env1.gate = 1;
+    portamento_targets[0] = period;
+    break;
 	
-    case CHN_SQ2:
-	env2.gate = 1;
-	portamento_targets[1] = period;
-	break;
+  case CHN_SQ2:
+    env2.gate = 1;
+    portamento_targets[1] = period;
+    break;
 	
-    case CHN_TRI:
-	tri.silenced = 0;
-	if (get_envmod(CHN_TRI) != 0)
-	    env3.gate = 1;
-	portamento_targets[2] = period;
-	break;
+  case CHN_TRI:
+    tri.silenced = 0;
+    if (get_envmod(CHN_TRI) != 0)
+      env3.gate = 1;
+    portamento_targets[2] = period;
+    break;
 
-    case CHN_NOISE:
-	env3.gate = 1;
-	mod_periods[3] = note - 24;
-	break;
+  case CHN_NOISE:
+    env3.gate = 1;
+    mod_periods[3] = note - 24;
+    break;
 
-    case CHN_DMC:
-	sample_load(&dmc.sample, note - 60);
-	if (dmc.sample.size != 0)
-	    dmc.sample_enabled = 1;
-	dmc.sample_loop = 0;
-	break;
+  case CHN_DMC:
+    if (sample_occupied(note - 60)) {
+      sample_load(note - 60);
+      if (sample.size != 0)
+	dmc.sample_enabled = 1;
+      dmc.sample_loop = 0;
+      break;
     }
+  }
 }
 
 void stop_note(uint8_t channel)
 {
-    switch (channel) {
-    case CHN_SQ1:
-	env1.gate = 0;
-	break;
+  switch (channel) {
+  case CHN_SQ1:
+    env1.gate = 0;
+    break;
 	
-    case CHN_SQ2:
-	env2.gate = 0;
-	break;
+  case CHN_SQ2:
+    env2.gate = 0;
+    break;
 	
-    case CHN_TRI:
-	tri.silenced = 1;
-	break;
+  case CHN_TRI:
+    tri.silenced = 1;
+    break;
 
-    case CHN_NOISE:
-	env3.gate = 0;
-	break;
+  case CHN_NOISE:
+    env3.gate = 0;
+    break;
 
-    case CHN_DMC:
-	dmc.sample_enabled = 0;
-    }
+  case CHN_DMC:
+    dmc.sample_enabled = 0;
+  }
 }
 
 void assigner_handler()

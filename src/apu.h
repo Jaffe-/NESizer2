@@ -40,7 +40,6 @@ typedef struct {
   uint8_t enabled;
   uint8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
   uint8_t sample_number;
-  Sample sample;
 
   // Used internally:
   uint8_t sample_enabled : 1;

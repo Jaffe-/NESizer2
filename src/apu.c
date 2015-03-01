@@ -256,13 +256,12 @@ void dmc_update()
 
 inline void dmc_update_sample_raw()
 {
-    dmc.data = sample_read_byte(&dmc.sample);
+    dmc.data = sample_read_byte();
 
-    //register_update(DMC_RAW, dmc.data);
     io_register_write(DMC_RAW, dmc.data);
     
-    if (dmc.sample.bytes_done == dmc.sample.size) {
-        sample_reset(&dmc.sample);
+    if (sample.bytes_done == sample.size) {
+        sample_reset();
 
 	if (!dmc.sample_loop) 
 	    dmc.sample_enabled = 0;
@@ -270,6 +269,7 @@ inline void dmc_update_sample_raw()
 	
 }
 
+/*
 void dmc_update_sample_dpcm() 
 {
     static uint8_t data;
@@ -302,14 +302,15 @@ void dmc_update_sample_dpcm()
 	}
     }
 }
+*/
 
 void dmc_update_sample()
 {
 
-    if (dmc.sample.type == SAMPLE_TYPE_RAW)
+    if (sample.type == SAMPLE_TYPE_RAW)
 	dmc_update_sample_raw();
-    else
-	dmc_update_sample_dpcm();
+//    else
+//	dmc_update_sample_dpcm();
 
 }
 
