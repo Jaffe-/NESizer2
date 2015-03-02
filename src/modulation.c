@@ -16,11 +16,11 @@ uint16_t mod_pitchbend[4] = {0x2000, 0x2000, 0x2000, 0x2000};
 int16_t dc_temp[3] = {0};
 
 const float neg_cent_table[12] PROGMEM = {
-1, 1.05946f, 1.1225f, 1.1892f, 1.2599f, 1.3348f, 1.4142f, 1.4983f, 1.5874f, 1.6818f, 1.7818f, 1.8877f
+  1, 1.05946f, 1.1225f, 1.1892f, 1.2599f, 1.3348f, 1.4142f, 1.4983f, 1.5874f, 1.6818f, 1.7818f, 1.8877f
 };
 
 const float pos_cent_table[12] PROGMEM = {
-1, 0.9439f, 0.8909f, 0.8409f, 0.7937f, 0.7492f, 0.7071f, 0.6674f, 0.6300f, 0.5946f, 0.5612f, 0.5297f
+  1, 0.9439f, 0.8909f, 0.8409f, 0.7937f, 0.7492f, 0.7071f, 0.6674f, 0.6300f, 0.5946f, 0.5612f, 0.5297f
 };
 
 
@@ -43,27 +43,27 @@ const uint8_t div12[60] PROGMEM = {
 };
 
 
-static inline int16_t dc_to_dT(uint16_t period, int16_t dc)
+static inline int16_t dc_to_T(uint16_t period, int16_t dc)
 /*
   Converts the given frequency change (given in steps of 10 cents) to a 
   corresponding timer value change.
 
   By direct computation, 
-    dT = f_2A03 / (16 * (f + df)) - f_2A03 / (16 * f)
-       = f_2A03 / 16 * (f/(f(f + df)) - (f + df) / (f(f + df)))
-       = f_2A03 / (16 f) * df / (f + df) 
-       = T * (1 - f / (f + df))
+  dT = f_2A03 / (16 * (f + df)) - f_2A03 / (16 * f)
+  = f_2A03 / 16 * (f/(f(f + df)) - (f + df) / (f(f + df)))
+  = f_2A03 / (16 f) * df / (f + df) 
+  = T * (1 - f / (f + df))
   Further more, by the definition of cents and adjusting for dc's 10 cent scale:
-    f + df = f * (2^(dc/120) 
+  f + df = f * (2^(dc/120) 
   Putting these two together yields
-    dT = T * (2^(-dc/120) - 1).
+  dT = T * (2^(-dc/120) - 1).
 
   To simplify calculating the power of 2, a piecewise linear approximation is
   used. 
- */
+*/
 {
   if (dc == 0)
-    return 0;
+    return period;
 
   union {
     uint16_t raw_value;
@@ -98,20 +98,20 @@ static inline int16_t dc_to_dT(uint16_t period, int16_t dc)
     val <<= octave;
   }
 
-  // If value is outside of bounds, discard the change
+  // If value is out of bounds, discard the change
   if (val > 2005)
-    return 2005 - period;
+    return 2005;
   else if (val < 8)
-    return 8 - period;
+    return 8;
   else
-    return val - period;
+    return val;
 }
 
 static Envelope* envelopes[] = {&env1, &env2, &env3};
 
 static inline int8_t get_detune(uint8_t chn)
 {
-    return (int8_t)mod_detune[chn] - 9;
+  return (int8_t)mod_detune[chn] - 9;
 }
 
 static inline int16_t get_pitchbend(uint8_t chn)
@@ -121,10 +121,10 @@ static inline int16_t get_pitchbend(uint8_t chn)
 
 int8_t get_envmod(uint8_t chn)
 {
-    if (chn == CHN_NOISE)
-	return (int8_t)mod_envmod[2] - 7;
-    else 
-	return (int8_t)mod_envmod[chn] - 9;
+  if (chn == CHN_NOISE)
+    return (int8_t)mod_envmod[2] - 7;
+  else 
+    return (int8_t)mod_envmod[chn] - 9;
 }
 
 static inline void apply_freqmod(uint8_t chn)
@@ -133,33 +133,33 @@ static inline void apply_freqmod(uint8_t chn)
   period compensated period modulations. 
 
   NOISE: Applies envelope modulation and LFOs directly to period
- */
+*/
 {
-    // Convert frequency delta to a period delta and add to the base period
-    uint16_t dT;
-    if (chn <= CHN_TRI) 
-	dT = mod_periods[chn] + dc_to_dT(mod_periods[chn], dc_temp[chn]);
+  // Convert frequency delta to a period delta and add to the base period
+  uint16_t dT;
+  if (chn <= CHN_TRI) 
+    dT = dc_to_T(mod_periods[chn], dc_temp[chn]);
 	
-    switch (chn) {
-    case CHN_SQ1:
-	sq1.period = dT;
-	break;
-    case CHN_SQ2:
-	sq2.period = dT;
-	break;
-    case CHN_TRI:
-	tri.period = dT;
-	break;
-    case CHN_NOISE:
-	noise.period = mod_periods[CHN_NOISE];
-    }
+  switch (chn) {
+  case CHN_SQ1:
+    sq1.period = dT;
+    break;
+  case CHN_SQ2:
+    sq2.period = dT;
+    break;
+  case CHN_TRI:
+    tri.period = dT;
+    break;
+  case CHN_NOISE:
+    noise.period = mod_periods[CHN_NOISE];
+  }
 }
 
 static inline void calc_freqmod(uint8_t chn)
 /*
   Calculates frequency change for SQ1, SQ2 and TRI based on 
   detuning, LFOs and envelope modulation.
- */
+*/
 {
   // Define some helper arrays
   static LFO* lfos[] = {&lfo1, &lfo2, &lfo3};
@@ -200,23 +200,23 @@ static inline void calc_freqmod(uint8_t chn)
 
 static inline void apply_envelopes()
 {
-    sq1.volume = env1.value;
-    sq2.volume = env2.value;
-    noise.volume = env3.value;    
+  sq1.volume = env1.value;
+  sq2.volume = env2.value;
+  noise.volume = env3.value;    
 }
 
 void mod_calculate()
 {
-	static uint8_t chn = 0;
-	calc_freqmod(chn); 
-	if (++chn == 4) chn = 0;
+  static uint8_t chn = 0;
+  calc_freqmod(chn); 
+  if (++chn == 4) chn = 0;
 }
 
 void mod_apply()
 {
-	static uint8_t chn = 0;
-	apply_freqmod(chn); 
-	if (++chn == 4) chn = 0;
+  static uint8_t chn = 0;
+  apply_freqmod(chn); 
+  if (++chn == 4) chn = 0;
 
-	apply_envelopes(); 
+  apply_envelopes(); 
 }
