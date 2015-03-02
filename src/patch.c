@@ -2,11 +2,8 @@
 #include "memory.h"
 #include "parameter.h"
 
-#define PATCH_OFFSET 0
-
-#define BYTE 0
-#define WORD 1
-#define DWORD 2
+// First 256 bytes of SRAM not used.
+#define PATCH_START 0x100
 
 #define NUM_PARAMS 40
 #define PATCH_SIZE 64
@@ -14,7 +11,7 @@
 void patch_initialize(uint8_t num)
 /* Initializes patch memory by writing initial values to the patch memory */
 {
-    uint16_t address = PATCH_SIZE * num;
+    uint16_t address = PATCH_START + PATCH_SIZE * num;
 
     for (uint8_t i = 0; i < NUM_PARAMS; i++) {
 	Parameter data = parameter_get(i);
@@ -24,7 +21,7 @@ void patch_initialize(uint8_t num)
 
 void patch_save(uint8_t num)
 {
-    uint16_t address = PATCH_SIZE * num;
+    uint16_t address = PATCH_START + PATCH_SIZE * num;
 
     for (uint8_t i = 0; i < NUM_PARAMS; i++) {
 	Parameter data = parameter_get(i);
@@ -34,7 +31,7 @@ void patch_save(uint8_t num)
 
 void patch_load(uint8_t num)
 {
-    uint16_t address = PATCH_SIZE * num;
+    uint16_t address = PATCH_START + PATCH_SIZE * num;
 
     for (uint8_t i = 0; i < NUM_PARAMS; i++) {
 	Parameter data = parameter_get(i);

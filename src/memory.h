@@ -3,12 +3,11 @@
 #include <avr/io.h>
 
 #define WE 0b10000
-#define MEM_EN 0b10000000
 
 #define we_low() PORTC &= ~WE
 #define we_high() PORTC |= WE
 
-#define MEMORY_SIZE 0x80000UL
+#define MEMORY_SIZE 0x100000UL  // 1MB of memory
 
 typedef union {
   uint8_t bytes[4];

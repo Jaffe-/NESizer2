@@ -14,18 +14,18 @@
 
 #define NUM_SAMPLES 100
 
-#define INDEX_START 0x6000
-#define BLOCKTABLE_START 0x6400
-#define BLOCK_START 0x6C00UL
+// 256b empty + 6400b sample + 32768b firmware
+#define INDEX_START 0x9A00
 
 #define INDEX_ENTRY_SIZE 8
 #define INDEX_SIZE (INDEX_ENTRY_SIZE * NUM_SAMPLES)
 
+#define BLOCKTABLE_START (INDEX_START + INDEX_SIZE)
 #define BLOCK_SIZE 1024
-#define BLOCKTABLE_SIZE 2048
+#define BLOCKTABLE_SIZE 1024
+#define BLOCK_START BLOCKTABLE_START + BLOCKTABLE_SIZE
 
 #define NUM_BLOCKS (MEMORY_SIZE - BLOCK_START) / BLOCK_SIZE
-
 
 /* Internal functions */
 
@@ -86,11 +86,11 @@ uint8_t sample_read_byte()
 
 void sample_new(uint8_t index)
 {
-  sample.first_block = allocate_block();
-  sample_reset();
-
   if (index_occupied(index)) 
     sample_delete(index);
+
+  sample.first_block = allocate_block();
+  sample_reset();
 
   write_to_index(index);
 }

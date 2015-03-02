@@ -215,6 +215,10 @@ Reading and interpreting the data is done by the functions in `midi.c`, `midi.h`
 
 ### Changelog
 
+**02/03/15**: Removed /MEM_EN signal as it is not needed with the DS1210 based backup circuitry. 
+
+**01/03/15**: MIDI transfers have been improved. The UI now shows a progress bar (using the upper 16 button leds) when transferring data. Optimizations done in the memory write/read routines. 
+
 **28/02/15**: Rationalized the SRAM backup circuitry by replacing one of the DS1210s with two transistors and four resistors. The single DS1210 now has CE tied to ground and uses /CEO to switch two PNP transistors which connect /CE1 and /CE2 to their respective SRAM ICs.
 
 **26/02/15**: Modulation is now done with cents instead of frequency as the 'unit of measurement'. This gives a consistant modulation effect across the octaves. It also turned out that using cents makes computing the corresponding timer period change simpler.  

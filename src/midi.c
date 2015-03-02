@@ -20,22 +20,32 @@
 #include "portamento.h"
 #include "assigner.h"
 
-#define STATE_MESSAGE 0
-#define STATE_SYSEX 1
-#define STATE_TRANSFER 2
+typedef enum {STATE_MESSAGE, STATE_SYSEX, STATE_TRANSFER} midi_state_e;
 
 uint8_t midi_channels[5];
 static uint8_t notes[5];
 
-static uint8_t state = STATE_MESSAGE;
+static midi_state_e state = STATE_MESSAGE;
 static uint8_t sysex_command;
 
-inline void midi_transfer();
-static inline void initiate_transfer();
+static inline void interpret_message();
+static inline void transfer();
+static inline void sysex();
 
-static inline uint8_t get_midi_channel(uint8_t channel)
+static inline void initiate_transfer();
+static inline uint8_t get_midi_channel(uint8_t channel);
+
+void midi_handler()
 {
-  return midi_channels[channel] - 1;
+  switch (state) {
+  case STATE_MESSAGE:
+    interpret_message(); break;
+  case STATE_SYSEX:
+    sysex(); break;
+  case STATE_TRANSFER:
+    transfer(); break;
+  default: break;
+  }
 }
 
 static inline void interpret_message()
@@ -108,50 +118,45 @@ static inline void interpret_message()
   }
 }
 
-#define SYSEX_STOP 0b11110111
+#define SYSEX_STOP 0xF7
 #define SYSEX_CMD_SAMPLE_LOAD 1
 #define SYSEX_CMD_FIRMWARE_LOAD 2
-
-void midi_handler()
-{  
-  if (state == STATE_MESSAGE) {
-    interpret_message();
-  }
-
-  else if (state == STATE_SYSEX) {
-    // When the state just changed, we need to look at the first few bytes
-    // to determine what sysex message we're dealing with
-    if (midi_io_bytes_remaining() >= 6) {
-      sysex_command = midi_io_read_byte();
-      
-      if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
-	
-	// Read sample descriptor and store in sample object
-	uint8_t sample_number = midi_io_read_byte();
-	sample.type = midi_io_read_byte();
-	sample.size = midi_io_read_byte();
-	sample.size |= (uint32_t)midi_io_read_byte() << 7;
-	sample.size |= (uint32_t)midi_io_read_byte() << 14;
-	sample_new(sample_number);
-
-	initiate_transfer();
-      }
-      
-      else if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
-	  // To do
-	state = STATE_TRANSFER;
-      }
-    }
-  }
-
-  else if (state == STATE_TRANSFER)
-    midi_transfer();  
-}
 
 uint8_t midi_transfer_progress = 0;
 static uint8_t dmc_state;
 
-void midi_transfer()
+static inline void sysex()
+{
+  // When the state just changed, we need to look at the first few bytes
+  // to determine what sysex message we're dealing with
+  if (midi_io_bytes_remaining() >= 6) {
+    sysex_command = midi_io_read_byte();
+      
+    if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+	
+      // Read sample descriptor and store in sample object
+      uint8_t sample_number = midi_io_read_byte();
+      sample.type = midi_io_read_byte();
+      sample.size = midi_io_read_byte();
+      sample.size |= (uint32_t)midi_io_read_byte() << 7;
+      sample.size |= (uint32_t)midi_io_read_byte() << 14;
+      sample_new(sample_number);
+
+      initiate_transfer();
+    }
+      
+    else if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
+      // To do
+      state = STATE_TRANSFER;
+    }
+  }
+ 
+}
+
+static inline void transfer()
+/*
+  Handlers transfering of data via MIDI
+ */
 {
   static uint8_t nibble_flag = 0;
   static uint8_t temp_val = 0;
@@ -184,6 +189,11 @@ void midi_transfer()
       }
     }
   }
+}
+
+static inline uint8_t get_midi_channel(uint8_t channel)
+{
+  return midi_channels[channel] - 1;
 }
 
 static inline void initiate_transfer()

@@ -71,10 +71,10 @@ const Parameter parameters[] PROGMEM = {
 
 Parameter parameter_get(ParameterID parameter)
 {
-    Parameter p = {pgm_read_ptr(&parameters[parameter].target),
-		   pgm_read_byte(&parameters[parameter].type),
-		   pgm_read_byte(&parameters[parameter].min),
-		   pgm_read_byte(&parameters[parameter].max),
-		   pgm_read_byte(&parameters[parameter].initial_value)};
+    Parameter p = {pgm_read_ptr_near(&parameters[parameter].target),
+		   pgm_read_byte_near(&parameters[parameter].type),
+		   pgm_read_byte_near(&parameters[parameter].min),
+		   pgm_read_byte_near(&parameters[parameter].max),
+		   pgm_read_byte_near(&parameters[parameter].initial_value)};
     return p;
 }
