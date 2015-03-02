@@ -5,24 +5,45 @@
 #include "lfo.h"
 #include "envelope.h"
 
+#define ABS(x) ((x > 0) ? (x) : (-x))
+
 uint16_t mod_periods[4] = {0};
 uint8_t mod_lfo_modmatrix[4][3] = {{0}};
 uint8_t mod_detune[3] = {9, 9, 9};   // detune values default to 9 (translates to 0)
 uint8_t mod_envmod[4] = {9, 9, 9, 7};
+uint16_t mod_pitchbend[4] = {0x2000, 0x2000, 0x2000, 0x2000};
 
-int8_t dc_temp[3] = {0};
+int16_t dc_temp[3] = {0};
 
 const float neg_cent_table[12] PROGMEM = {
-  1, 1.05946f, 1.1225f, 1.1892f, 1.2599f, 1.3348f, 1.4142f, 1.4983f, 1.5874f, 1.6818f, 1.7818f, 1.8877f 
+1, 1.05946f, 1.1225f, 1.1892f, 1.2599f, 1.3348f, 1.4142f, 1.4983f, 1.5874f, 1.6818f, 1.7818f, 1.8877f
 };
 
 const float pos_cent_table[12] PROGMEM = {
-  1, 0.9439f, 0.8909f, 0.8409f, 0.7937f, 0.7492f, 0.7071f, 0.6674f, 0.6300f, 0.5946f, 0.5612f, 0.5297f
+1, 0.9439f, 0.8909f, 0.8409f, 0.7937f, 0.7492f, 0.7071f, 0.6674f, 0.6300f, 0.5946f, 0.5612f, 0.5297f
 };
 
-#define ABS(x) ((x > 0) ? (x) : (-x))
 
-static inline int16_t dc_to_dT(uint16_t period, int8_t dc)
+/* Ugly but necessary for better speed */
+
+const uint8_t mod12[60] PROGMEM = {
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 
+};
+
+const uint8_t div12[60] PROGMEM = {
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+};
+
+
+static inline int16_t dc_to_dT(uint16_t period, int16_t dc)
 /*
   Converts the given frequency change (given in steps of 10 cents) to a 
   corresponding timer value change.
@@ -41,32 +62,61 @@ static inline int16_t dc_to_dT(uint16_t period, int8_t dc)
   used. 
  */
 {
-  float base;
-
   if (dc == 0)
     return 0;
 
-  uint8_t abs_dc = ABS(dc);
-  uint8_t cent_base_index = abs_dc / 10;
-  uint8_t cent_offset = abs_dc - cent_base_index * 10;
+  union {
+    uint16_t raw_value;
+    struct { 
+      uint8_t offset : 4;
+      uint16_t semitone : 12;
+    };
+  } tone;
 
+  tone.raw_value = ABS(dc);
+
+  float base;
+  uint8_t semitone = pgm_read_byte_near(&mod12[tone.semitone]);
+  uint8_t octave = pgm_read_byte_near(&div12[tone.semitone]);
+  int16_t val;
+  
   if (dc > 0) {
-    base = pgm_read_float_near(&pos_cent_table[cent_base_index]);
-    return (base * (1.0f - 0.00561f * (float)cent_offset) - 1.0f) * (float)period;
+    // Get precalculated value for 2^(x/12) where x is the semitone
+    base = pgm_read_float_near(&pos_cent_table[semitone]);
+
+    // Use linear approximation to get to the desired offset
+    val = (base * (1.0f - 0.00351f * tone.offset)) * period;
+
+    // If the semitone is above one octave, simply divide by 2
+    val >>= octave;
   }
   
   else {
-    base = pgm_read_float_near(&neg_cent_table[cent_base_index]);
-    return (base * (1.0f + 0.005946f * (float)cent_offset) - 1.0f) * (float)period;
+    base = pgm_read_float_near(&neg_cent_table[semitone]);
+
+    val = (base * (1.0f + 0.00372f * tone.offset)) * period;
+    val <<= octave;
   }
+
+  // If value is outside of bounds, discard the change
+  if (val > 2005)
+    return 2005 - period;
+  else if (val < 8)
+    return 8 - period;
+  else
+    return val - period;
 }
 
-//static uint16_t* period_ptrs[] = {&(sq1.period), &(sq2.period), &(tri.period)};
 static Envelope* envelopes[] = {&env1, &env2, &env3};
 
 static inline int8_t get_detune(uint8_t chn)
 {
     return (int8_t)mod_detune[chn] - 9;
+}
+
+static inline int16_t get_pitchbend(uint8_t chn)
+{
+  return (int16_t)(mod_pitchbend[chn] >> 5) - 0x100;
 }
 
 int8_t get_envmod(uint8_t chn)
@@ -128,9 +178,11 @@ static inline void calc_freqmod(uint8_t chn)
   if (cnt > 1) 
     sum /= cnt;
   
-  else if (chn <= CHN_TRI) {
+  if (chn <= CHN_TRI) {
     // Frequency delta due to LFO. Divide by 32 to make parameter 30 yield one octave.
-    int8_t dc = sum / 32;
+    int16_t dc = get_pitchbend(chn);
+
+    dc += sum / 128;
     
     // Add detune frequency delta
     dc += get_detune(chn);

@@ -15,6 +15,7 @@
 #include "leds.h"
 #include "input.h"
 #include "midi.h"
+#include "modulation.h"
 
 #define BLINK_CNT 30
 
@@ -73,7 +74,9 @@ void ui_handler()
   button_leds[BTN_PATTERN] = ((mode & 0x0F) == MODE_PATTERN) * 0xFF;
   button_leds[BTN_TRACK] = ((mode & 0x0F) == MODE_TRACK) * 0xFF;
   button_leds[BTN_SETTINGS] = ((mode & 0x0F) == MODE_SETTINGS) * 0xFF;
-    
+
+  //leds_7seg_two_digit_set_hex(3, 4, mod_pitchbend[0] >> 8);
+  
   // Save current button states
   prev_input[0] = input[0];
   prev_input[1] = input[1];
