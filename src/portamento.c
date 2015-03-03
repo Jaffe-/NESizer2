@@ -2,44 +2,35 @@
 #include "portamento.h"
 #include "modulation.h"
 
-static uint8_t counters[3] = {0};
 uint8_t portamento_values[3] = {0};
-uint16_t portamento_targets[3] = {0};
+uint16_t portamento_periods[3] = {0};
+int16_t portamento_dcs[3] = {0};
+int8_t portamento_target_notes[3] = {0};
 
-static inline int16_t abs(int16_t a)
-{
-    return (a >= 0) ? a : -a;
-}
+static int8_t old_notes[3] = {0};
+static uint8_t counters[3] = {0};
 
-static inline int16_t dc_to_dT(uint16_t period, int16_t dc)
-/* Takes an adjusted frequency delta (5.5 bit format) and computes the corresponding
-   period delta */
-{
-    int16_t temp = dc * ((int32_t)2005 * (int32_t)period / 104167);
-    temp /= 32;    // 5 bits were used as fractional part
-    return temp;
-}
-
-static int16_t dc = 16;
+static const uint16_t d_dc = 1;
 
 void portamento_handler()
 {
-    for (uint8_t i = 0; i < 3; i++) {
-	if (portamento_values[i] == 0) 
-	    mod_periods[i] = portamento_targets[i];
-	else {
-	    counters[i]++;
-	    if (counters[i] == portamento_values[i]) {
-		counters[i] = 0;
-		if (abs(mod_periods[i] - portamento_targets[i]) < abs(dc_to_dT(mod_periods[i], dc))) 
-		    mod_periods[i] = portamento_targets[i];
-		else if (portamento_targets[i] <= 2005 && portamento_targets[i] >= 49) {
-		    if (portamento_targets[i] > mod_periods[i]) 
-			mod_periods[i] += dc_to_dT(mod_periods[i], dc);
-		    else
-			mod_periods[i] += dc_to_dT(mod_periods[i], -dc);
-		}
-	    }
-	}
+  for (uint8_t i = 0; i < 3; i++) {
+    mod_periods[i] = portamento_periods[i];
+    
+    if (portamento_values[i] > 0) {
+      if (portamento_target_notes[i] != old_notes[i]) {
+	portamento_dcs[i] = 16 * (old_notes[i] - portamento_target_notes[i]) + portamento_dcs[i];
+	old_notes[i] = portamento_target_notes[i];
+      }
+      
+      if (++counters[i] == portamento_values[i]) {
+	counters[i] = 0;
+	
+	if (portamento_dcs[i] < 0)
+	  portamento_dcs[i] += d_dc;
+	else if (portamento_dcs[i] > 0)
+	  portamento_dcs[i] -= d_dc;
+      }
     }
+  }
 }

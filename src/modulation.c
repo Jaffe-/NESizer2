@@ -4,6 +4,7 @@
 #include "apu.h"
 #include "lfo.h"
 #include "envelope.h"
+#include "portamento.h"
 
 #define ABS(x) ((x > 0) ? (x) : (-x))
 
@@ -43,7 +44,7 @@ const uint8_t div12[60] PROGMEM = {
 };
 
 
-static inline int16_t dc_to_T(uint16_t period, int16_t dc)
+static inline uint16_t dc_to_T(uint16_t period, int16_t dc)
 /*
   Converts the given frequency change (given in steps of 10 cents) to a 
   corresponding timer value change.
@@ -105,6 +106,11 @@ static inline int16_t dc_to_T(uint16_t period, int16_t dc)
     return 8;
   else
     return val;
+}
+
+uint16_t mod_dc_to_T(uint16_t period, int16_t dc)
+{
+  return dc_to_T(period, dc);
 }
 
 static Envelope* envelopes[] = {&env1, &env2, &env3};
@@ -180,7 +186,9 @@ static inline void calc_freqmod(uint8_t chn)
   
   if (chn <= CHN_TRI) {
     // Frequency delta due to LFO. Divide by 32 to make parameter 30 yield one octave.
-    int16_t dc = get_pitchbend(chn);
+    int16_t dc = portamento_dcs[chn];
+
+    dc += get_pitchbend(chn);
 
     dc += sum / 128;
     

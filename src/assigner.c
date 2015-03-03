@@ -127,19 +127,22 @@ void play_note(uint8_t channel, uint8_t note)
   switch (channel) {
   case CHN_SQ1:
     env1.gate = 1;
-    portamento_targets[0] = period;
+    portamento_periods[0] = period;
+    portamento_target_notes[0] = note;
     break;
 	
   case CHN_SQ2:
     env2.gate = 1;
-    portamento_targets[1] = period;
+    portamento_periods[1] = period;
+    portamento_target_notes[1] = note;
     break;
 	
   case CHN_TRI:
     tri.silenced = 0;
     if (get_envmod(CHN_TRI) != 0)
       env3.gate = 1;
-    portamento_targets[2] = period;
+    portamento_periods[2] = period;
+    portamento_target_notes[2] = note;
     break;
 
   case CHN_NOISE:
