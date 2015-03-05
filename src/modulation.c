@@ -27,20 +27,24 @@ const float pos_cent_table[12] PROGMEM = {
 
 /* Ugly but necessary for better speed */
 
-const uint8_t mod12[60] PROGMEM = {
+const uint8_t mod12[84] PROGMEM = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11  
 };
 
-const uint8_t div12[60] PROGMEM = {
+const uint8_t div12[84] PROGMEM = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
   3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6
 };
 
 
@@ -168,22 +172,15 @@ static inline void calc_freqmod(uint8_t chn)
 */
 {
   // Define some helper arrays
-  static LFO* lfos[] = {&lfo1, &lfo2, &lfo3};
+  static const LFO* lfos[] = {&lfo1, &lfo2, &lfo3};
   
   int16_t sum = 0;
-  uint8_t cnt = 0;
 
   for (uint8_t j = 0; j < 3; j++) { 
-    if (mod_lfo_modmatrix[chn][j] > 0) {
-      cnt++;
-      //c_sum += mod_lfo_modmatrix[chn][j];
+    if (mod_lfo_modmatrix[chn][j] > 0) 
       sum += mod_lfo_modmatrix[chn][j] * lfos[j]->value;
-    }
   }
-  
-  if (cnt > 1) 
-    sum /= cnt;
-  
+    
   if (chn <= CHN_TRI) {
     // Frequency delta due to LFO. Divide by 32 to make parameter 30 yield one octave.
     int16_t dc = portamento_dcs[chn];
@@ -198,7 +195,7 @@ static inline void calc_freqmod(uint8_t chn)
     // For square channels, also add in the envelope modulation, if any
     int8_t env_fmod_val = (int8_t)envelopes[chn]->value - (int8_t)envelopes[chn]->sustain;
     if (env_fmod_val > 0) 
-      dc += 4 * env_fmod_val * get_envmod(chn);
+      dc += env_fmod_val * get_envmod(chn);
     
     // Store total dc value, which will be applied by apply_freqmod
     dc_temp[chn] = dc;

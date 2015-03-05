@@ -7,6 +7,8 @@
 #define VALTYPE_INVRANGE 2
 #define VALTYPE_POLRANGE 3
 
+#define NUM_PARAMETERS 49
+
 typedef struct {
     uint8_t* target;
     uint8_t type;

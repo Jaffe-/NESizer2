@@ -2,20 +2,16 @@
 
 #include "apu.h"
 
-#define LFO_TRIANGLE 0
-#define LFO_SQUARE 1
-#define LFO_SINE 2
-#define LFO_RAMP_UP 3
-#define LFO_RAMP_DOWN 4
-
 typedef struct {
-    uint8_t period;
-    uint8_t waveform;
+  uint8_t period;
+  enum {
+    SINE = 1, RAMP_DOWN, RAMP_UP, SQUARE, TRIANGLE
+  } waveform;
 
-    // Used by LFO logic:
-    int8_t value;
-    uint8_t counter;
-    uint8_t position;
+  // Used by LFO logic:
+  int8_t value;
+  uint8_t counter;
+  uint8_t position;
 } LFO;
 
 LFO lfo1;

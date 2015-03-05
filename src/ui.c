@@ -36,9 +36,8 @@ void ui_handler()
 
   // If a transfer is going on, simply use the 16 upper buttons as a progress
   // bar
-  if (mode & MODE_TRANSFER) {
+  if (mode & MODE_TRANSFER)
     button_leds[midi_transfer_progress] = 0xFF;
-  }
 
   else if (mode & MODE_GETVALUE)
     ui_getvalue_handler();
@@ -74,8 +73,6 @@ void ui_handler()
   button_leds[BTN_PATTERN] = ((mode & 0x0F) == MODE_PATTERN) * 0xFF;
   button_leds[BTN_TRACK] = ((mode & 0x0F) == MODE_TRACK) * 0xFF;
   button_leds[BTN_SETTINGS] = ((mode & 0x0F) == MODE_SETTINGS) * 0xFF;
-
-  //leds_7seg_two_digit_set_hex(3, 4, mod_pitchbend[0] >> 8);
   
   // Save current button states
   prev_input[0] = input[0];
