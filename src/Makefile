@@ -2,15 +2,16 @@
 # Makefile, for AVR Programming
  
 # Target name:
-TARGET = output
+TARGET = nesizer_fw
  
 # Target type
 MCU=atmega328
 PROGRAMMER=jtag3isp
 F_CPU=20000000L
  
-SRC = $(wildcard *.c)
-OBJ = $(SRC:.c=.o)
+CSRC = $(wildcard *.c)
+SSRC = $(wildcard *.S)
+OBJ = $(CSRC:.c=.o) $(SSRC:.S=.o)
  
 # Compiler / Linker flags:
 #CFLAGS = -mmcu=$(MCU) -Wall -Os -std=gnu99 -D F_CPU=$(F_CPU) -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
@@ -51,3 +52,5 @@ clean:
  
 %.o : %.c
 	avr-gcc $(CFLAGS) -c $< -o $@ 
+%.o : %.S
+	avr-gcc -mmcu=$(MCU) -c $< -o $@

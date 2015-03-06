@@ -41,7 +41,7 @@ const Parameter parameters[] PROGMEM = {
   {&mod_lfo_modmatrix[3][1], VALTYPE_RANGE, 0, 99, 0},
   {&mod_lfo_modmatrix[3][2], VALTYPE_RANGE, 0, 99, 0},
 
-  {&dmc.enabled, VALTYPE_RANGE, 0, 1, 0},
+  {&dmc.enabled, VALTYPE_BOOL, 0, 1, 0},
   {&dmc.sample_loop, VALTYPE_RANGE, 0, 1, 0},
 
   {&env1.attack, VALTYPE_RANGE, 0, 99, 0},
