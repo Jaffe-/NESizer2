@@ -55,6 +55,16 @@ void task_setup()
   TCCR0B = (1 << FOC0A) | (0b010 << CS00); 
 }
 
+void task_stop()
+{
+  TIMSK0 = 0;
+}
+
+void task_restart()
+{
+  TIMSK0 = 1 << OCIE0A;
+}
+
 ISR(TIMER0_COMPA_vect)
 /* 
    16kHz (16025 Hz) timer interrupt
@@ -90,3 +100,4 @@ void task_manager()
     }
   }
 }
+

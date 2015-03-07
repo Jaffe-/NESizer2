@@ -20,4 +20,4 @@ void io_setup();
 void io_reset_pc();
 
 uint8_t io_reg_buffer[0x16];
-
+uint8_t det;

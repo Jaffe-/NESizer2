@@ -1,8 +1,12 @@
 #include "2a03_io.h"
 #include <avr/io.h>
+
+#define F_CPU 20000000L
 #include <util/delay.h>
+
 #include <util/atomic.h>
 #include "bus.h"
+#include "task.h"
 
 /* 
    2a03_io.c 
@@ -14,10 +18,20 @@ uint8_t io_reg_buffer[0x16] = {0};
 uint8_t reg_mirror[0x16] = {0};
 uint8_t reg_update[0x16] = {0};
 
-/* Internal utility functions */
+/* Assembly functions in 2a03_asm.S */
 
 extern void register_set12(uint8_t, uint8_t);
 extern void register_set15(uint8_t, uint8_t);
+extern void register_set16(uint8_t, uint8_t);
+extern void reset_pc12(void);
+extern void reset_pc15(void);
+extern void reset_pc16(void);
+extern uint8_t detect(void);
+
+void (*register_set_fn)(uint8_t, uint8_t);
+void (*reset_pc_fn)(void);
+
+/* Internal utility functions */
 
 inline void register_write(uint8_t reg, uint8_t value)
 /* Write to register
@@ -27,29 +41,48 @@ inline void register_write(uint8_t reg, uint8_t value)
    storing the value in $40<reg>.
 */
 {
-    // Ensure that interrupts are disabled when doing this
+  // Put STA_zp on bus before deactivating CPU latch
+  bus_write(STA_zp);
 
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-	// Put STA_zp on bus before deactivating CPU latch
-	bus_write(STA_zp);
-	
-	// Open latch gates
-	bus_select(CPU_ADDRESS);
+  // Open latch output
+  bus_select(CPU_ADDRESS);
 
-	// Wait for 6502 to reach the third cycle of its idle STA
-	// instruction. 
+  // The code in the register set function has to be cycle exact, so it has to
+  // be run with interrupts disabled:
+  
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { 
+    register_set_fn(reg, value);
+  }
 
-	register_set15(reg, value);
+  // Finally, latch the last bus value by deselecting the CPU
+  bus_deselect();
 
-	// Finally, latch the bus value by switching to a
-	// different address
-	bus_deselect();
-    }
-
-    // Reflect change in mirror
-    reg_mirror[reg] = value;
+  // Reflect change in mirror
+  reg_mirror[reg] = value;
 }
 
+/*
+static inline void timeout_timer_start()
+{
+  // Enable clocking of TIMER2
+  TCCR2 = 1 << CS20;
+
+  // Enable interrupt
+  TIMSK2 = 1 << OCIE2A;
+}
+
+
+ISR(TIMER1_COMPA_vect)
+{
+  // Stop clocking of timer 
+  TCCR2 = 0 << CS20;
+
+  // Disable interrupt
+  TIMSK2 = 0 << OCIE2A;
+
+  // 
+}
+*/
 
 /* External functions */
 
@@ -66,6 +99,19 @@ void io_write_changed(uint8_t reg)
     }
 }
 
+void io_reset_pc()
+{
+  bus_write(STA_zp);
+
+  bus_select(CPU_ADDRESS);
+
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    reset_pc_fn();
+  }
+  
+  bus_deselect();
+}
+
 void io_setup()
 /* Initializes the interface to communicate with 6502 
 
@@ -78,23 +124,35 @@ void io_setup()
     DDRC |= RES;
     PORTC |= RES | RW;
 
-    bus_write(STA_zp);
+    bus_select(CPU_ADDRESS);
 
+    bus_write(STA_zp);
+    
+    bus_deselect();
+    
     // Reset the 2A03:
 
     // Set /RES low
     PORTC &= ~RES;
 
     // Hold it low for some time, for 6502 to perform reset
-    _delay_ms(10);
+    _delay_us(10);
 
     // Set /RES high again
     PORTC |= RES;
 
-    // Wait for reset cycle to complete
-    _delay_ms(1);
+    _delay_us(10);
 
-    //io_register_write(0x17, 0);
+    if (detect() <= 26) {
+      register_set_fn = &register_set12;
+      reset_pc_fn = &reset_pc12;
+    }
+    else {
+      register_set_fn = &register_set15;
+      reset_pc_fn = &reset_pc15;
+    }
 
+    io_reset_pc();
+    io_register_write(0x17, 0x40);
 }
 

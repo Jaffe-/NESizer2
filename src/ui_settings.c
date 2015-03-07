@@ -11,6 +11,7 @@
 #include "sample.h"
 #include "memory.h"
 #include "leds.h"
+#include "2a03_io.h"
 
 #define BTN_MIDI_CHN 5
 #define BTN_BLOCKSTATS 6

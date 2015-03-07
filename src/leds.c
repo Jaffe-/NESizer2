@@ -62,7 +62,7 @@ void leds_refresh()
     // Activate desired column
     bus_write(current_col);
     
-    // Switch to some other address to latch the previous value
+    // Deselect to latch the value
     bus_deselect();
 
     current_col = (current_col == 0x80) ? 1 : current_col << 1;
