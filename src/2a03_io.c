@@ -5,8 +5,10 @@
 #include <util/delay.h>
 
 #include <util/atomic.h>
+#include <avr/interrupt.h>
 #include "bus.h"
 #include "task.h"
+#include "leds.h"
 
 /* 
    2a03_io.c 
@@ -61,28 +63,6 @@ inline void register_write(uint8_t reg, uint8_t value)
   reg_mirror[reg] = value;
 }
 
-/*
-static inline void timeout_timer_start()
-{
-  // Enable clocking of TIMER2
-  TCCR2 = 1 << CS20;
-
-  // Enable interrupt
-  TIMSK2 = 1 << OCIE2A;
-}
-
-
-ISR(TIMER1_COMPA_vect)
-{
-  // Stop clocking of timer 
-  TCCR2 = 0 << CS20;
-
-  // Disable interrupt
-  TIMSK2 = 0 << OCIE2A;
-
-  // 
-}
-*/
 
 /* External functions */
 
@@ -112,8 +92,9 @@ void io_reset_pc()
   bus_deselect();
 }
 
-void io_setup()
-/* Initializes the interface to communicate with 6502 
+uint8_t io_setup()
+/* 
+   Initializes the interface to communicate with 6502 
 
    Configures ports and resets the 6502 and puts the APU in a suitable
    (non-interruptive) state.
@@ -126,12 +107,10 @@ void io_setup()
 
     bus_select(CPU_ADDRESS);
 
-    bus_write(STA_zp);
+    bus_write(STA_abs);
     
     bus_deselect();
     
-    // Reset the 2A03:
-
     // Set /RES low
     PORTC &= ~RES;
 
@@ -143,16 +122,28 @@ void io_setup()
 
     _delay_us(10);
 
-    if (detect() <= 26) {
+    // Run detect function and set the right functions for communicating with
+    // the 2A03/clone chip used
+    switch (io_clockdiv = detect()) {
+    case 12:
       register_set_fn = &register_set12;
       reset_pc_fn = &reset_pc12;
-    }
-    else {
+      break;
+
+    case 15:
       register_set_fn = &register_set15;
       reset_pc_fn = &reset_pc15;
+      break;
+
+    case 16:
+      register_set_fn = &register_set16;
+      reset_pc_fn = &reset_pc16;
+      break;
+
+    default:
+      return 0;
     }
-
+    
     io_reset_pc();
-    io_register_write(0x17, 0x40);
+    return 1;
 }
-

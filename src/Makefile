@@ -10,8 +10,8 @@ PROGRAMMER=jtag3isp
 F_CPU=20000000L
  
 CSRC = $(wildcard *.c)
-SSRC = $(wildcard *.S)
-OBJ = $(CSRC:.c=.o) $(SSRC:.S=.o)
+SSRC = $(wildcard *.s)
+OBJ = $(CSRC:.c=.o) $(SSRC:.s=.o)
  
 # Compiler / Linker flags:
 #CFLAGS = -mmcu=$(MCU) -Wall -Os -std=gnu99 -D F_CPU=$(F_CPU) -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
@@ -52,5 +52,5 @@ clean:
  
 %.o : %.c
 	avr-gcc $(CFLAGS) -c $< -o $@ 
-%.o : %.S
-	avr-gcc -mmcu=$(MCU) -c $< -o $@
+%.o : %.s
+	avr-as -mmcu=$(MCU) -c $< -o $@
