@@ -209,9 +209,11 @@ void tri_update()
 
   register_update(TRI_LO, tri.period & 0xFF);
 
-  register_update(TRI_HI, ((tri.enabled & ~tri.silenced) ? 0b1000 : 0) 
+  register_update(TRI_HI, (!tri.silenced ? 0b1000 : 0) 
 		  | ((tri.period >> 8) & 0x07) << PERIOD_HI_p);
 
+  register_update(TRI_LINEAR, tri.silenced ? 0 : (TRI_LENGTH_CNTR_DISABLE | 1)); 
+  
 }
 
 

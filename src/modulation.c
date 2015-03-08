@@ -16,118 +16,6 @@ uint16_t mod_pitchbend[4] = {0x2000, 0x2000, 0x2000, 0x2000};
 
 int16_t dc_temp[3] = {0};
 
-const float neg_cent_table[12] PROGMEM = {
-  1, 1.05946f, 1.1225f, 1.1892f, 1.2599f, 1.3348f, 1.4142f, 1.4983f, 1.5874f, 1.6818f, 1.7818f, 1.8877f
-};
-
-const float pos_cent_table[12] PROGMEM = {
-  1, 0.9439f, 0.8909f, 0.8409f, 0.7937f, 0.7492f, 0.7071f, 0.6674f, 0.6300f, 0.5946f, 0.5612f, 0.5297f
-};
-
-
-/* Ugly but necessary for better speed */
-
-const uint8_t mod12[84] PROGMEM = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11  
-};
-
-const uint8_t div12[84] PROGMEM = {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6
-};
-
-
-#define A1_SQ_12 1893
-#define A1_SQ_15 1514
-#define A1_SQ_16 1419
-
-#define A1_TRI_12 945
-#define A1_TRI_15 757
-#define A1_TRI_16 709
-
-
-static inline uint16_t c_to_T(int16_t c)
-/*
-  Converts the given frequency change (given in steps of 10 cents) to a 
-  corresponding timer value change.
-
-  By direct computation, 
-  dT = f_2A03 / (16 * (f + df)) - f_2A03 / (16 * f)
-  = f_2A03 / 16 * (f/(f(f + df)) - (f + df) / (f(f + df)))
-  = f_2A03 / (16 f) * df / (f + df) 
-  = T * (1 - f / (f + df))
-  Further more, by the definition of cents and adjusting for dc's 10 cent scale:
-  f + df = f * (2^(dc/120) 
-  Putting these two together yields
-  dT = T * (2^(-dc/120) - 1).
-
-  To simplify calculating the power of 2, a piecewise linear approximation is
-  used. 
-*/
-{
-  if (c == 0)
-    return A1_SQ_12;
-
-  union {
-    uint16_t raw_value;
-    struct { 
-      uint8_t offset : 4;
-      uint16_t semitone : 12;
-    };
-  } tone;
-
-  tone.raw_value = ABS(c);
-
-  float base;
-  uint8_t semitone = pgm_read_byte_near(&mod12[tone.semitone]);
-  uint8_t octave = pgm_read_byte_near(&div12[tone.semitone]);
-  int16_t val;
-  
-  if (c > 0) {
-    // Get precalculated value for 2^(x/12) where x is the semitone
-    base = pgm_read_float_near(&pos_cent_table[semitone]);
-
-    // Use linear approximation to get to the desired offset
-    val = (base * (1.0f - 0.00351f * tone.offset)) * A1_SQ_12;
-
-    // If the semitone is above one octave, simply divide by 2
-    val >>= octave;
-  }
-  
-  else {
-    base = pgm_read_float_near(&neg_cent_table[semitone]);
-
-    val = (base * (1.0f + 0.00372f * tone.offset)) * A1_SQ_12;
-    val <<= octave;
-  }
-
-  // If value is out of bounds, discard the change
-  if (val > 2005)
-    return 2005;
-  else if (val < 8)
-    return 8;
-  else
-    return val;
-}
-
-/*
-uint16_t mod_dc_to_T(uint16_t period, int16_t dc)
-{
-  return c_to_T(period, dc);
-}
-*/
-
 static Envelope* envelopes[] = {&env1, &env2, &env3};
 
 static inline int8_t get_detune(uint8_t chn)
@@ -159,7 +47,7 @@ static inline void apply_freqmod(uint8_t chn)
   // Convert frequency delta to a period delta and add to the base period
   uint16_t dT;
   if (chn <= CHN_TRI) 
-    dT = c_to_T(portamento_cs[chn] + dc_temp[chn]);
+    dT = get_period(chn, portamento_cs[chn] + dc_temp[chn]);
 	
   switch (chn) {
   case CHN_SQ1:

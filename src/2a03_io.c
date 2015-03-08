@@ -8,7 +8,7 @@
 #include <avr/interrupt.h>
 #include "bus.h"
 #include "task.h"
-#include "leds.h"
+#include "periods.h"
 
 /* 
    2a03_io.c 
@@ -131,18 +131,21 @@ uint8_t io_setup()
       register_set= &register_set12;
       reset_pc = &reset_pc12;
       disable_interrupts = &disable_interrupts12;
+      period_table = period_table12;
       break;
       
     case 15:
       register_set = &register_set15;
       reset_pc = &reset_pc15;
       disable_interrupts = &disable_interrupts15;
+      period_table = period_table15;
       break;
       
     case 16:
       register_set = &register_set16;
       reset_pc = &reset_pc16;
       disable_interrupts = &disable_interrupts16;
+      period_table = period_table16;
       break;
       
     default:
