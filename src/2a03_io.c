@@ -28,10 +28,14 @@ extern void register_set16(uint8_t, uint8_t);
 extern void reset_pc12(void);
 extern void reset_pc15(void);
 extern void reset_pc16(void);
+extern void disable_interrupts12(void);
+extern void disable_interrupts15(void);
+extern void disable_interrupts16(void);
 extern uint8_t detect(void);
 
-void (*register_set_fn)(uint8_t, uint8_t);
-void (*reset_pc_fn)(void);
+void (*register_set)(uint8_t, uint8_t);
+void (*reset_pc)(void);
+void (*disable_interrupts)(void);
 
 /* Internal utility functions */
 
@@ -53,7 +57,7 @@ inline void register_write(uint8_t reg, uint8_t value)
   // be run with interrupts disabled:
   
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { 
-    register_set_fn(reg, value);
+    register_set(reg, value);
   }
 
   // Finally, latch the last bus value by deselecting the CPU
@@ -86,7 +90,7 @@ void io_reset_pc()
   bus_select(CPU_ADDRESS);
 
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    reset_pc_fn();
+    reset_pc();
   }
   
   bus_deselect();
@@ -95,9 +99,6 @@ void io_reset_pc()
 uint8_t io_setup()
 /* 
    Initializes the interface to communicate with 6502 
-
-   Configures ports and resets the 6502 and puts the APU in a suitable
-   (non-interruptive) state.
 */
 {
     // Configure the /RES pin on PORT C as output and set /RES high, also set
@@ -120,30 +121,36 @@ uint8_t io_setup()
     // Set /RES high again
     PORTC |= RES;
 
-    _delay_us(10);
+    // Wait a while until the 6502 has completed its reset cycle
+    _delay_us(100);
 
     // Run detect function and set the right functions for communicating with
     // the 2A03/clone chip used
     switch (io_clockdiv = detect()) {
     case 12:
-      register_set_fn = &register_set12;
-      reset_pc_fn = &reset_pc12;
+      register_set= &register_set12;
+      reset_pc = &reset_pc12;
+      disable_interrupts = &disable_interrupts12;
       break;
-
+      
     case 15:
-      register_set_fn = &register_set15;
-      reset_pc_fn = &reset_pc15;
+      register_set = &register_set15;
+      reset_pc = &reset_pc15;
+      disable_interrupts = &disable_interrupts15;
       break;
-
+      
     case 16:
-      register_set_fn = &register_set16;
-      reset_pc_fn = &reset_pc16;
+      register_set = &register_set16;
+      reset_pc = &reset_pc16;
+      disable_interrupts = &disable_interrupts16;
       break;
-
+      
     default:
       return 0;
     }
-    
+
+    /* Disable interrupts */
+    disable_interrupts();
     io_reset_pc();
     return 1;
 }

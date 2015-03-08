@@ -48,7 +48,16 @@ const uint8_t div12[84] PROGMEM = {
 };
 
 
-static inline uint16_t dc_to_T(uint16_t period, int16_t dc)
+#define A1_SQ_12 1893
+#define A1_SQ_15 1514
+#define A1_SQ_16 1419
+
+#define A1_TRI_12 945
+#define A1_TRI_15 757
+#define A1_TRI_16 709
+
+
+static inline uint16_t c_to_T(int16_t c)
 /*
   Converts the given frequency change (given in steps of 10 cents) to a 
   corresponding timer value change.
@@ -67,8 +76,8 @@ static inline uint16_t dc_to_T(uint16_t period, int16_t dc)
   used. 
 */
 {
-  if (dc == 0)
-    return period;
+  if (c == 0)
+    return A1_SQ_12;
 
   union {
     uint16_t raw_value;
@@ -78,19 +87,19 @@ static inline uint16_t dc_to_T(uint16_t period, int16_t dc)
     };
   } tone;
 
-  tone.raw_value = ABS(dc);
+  tone.raw_value = ABS(c);
 
   float base;
   uint8_t semitone = pgm_read_byte_near(&mod12[tone.semitone]);
   uint8_t octave = pgm_read_byte_near(&div12[tone.semitone]);
   int16_t val;
   
-  if (dc > 0) {
+  if (c > 0) {
     // Get precalculated value for 2^(x/12) where x is the semitone
     base = pgm_read_float_near(&pos_cent_table[semitone]);
 
     // Use linear approximation to get to the desired offset
-    val = (base * (1.0f - 0.00351f * tone.offset)) * period;
+    val = (base * (1.0f - 0.00351f * tone.offset)) * A1_SQ_12;
 
     // If the semitone is above one octave, simply divide by 2
     val >>= octave;
@@ -99,7 +108,7 @@ static inline uint16_t dc_to_T(uint16_t period, int16_t dc)
   else {
     base = pgm_read_float_near(&neg_cent_table[semitone]);
 
-    val = (base * (1.0f + 0.00372f * tone.offset)) * period;
+    val = (base * (1.0f + 0.00372f * tone.offset)) * A1_SQ_12;
     val <<= octave;
   }
 
@@ -112,10 +121,12 @@ static inline uint16_t dc_to_T(uint16_t period, int16_t dc)
     return val;
 }
 
+/*
 uint16_t mod_dc_to_T(uint16_t period, int16_t dc)
 {
-  return dc_to_T(period, dc);
+  return c_to_T(period, dc);
 }
+*/
 
 static Envelope* envelopes[] = {&env1, &env2, &env3};
 
@@ -148,7 +159,7 @@ static inline void apply_freqmod(uint8_t chn)
   // Convert frequency delta to a period delta and add to the base period
   uint16_t dT;
   if (chn <= CHN_TRI) 
-    dT = dc_to_T(mod_periods[chn], dc_temp[chn]);
+    dT = c_to_T(portamento_cs[chn] + dc_temp[chn]);
 	
   switch (chn) {
   case CHN_SQ1:
@@ -183,8 +194,10 @@ static inline void calc_freqmod(uint8_t chn)
     
   if (chn <= CHN_TRI) {
     // Frequency delta due to LFO. Divide by 32 to make parameter 30 yield one octave.
-    int16_t dc = portamento_dcs[chn];
+//    int16_t dc = portamento_dcs[chn];
 
+    int16_t dc = 0;
+    
     dc += get_pitchbend(chn);
 
     dc += sum / 128;

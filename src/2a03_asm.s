@@ -1,39 +1,65 @@
 
-	;; Opcodes:
-	LDA_imm = 0xA9
-	STA_abs = 0x8D
-	STA_zp = 0x85
-	JMP_abs = 0x4C
-	SEI = 0x78
+;; Opcodes:
+LDA_imm = 0xA9
+STA_abs = 0x8D
+STA_zp = 0x85
+JMP_abs = 0x4C
+SEI = 0x78
 
-	;; R/W bit position
-	RW = 3
+;; R/W bit position
+RW = 3
 
 ;; I/O ports
-	PINC = 0x06
-	PORTC = 0x08
-	PORTD = 0x0B
-	TCCR0B = 0x25
-	TCNT0 = 0x26
+PINC = 0x06
+PORTC = 0x08
+PORTD = 0x0B
+TCCR0B = 0x25
+TCNT0 = 0x26
 	
-	.global register_set12
-	.global register_set15
-	.global register_set16
-	.global disable_interrupts12
-	.global disable_interrupts15
-	.global disable_interrupts16
-	.global reset_pc12
-	.global reset_pc15
-	.global reset_pc16
-	.global detect
-	.section .text
+.global register_set12
+.global register_set15
+.global register_set16
+.global disable_interrupts12
+.global disable_interrupts15
+.global disable_interrupts16
+.global reset_pc12
+.global reset_pc15
+.global reset_pc16
+.global detect
+.section .text
 
+
+;;; ----------------------------------------------------------------------------
+
+;;; SYNC macro
+;;;
+;;; Waits for the R/W line to go low, then to go high. When this has happened
+;;; the 6502 is just finished with the last cycle of its idle STA_zp
+;;; instruction, and a new instruction can be put on the bus.
+	
 .macro SYNC
 1:	sbic PINC, RW
 	rjmp 1b
 2:	sbis PINC, RW
 	rjmp 2b
 .endm
+
+
+;;; ----------------------------------------------------------------------------
+
+;;; REGISTER_SET
+;;;
+;;; Parameters: r24: APU register
+;;; 		r22: value
+;;; Return:	none
+;;; 
+;;; Puts a given value in a given APU register by writing the following
+;;; instructions:
+;;; 
+;;; LDA #<val>
+;;; STA 0x40<reg>
+;;;
+;;; The write is followed by an STA_zp to keep the 6502 running.
 	
 .macro REGISTER_SET fill
 	in r18, PORTC
@@ -143,6 +169,9 @@
 	ret
 .endm
 
+;;; The only thing differing between the three varieties are the number of nops
+;;; to pad out each write sequence with.
+	
 register_set12:
 	REGISTER_SET 0
 
@@ -152,6 +181,15 @@ register_set15:
 register_set16:
 	REGISTER_SET 4
 
+	
+;;; ----------------------------------------------------------------------------
+
+;;; DISABLE_INTERRUPTS
+;;;
+;;; Parameters: none
+;;; Return: 	none
+;;; 
+;;; Sends an SEI instruction followed by the idling STA_zp
 	
 .macro DISABLE_INTERRUPTS fill
 	in r18, PORTC
@@ -201,7 +239,18 @@ disable_interrupts15:
 disable_interrupts16:
 	DISABLE_INTERRUPTS 4
 
+	
+;;; ----------------------------------------------------------------------------
 
+;;; RESET_PC
+;;;
+;;; Parameters: none
+;;; Return:	none
+;;; 
+;;; Resets the program counter by sending a JMP_abs opcode followed by just
+;;; STA_zp. This makes the 6502 jump to address $8585 and continue 'storing' to
+;;; $85.
+	
 .macro RESET_PC fill
 	in r18, PORTC
 	andi r18, 0xFC          ; Keep PORTC & 0xFC in r18
@@ -251,16 +300,29 @@ reset_pc15:
 reset_pc16:
 	RESET_PC 4
 
+	
+;;; ----------------------------------------------------------------------------
 
 	
-detect:
-;;; Uses timer 0 to count how many clock cycles it takes to synchronize twice
-;;; with the 2A03. During this period the 2A03 should have executed exactly 8
-;;; clock cycles, meaning that the counted clock cycles divided by 8 is the
-;;; clock divisor of the 2A03 being used. 
+;;; detect -- 2A03 type auto detection
+;;;
+;;; Parameters: none
+;;; Return:	r24: number of Atmega clock cycles per 6502 clock cycle
+;;; 
+;;; When this function is ran, the 6502 is being fed the STA instruction with
+;;; absolute addressing, which takes four cycles. At its fourth cycle, it pulls
+;;; the R/W line down. This can be used to measure how many clock cycles the
+;;; Atmega has done for each cycle the 6502 has done by counting how many cycles
+;;; it takes between each time R/W transitions from low to high. In this
+;;; function the numer of Atmega cycles is counted for two such transitions to
+;;; ensure that the timer is started and stopped at the exact same phase of the
+;;; R/W transition. The counted number of cycles is divided by 8 to get the
+;;; number of Atmega cycles per one 6502 cycle.
 
+detect:
 	ldi r18, 1 
 	ldi r19, 0
+	out TCNT0, r19
 	
 	;; Wait for R/W to tranisiton from low to high
 	SYNC
