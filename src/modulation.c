@@ -67,7 +67,7 @@ static inline void apply_freqmod(uint8_t chn)
 static inline void calc_freqmod(uint8_t chn)
 /*
   Calculates frequency change for SQ1, SQ2 and TRI based on 
-  detuning, LFOs and envelope modulation.
+  detuning, LFOs and envelope modulation. 
 */
 {
   // Define some helper arrays

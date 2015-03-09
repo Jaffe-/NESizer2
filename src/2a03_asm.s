@@ -1,4 +1,35 @@
+;;; NESIZER
+;;;
+;;; (c) 2014-2015 Johan Fjeldtvedt
+;;;
+;;; Functions for communicating with the 6502 processor in the 2A03.
+;;; Provides functions for
+;;; 
+;;; 	* Setting an APU register
+;;; 	* Disabling 6502 interrupts
+;;; 	* Resetting the 6502 program counter
+;;; 	* Detecting the type of 2A03 used 
+;;;
+;;; Communication is done by monitoring the 6502's R/W line. When nothing is
+;;; being done, the 6502 is being fed an STA zero page instruction, with opcode
+;;; 0x85, so the 6502 is effectively trying to store its A register in memory
+;;; address 0x85. This instruction takes three cycles, where the last one is the
+;;; write to memory. About halfway through the last cycle, the R/W line is being
+;;; pulled low. When it goes high again, the 6502 has started on the first cycle
+;;; of the next instruction, and this is when a new instruction can be fed to
+;;; it.
+;;;
+;;; Depending on the 2A03/07 type used (NTSC, clone or PAL), the amount of
+;;; Atmega cycles per 6502 cycle is 12, 15 or 16. This means that when writing
+;;; data to the 6502, the code must be timed so that it is exactly 12, 15 or 16
+;;; Atmega cycles between each time the databus is updated.  
+;;;
+;;; Every write sequence is initiated by synchronizing with the 6502, which
+;;; means waiting for R/W to transition from low to high, followed by a sequence
+;;; of cycle exact writes to the databus, where the last write is the STA_zp
+;;; opcode which is keeping the 6502 busy and synchronizable. 
 
+	
 ;; Opcodes:
 LDA_imm = 0xA9
 STA_abs = 0x8D
@@ -302,7 +333,6 @@ reset_pc16:
 
 	
 ;;; ----------------------------------------------------------------------------
-
 	
 ;;; detect -- 2A03 type auto detection
 ;;;

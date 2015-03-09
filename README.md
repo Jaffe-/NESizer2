@@ -150,9 +150,9 @@ At the end, `register_set` puts the `STA` zero page opcode (0x85) back on the bu
 
 #### APU abstaction layer
 
-The APU abstraction layer (`apu.h`, `apu.c`) contains structs and functions for manipulating the 2A03 channels in a high level manner without having to deal with register writes manually. The channels are represented by structs having fields corresponding to each parameter of the channel. 
+The APU abstraction layer (`apu`) contains structs and functions for manipulating the 2A03 channels in a high level manner without having to deal with register writes manually. The channels are represented by structs having fields corresponding to each parameter of the channel. 
 
-Each channel type is represented by a struct, `Square`, `Triangle`, `Noise` and `DMC`, respectively. Global objects `sq1`, `sq2`, `tri`, `noise` and `dmc` of corresponding types are allocated on the stack. Each channel has a setup function named `<channel>_setup`, intended for initializing the struct, and an update function `<channel>_update` which takes the data in a struct and fills the appropriate registers in a register buffer. The function `apu_refresh_channel` takes the data for a given channel in the register buffer and writes them to the 2A03. This function updates one channel's registers at a time, so it needs to be called 5 times to update all registers. This is necessary to reduce time spent on register updates.
+Each channel type is represented by a struct, `Square`, `Triangle`, `Noise` and `DMC`, respectively. Global objects `sq1`, `sq2`, `tri`, `noise` and `dmc` of corresponding types are defined. Each channel has a setup function named `<channel>_setup`, intended for initializing the struct, and an update function `<channel>_update` which takes the data in a struct and fills the appropriate registers in a register buffer. The function `apu_refresh_channel` takes the data for a given channel in the register buffer and writes them to the 2A03. This function updates one channel's registers at a time, so it needs to be called 5 times to update all registers. This is necessary to reduce time spent on register updates.
 
 The abstraction makes producing sound easy: 
 
@@ -183,7 +183,7 @@ The abstraction makes producing sound easy:
 
 #### Interrupt timing and task handler
 
-One of the Atmega's timers is used to generate an interrupt at approximately 16 kHz. This interrupt provides the basic timing used by various subsystems (LFOs, envelopes, APU updates, etc.)  
+One of the Atmega's timers is used to generate an interrupt at approximately 16 kHz. This interrupt provides the basic timing used by various subsystems (LFOs, envelopes, APU updates, etc.).
 
 A simple task handler (`task.h`, `task.c`) is used to sequence tasks to be performed. Tasks are registered with a desired frequency and a time delay to spread tasks out in time. 
 
@@ -192,9 +192,9 @@ A simple task handler (`task.h`, `task.c`) is used to sequence tasks to be perfo
 
 These are handled in `leds.c`, `leds.h` and `input.c`, `input.h`. 
 
-LED states are held in a 32 byte array `leds`. The function `leds_refresh` is intended to be registered as a task, and will update one column of the LED array each time it is called. It is intended to be run often enough for the sequential updating to happen unnoticed. 
+LED states are held in a 5 byte array `leds`. The function `leds_refresh` is intended to be registered as a task, and will update one column of the LED array each time it is called. It is intended to be run often enough for the sequential updating to happen unnoticed. 
 
-Switch states are held in a 32 byte array `input`. The function `input_refresh` reads one row of switch data at a time and updates `input` accordingly. It is intended to be registered as a task and executed often enough for input to be seamless. 
+Switch states are held in a 3 byte array `input`. The function `input_refresh` reads one row of switch data at a time and updates `input` accordingly. It is intended to be registered as a task and executed often enough for input to be seamless. 
 
 
 #### SRAM
@@ -214,6 +214,10 @@ Reading and interpreting the data is done by the functions in `midi.c`, `midi.h`
 
 
 ### Changelog
+
+**08/03/15**: Optimized the cent to period calculations, now uses a period lookup table and a linear approximation in between seminotes. 
+
+**07/03/15**: 2A03 communication functions moved from inline assembly in C to an own assembly file. Added functions for auto-detecting what kind of APU chip (2A03, 2A07, clone) is being used and adjusting the period tables, write functions etc. accordingly. 
 
 **02/03/15**: Removed /MEM_EN signal as it is not needed with the DS1210 based backup circuitry. 
 
