@@ -52,8 +52,6 @@
 // Gets the boolean value of a particular button
 #define button_getbool(BTN) ((input[button_row(BTN)] >> button_col(BTN)) & 1)
 
-//#define no_btn(VAL) (((VAL) & 0x80) != 0)
-
 typedef enum { SESSION_INACTIVE, SESSION_ACTIVE } GetvalueState;
 
 typedef struct {
@@ -64,24 +62,23 @@ typedef struct {
 } GetvalueSession;
 
 // The current mode (PROGRAM, PATTERN, TRACK or SETTINGS)
-uint8_t mode;
+extern uint8_t mode;
 
 // Previous inputs
-uint8_t prev_input[3];
+extern uint8_t prev_input[3];
 
-/* Button leds format: 
-
+/* 
+   Button leds format: 
    0 - off
    0xFF - led on
    any other value: blink
 */
-uint8_t button_leds[24];
+extern uint8_t button_leds[24];
+
+extern GetvalueSession ui_getvalue_session;
 
 void ui_handler();
 void ui_leds_handler();
-
 void ui_updown(uint8_t* value, uint8_t min, uint8_t max);
-
-GetvalueSession ui_getvalue_session;
 void ui_getvalue_handler();
 

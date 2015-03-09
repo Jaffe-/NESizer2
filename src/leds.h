@@ -8,8 +8,8 @@
 #define LEDS_7SEG_MINUS 17
 
 // Global variables
-uint8_t leds[5];
-uint8_t row_mirror;
+extern uint8_t leds[5];
+extern uint8_t row_mirror;
 
 // Functions
 void leds_refresh();

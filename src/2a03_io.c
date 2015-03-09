@@ -96,7 +96,7 @@ void io_reset_pc()
   bus_deselect();
 }
 
-uint8_t io_setup()
+void io_setup()
 /* 
    Initializes the interface to communicate with 6502 
 */
@@ -125,8 +125,16 @@ uint8_t io_setup()
     _delay_us(100);
 
     // Run detect function and set the right functions for communicating with
-    // the 2A03/clone chip used
-    switch (io_clockdiv = detect()) {
+    // the 2A03/clone chip used. Try three times to ensure that a correct
+    // value is read.
+    uint8_t tries = 3;
+    while (tries-- > 0) {
+      io_clockdiv = detect();
+      if (io_clockdiv == 12 || io_clockdiv == 15 || io_clockdiv == 16)
+	break;
+    }
+
+    switch (io_clockdiv) {
     case 12:
       register_set= &register_set12;
       reset_pc = &reset_pc12;
@@ -147,13 +155,11 @@ uint8_t io_setup()
       disable_interrupts = &disable_interrupts16;
       period_table = period_table16;
       break;
-      
-    default:
-      return 0;
     }
 
-    /* Disable interrupts */
+    // Disable interrupts on the 6502
     disable_interrupts();
+
+    // Reset PC to ensure that it doesn't read any of the APU registers
     io_reset_pc();
-    return 1;
 }

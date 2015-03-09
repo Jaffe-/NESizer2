@@ -46,10 +46,10 @@ typedef struct {
   uint8_t data : 7;
 } DMC;
 
-Square sq1, sq2;
-Triangle tri;
-Noise noise;
-DMC dmc;
+extern Square sq1, sq2;
+extern Triangle tri;
+extern Noise noise;
+extern DMC dmc;
 
 /* Functions */
 

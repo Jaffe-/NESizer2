@@ -16,7 +16,7 @@ typedef struct {
     uint32_t bytes_done;
 } Sample;
 
-Sample sample;
+extern Sample sample;
 
 void sample_clean();
 void sample_new(uint8_t index);

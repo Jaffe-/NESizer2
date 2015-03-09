@@ -8,13 +8,13 @@
 
 #define ABS(x) ((x > 0) ? (x) : (-x))
 
-uint16_t mod_periods[4] = {0};
-uint8_t mod_lfo_modmatrix[4][3] = {{0}};
+uint8_t mod_lfo_modmatrix[4][3];
 uint8_t mod_detune[3] = {9, 9, 9};   // detune values default to 9 (translates to 0)
 uint8_t mod_envmod[4] = {9, 9, 9, 7};
 uint16_t mod_pitchbend[4] = {0x2000, 0x2000, 0x2000, 0x2000};
 
-int16_t dc_temp[3] = {0};
+static int16_t dc_temp[3];
+uint8_t noise_period;
 
 static Envelope* envelopes[] = {&env1, &env2, &env3};
 
@@ -45,22 +45,22 @@ static inline void apply_freqmod(uint8_t chn)
 */
 {
   // Convert frequency delta to a period delta and add to the base period
-  uint16_t dT;
+  uint16_t period = 0;
   if (chn <= CHN_TRI) 
-    dT = get_period(chn, portamento_cs[chn] + dc_temp[chn]);
+    period = get_period(chn, portamento_cs[chn] + dc_temp[chn]);
 	
   switch (chn) {
   case CHN_SQ1:
-    sq1.period = dT;
+    sq1.period = period;
     break;
   case CHN_SQ2:
-    sq2.period = dT;
+    sq2.period = period;
     break;
   case CHN_TRI:
-    tri.period = dT;
+    tri.period = period;
     break;
   case CHN_NOISE:
-    noise.period = mod_periods[CHN_NOISE];
+    noise.period = noise_period;
   }
 }
 
@@ -82,8 +82,6 @@ static inline void calc_freqmod(uint8_t chn)
     
   if (chn <= CHN_TRI) {
     // Frequency delta due to LFO. Divide by 32 to make parameter 30 yield one octave.
-//    int16_t dc = portamento_dcs[chn];
-
     int16_t dc = 0;
     
     dc += get_pitchbend(chn);

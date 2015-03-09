@@ -1,7 +1,7 @@
 #pragma once
 
-#define ANALOG_INPUT 0b00100000
+#include <stdint.h>
 
-uint8_t input[3];
+extern uint8_t input[3];
 
 void input_refresh();

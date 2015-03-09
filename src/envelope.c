@@ -1,8 +1,8 @@
 #include "envelope.h"
 
-Envelope env1 = {0};
-Envelope env2 = {0};
-Envelope env3 = {0};
+Envelope env1;
+Envelope env2;
+Envelope env3;
 
 void envelope_update(Envelope* env)
 /*

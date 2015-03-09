@@ -16,8 +16,8 @@
 
 void io_register_write(uint8_t reg, uint8_t value);
 void io_write_changed(uint8_t reg);
-uint8_t io_setup();
+void io_setup();
 void io_reset_pc();
 
-uint8_t io_reg_buffer[0x18];
-uint8_t io_clockdiv;
+extern uint8_t io_reg_buffer[0x16];
+extern uint8_t io_clockdiv;

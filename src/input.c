@@ -13,7 +13,6 @@ void input_refresh()
     static uint8_t current_row = 0;
     static uint8_t stage = 0;
     static uint8_t last_data = 0;
-    static uint16_t analog_sum = 0;
     
     // Update row latch value
     bus_select(ROW_ADDRESS);

@@ -187,7 +187,7 @@ static inline void transfer()
       else if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
 	if (sample.bytes_done < sample.size) {
 	  sample_write_serial(val);
-	  midi_transfer_progress = (sample.bytes_done * (uint32_t)16) / sample.size;
+	  midi_transfer_progress = (sample.bytes_done << 4) / sample.size;
 	}
       }
     }

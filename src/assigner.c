@@ -17,7 +17,7 @@
 #include "sample.h"
 #include "periods.h"
 
-const uint8_t mod12[84] PROGMEM = {
+static const uint8_t mod12[84] PROGMEM = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
@@ -27,7 +27,7 @@ const uint8_t mod12[84] PROGMEM = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11  
 };
 
-const uint8_t div12[84] PROGMEM = {
+static const uint8_t div12[84] PROGMEM = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -88,7 +88,7 @@ uint16_t get_period(uint8_t chn, uint16_t c)
   uint16_t val = (1.0f - 0.00351f * tone.offset) * period;
 
   if (chn == CHN_TRI)
-    val = 0.5f * (val - 1);
+    val = (val - 1) >> 2;
   
   // If value is out of bounds, discard the change
   if (val > 2005)
@@ -126,15 +126,15 @@ void play_note(uint8_t channel, uint8_t midi_note)
 
   case CHN_NOISE:
     env3.gate = 1;
-    mod_periods[3] = note - 24;
+    noise_period = note - 24;
     break;
 
   case CHN_DMC:
-    if (sample_occupied(note - 60)) {
-      sample_load(note - 60);
+    if (sample_occupied(midi_note - 60)) {
+      sample_load(midi_note - 60);
       if (sample.size != 0)
 	dmc.sample_enabled = 1;
-      dmc.sample_loop = 0;
+      //dmc.sample_loop = 0;
       break;
     }
   }

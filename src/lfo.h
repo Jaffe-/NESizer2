@@ -14,9 +14,9 @@ typedef struct {
   uint8_t position;
 } LFO;
 
-LFO lfo1;
-LFO lfo2;
-LFO lfo3;
+extern LFO lfo1;
+extern LFO lfo2;
+extern LFO lfo3;
 
 void lfo_update(LFO* lfo);
 int16_t lfo_value(LFO* lfo, uint8_t intensity);

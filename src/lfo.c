@@ -4,9 +4,9 @@
 #include "apu.h" 
 #include "data/sine.c"
 
-LFO lfo1 = {0};
-LFO lfo2 = {0};
-LFO lfo3 = {0};
+LFO lfo1;
+LFO lfo2;
+LFO lfo3;
 
 void lfo_update(LFO* lfo)
 {

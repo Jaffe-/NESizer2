@@ -12,7 +12,7 @@
 #include <avr/pgmspace.h>
 #include "2a03_io.h"
 #include "../tools/deltacompress.h"
-
+#include "lfo.h"
 
 /* APU channel bit masks */
 
@@ -132,10 +132,10 @@
 
 */
 
-Square sq1 = {0}, sq2 = {0};
-Triangle tri = {0};
-Noise noise = {0};
-DMC dmc = {0};
+Square sq1, sq2;
+Triangle tri;
+Noise noise;
+DMC dmc;
 
 inline void register_update(uint8_t reg, uint8_t val)
 {
@@ -256,12 +256,22 @@ void dmc_update()
 		  | dmc.enabled << DMC_ENABLE_p);
 }
 
-inline void dmc_update_sample_raw()
-{
-  dmc.data = sample_read_byte();
+#define BUFF 256
 
+void dmc_update_sample_raw()
+{
+//  static uint8_t buffer[BUFF] = {0};
+//  static uint16_t buff_ptr = 0;
+
+//  dmc.data = (sample_read_byte() + buffer[(buff_ptr + 1) % BUFF]) >> 1;
+//  buffer[buff_ptr] = dmc.data;
+
+  dmc.data = sample_read_byte();
+   
   io_register_write(DMC_RAW, dmc.data);
-    
+
+//  if (++buff_ptr == BUFF) buff_ptr = 0;
+  
   if (sample.bytes_done == sample.size) {
     sample_reset();
 

@@ -1,10 +1,10 @@
 #pragma once
 
-uint16_t mod_periods[4];
-uint8_t mod_lfo_modmatrix[4][3];
-uint8_t mod_detune[3];
-uint8_t mod_envmod[4];
-uint16_t mod_pitchbend[4];
+extern uint8_t mod_lfo_modmatrix[4][3];
+extern uint8_t mod_detune[3];
+extern uint8_t mod_envmod[4];
+extern uint16_t mod_pitchbend[4];
+extern uint8_t noise_period;
 
 void mod_calculate();
 void mod_apply();

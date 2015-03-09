@@ -30,6 +30,6 @@ typedef struct {
 void envelope_update(Envelope* env);
 void envelope_update_handler();
 
-Envelope env1;
-Envelope env2;
-Envelope env3;
+extern Envelope env1;
+extern Envelope env2;
+extern Envelope env3;

@@ -13,8 +13,8 @@
 
 #define isone(VAL) ((VAL) != 0)
 
-uint8_t leds[5] = {0};
-uint8_t row_mirror = 0;
+uint8_t leds[5];
+uint8_t row_mirror;
 
 static const uint8_t leds_7seg_values[18] =
 {0b11111100, // 0
