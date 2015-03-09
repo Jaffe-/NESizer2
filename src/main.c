@@ -15,12 +15,14 @@
 #include "bus.h"
 #include "patch.h"
 #include "midi_io.h"
+#include "periods.h"
 
 int main() 
 {
   // Set up low level systems:
   bus_setup();
   io_setup();
+  periods_setup();
   memory_setup();
   task_setup();
   midi_io_setup();

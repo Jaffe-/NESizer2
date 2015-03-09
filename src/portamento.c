@@ -17,7 +17,7 @@ void portamento_handler()
 {
   for (uint8_t i = 0; i < 3; i++) {
     if (portamento_values[i] == 0)
-      portamento_cs[i] = (int16_t)portamento_target_notes[i] * 16;
+      portamento_cs[i] = (uint16_t)portamento_target_notes[i] << 6;
     else {
       if (++counters[i] == portamento_values[i]) {
 	counters[i] = 0;

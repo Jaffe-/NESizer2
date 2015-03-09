@@ -250,8 +250,8 @@ void sequence_handler()
     }
 
     if (tri_counter > 0) {
-	if (--tri_counter == 0)
-	    mod_periods[2] = 0;
+      //if (--tri_counter == 0)
+	  //mod_periods[2] = 0;
     }
 
     if (noise_counter > 0) {
@@ -279,7 +279,7 @@ static inline void play()
 	env3.gate = 0;
 	env2.gate = 0;
 	env1.gate = 0;
-	mod_periods[2] = 0;	
+//	mod_periods[2] = 0;	
     }
 }
 

@@ -37,6 +37,8 @@ void (*register_set)(uint8_t, uint8_t);
 void (*reset_pc)(void);
 void (*disable_interrupts)(void);
 
+uint8_t io_clockdiv;
+
 /* Internal utility functions */
 
 inline void register_write(uint8_t reg, uint8_t value)
@@ -139,21 +141,18 @@ void io_setup()
       register_set= &register_set12;
       reset_pc = &reset_pc12;
       disable_interrupts = &disable_interrupts12;
-      period_table = period_table12;
       break;
       
     case 15:
       register_set = &register_set15;
       reset_pc = &reset_pc15;
       disable_interrupts = &disable_interrupts15;
-      period_table = period_table15;
       break;
       
     case 16:
       register_set = &register_set16;
       reset_pc = &reset_pc16;
       disable_interrupts = &disable_interrupts16;
-      period_table = period_table16;
       break;
     }
 

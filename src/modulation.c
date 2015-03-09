@@ -36,6 +36,15 @@ int8_t get_envmod(uint8_t chn)
     return (int8_t)mod_envmod[chn] - 9;
 }
 
+static inline uint16_t apply_dc(uint16_t c, int16_t dc)
+{
+  int16_t r = c;
+  if (r + dc < 0)
+    return c;
+  else
+    return r + dc;
+}
+
 static inline void apply_freqmod(uint8_t chn)
 /*
   SQ1/2/TRI: Applies calculated frequency modulations by converting them to 
@@ -47,7 +56,7 @@ static inline void apply_freqmod(uint8_t chn)
   // Convert frequency delta to a period delta and add to the base period
   uint16_t period = 0;
   if (chn <= CHN_TRI) 
-    period = get_period(chn, portamento_cs[chn] + dc_temp[chn]);
+    period = get_period(chn, apply_dc(portamento_cs[chn], dc_temp[chn]));
 	
   switch (chn) {
   case CHN_SQ1:

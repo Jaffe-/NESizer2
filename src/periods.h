@@ -1,7 +1,8 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
-const uint16_t period_table12[7][12];
-const uint16_t period_table15[7][12];
-const uint16_t period_table16[7][12];
-const uint16_t (*period_table)[12];
+extern uint8_t note_min;
+extern const uint8_t note_max;
+
+uint16_t get_period(uint8_t chn, uint16_t c);
+void periods_setup();
