@@ -10,7 +10,7 @@ static uint8_t counters[3] = {0};
 
 static inline uint16_t note_to_c(uint8_t note)
 {
-  return note << 4;
+  return note << 6;
 }
 
 void portamento_handler()

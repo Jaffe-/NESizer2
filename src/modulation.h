@@ -3,8 +3,10 @@
 extern uint8_t mod_lfo_modmatrix[4][3];
 extern uint8_t mod_detune[3];
 extern uint8_t mod_envmod[4];
-extern uint16_t mod_pitchbend[4];
+extern uint16_t mod_pitchbend_input[4];
+extern uint8_t mod_pitchbend[3];
 extern uint8_t noise_period;
+extern uint8_t mod_coarse[3];
 
 void mod_calculate();
 void mod_apply();

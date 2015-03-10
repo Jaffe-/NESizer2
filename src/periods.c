@@ -7,6 +7,7 @@
    The tables were auto generated using
 
    T = f_2A03 / (16 * f) - 1
+ 
 */
 
 const uint16_t period_table12[84] PROGMEM = {
@@ -90,7 +91,8 @@ uint16_t get_period(uint8_t chn, uint16_t c)
   }
   else {
     base_period = pgm_read_word_near(&period_table[tone.semitone]);
-    tri_scale = 1;
+    if (chn == 2)
+      tri_scale = 1;
   }
     
   val = (1.0f - 0.00087696f * tone.offset) * base_period;  

@@ -70,7 +70,7 @@ static inline void interpret_message()
 			
 	  case MIDI_CMD_PITCH_BEND:
 	    if (i < 4) {
-	      mod_pitchbend[i] = ((uint16_t)msg.data1) | ((uint16_t)msg.data2) << 7;
+	      mod_pitchbend_input[i] = ((uint16_t)msg.data1) | ((uint16_t)msg.data2) << 7;
 	    }
 	    break;
 	  }

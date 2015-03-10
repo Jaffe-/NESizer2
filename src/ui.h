@@ -20,8 +20,9 @@
 #define BTN_NOISE 3 // 19
 #define BTN_DMC 4 // 20
 
-#define BTN_SAVE 16 // 0
-#define BTN_SET 17 // 1
+#define BTN_SHIFT 16
+#define BTN_SAVE 17 // 0
+//#define BTN_SET 17 // 1
 #define BTN_PROGRAM 18 // 2
 #define BTN_PATTERN 19 // 3
 #define BTN_TRACK 20 // 4

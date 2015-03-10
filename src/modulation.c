@@ -11,7 +11,9 @@
 uint8_t mod_lfo_modmatrix[4][3];
 uint8_t mod_detune[3] = {9, 9, 9};   // detune values default to 9 (translates to 0)
 uint8_t mod_envmod[4] = {9, 9, 9, 7};
-uint16_t mod_pitchbend[4] = {0x2000, 0x2000, 0x2000, 0x2000};
+uint16_t mod_pitchbend_input[4] = {0x2000, 0x2000, 0x2000, 0x2000};
+uint8_t mod_pitchbend[3];
+uint8_t mod_coarse[3];
 
 static int16_t dc_temp[3];
 uint8_t noise_period;
@@ -25,7 +27,9 @@ static inline int8_t get_detune(uint8_t chn)
 
 static inline int16_t get_pitchbend(uint8_t chn)
 {
-  return (int16_t)(mod_pitchbend[chn] >> 5) - 0x100;
+  // test var
+  uint8_t pitch_bend_val = 2;
+  return (int16_t)((mod_pitchbend_input[chn] >> 7) - 0x40) * mod_pitchbend[chn];
 }
 
 int8_t get_envmod(uint8_t chn)
@@ -34,6 +38,11 @@ int8_t get_envmod(uint8_t chn)
     return (int8_t)mod_envmod[2] - 7;
   else 
     return (int8_t)mod_envmod[chn] - 9;
+}
+
+static inline int16_t get_coarse_tune(uint8_t chn)
+{
+  return (uint16_t)mod_coarse[chn] << 6; 
 }
 
 static inline uint16_t apply_dc(uint16_t c, int16_t dc)
@@ -90,8 +99,7 @@ static inline void calc_freqmod(uint8_t chn)
   }
     
   if (chn <= CHN_TRI) {
-    // Frequency delta due to LFO. Divide by 32 to make parameter 30 yield one octave.
-    int16_t dc = 0;
+    int16_t dc = get_coarse_tune(chn);
     
     dc += get_pitchbend(chn);
 

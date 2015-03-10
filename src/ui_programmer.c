@@ -52,7 +52,9 @@ const ParameterID sq1_parameters[] PROGMEM = {
   ENV1_ATTACK,
   ENV1_DECAY,
   ENV1_SUSTAIN,
-  ENV1_RELEASE
+  ENV1_RELEASE,
+  SQ1_PITCHBEND,
+  SQ1_OCTAVE
 };
 
 const ParameterID sq2_parameters[] PROGMEM = {
@@ -66,7 +68,9 @@ const ParameterID sq2_parameters[] PROGMEM = {
   ENV2_ATTACK,
   ENV2_DECAY,
   ENV2_SUSTAIN,
-  ENV2_RELEASE
+  ENV2_RELEASE,
+  SQ2_PITCHBEND,
+  SQ2_OCTAVE
 };
 
 const ParameterID tri_parameters[] PROGMEM = {
@@ -80,7 +84,9 @@ const ParameterID tri_parameters[] PROGMEM = {
   0xFF,
   0xFF,
   0xFF,
-  0xFF    
+  0xFF,
+  TRI_PITCHBEND,
+  TRI_OCTAVE
 };
 
 const ParameterID noise_parameters[] PROGMEM = {
@@ -235,7 +241,10 @@ static inline void toplevel_handler()
   // Search through the list of parameter buttons pressed, and find the first
   for (uint8_t i = 5; i < 16; i++) {
     if (button_pressed(i)) {
-      parameter_button = i;
+      if (button_on(BTN_SHIFT))
+	parameter_button = i + 8;
+      else
+	parameter_button = i;
       break;
     }
   }

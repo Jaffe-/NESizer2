@@ -16,7 +16,9 @@ const Parameter parameters[] PROGMEM = {
   {&mod_lfo_modmatrix[0][0], VALTYPE_RANGE, 0, 99, 0},
   {&mod_lfo_modmatrix[0][1], VALTYPE_RANGE, 0, 99, 0},
   {&mod_lfo_modmatrix[0][2], VALTYPE_RANGE, 0, 99, 0},
-    
+  {&mod_pitchbend[0], VALTYPE_RANGE, 0, 12, 1},
+  {&mod_coarse[0], VALTYPE_RANGE, 0, 36, 0},
+  
   {&sq2.enabled, VALTYPE_BOOL, 0, 0, 0},
   {&sq2.duty, VALTYPE_RANGE, 0, 3, 2},
   {&portamento_values[1], VALTYPE_RANGE, 0, 99, 0},
@@ -25,7 +27,9 @@ const Parameter parameters[] PROGMEM = {
   {&mod_lfo_modmatrix[1][0], VALTYPE_RANGE, 0, 99, 0},
   {&mod_lfo_modmatrix[1][1], VALTYPE_RANGE, 0, 99, 0},
   {&mod_lfo_modmatrix[1][2], VALTYPE_RANGE, 0, 99, 0},
-
+  {&mod_pitchbend[1], VALTYPE_RANGE, 0, 12, 1},
+  {&mod_coarse[1], VALTYPE_RANGE, 0, 36, 0},
+  
   {&tri.enabled, VALTYPE_BOOL, 0, 0, 0},
   {&portamento_values[2], VALTYPE_RANGE, 0, 99, 0},
   {&mod_detune[2], VALTYPE_POLRANGE, 0, 18, 9},
@@ -33,6 +37,8 @@ const Parameter parameters[] PROGMEM = {
   {&mod_lfo_modmatrix[2][0], VALTYPE_RANGE, 0, 99, 0},
   {&mod_lfo_modmatrix[2][1], VALTYPE_RANGE, 0, 99, 0},
   {&mod_lfo_modmatrix[2][2], VALTYPE_RANGE, 0, 99, 0},
+  {&mod_pitchbend[2], VALTYPE_RANGE, 0, 12, 1},
+  {&mod_coarse[2], VALTYPE_RANGE, 0, 36, 0},
 
   {&noise.enabled, VALTYPE_BOOL, 0, 0, 0},
   {&noise.loop, VALTYPE_RANGE, 0, 1,  0},

@@ -7,7 +7,7 @@
 #define VALTYPE_INVRANGE 2
 #define VALTYPE_POLRANGE 3
 
-#define NUM_PARAMETERS 49
+#define NUM_PARAMETERS 55
 
 typedef struct {
     uint8_t* target;
@@ -26,6 +26,8 @@ typedef enum {
     SQ1_LFO1,
     SQ1_LFO2,
     SQ1_LFO3,
+    SQ1_PITCHBEND,
+    SQ1_OCTAVE,
 
     SQ2_ENABLED,
     SQ2_DUTY,
@@ -35,6 +37,8 @@ typedef enum {
     SQ2_LFO1,
     SQ2_LFO2,
     SQ2_LFO3,
+    SQ2_PITCHBEND,
+    SQ2_OCTAVE,
 
     TRI_ENABLED,
     TRI_GLIDE,
@@ -43,6 +47,8 @@ typedef enum {
     TRI_LFO1,
     TRI_LFO2,
     TRI_LFO3,
+    TRI_PITCHBEND,
+    TRI_OCTAVE,
 
     NOISE_ENABLED,
     NOISE_LOOP,

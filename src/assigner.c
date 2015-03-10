@@ -37,26 +37,20 @@ void play_note(uint8_t channel, uint8_t midi_note)
   
   switch (channel) {
   case CHN_SQ1:
-    if (note >= 9 && note <= 72) {
-      env1.gate = 1;
-      portamento_target_notes[0] = note;
-    }
+    env1.gate = 1;
+    portamento_target_notes[0] = note;
     break;
 	
   case CHN_SQ2:
-    if (note >= 9 && note <= 72) {
-      env2.gate = 1;
-      portamento_target_notes[1] = note;
-    }
+    env2.gate = 1;
+    portamento_target_notes[1] = note;
     break;
 	
   case CHN_TRI:
-    if (note <= 72) {
-      tri.silenced = 0;
-      if (get_envmod(CHN_TRI) != 0)
-	env3.gate = 1;
-      portamento_target_notes[2] = note;
-    }
+    tri.silenced = 0;
+    if (get_envmod(CHN_TRI) != 0)
+      env3.gate = 1;
+    portamento_target_notes[2] = note;
     break;
 
   case CHN_NOISE:
