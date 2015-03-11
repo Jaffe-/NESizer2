@@ -229,9 +229,16 @@ void programmer()
 
 static inline ParameterID get_parameter_id(uint8_t main_button, uint8_t parameter_button)
 {
-  if (parameter_button != 0xFF)
-    return pgm_read_byte(&main_buttons[main_button].parameter_list[parameter_button - 5]);
-  return 0xFF;
+  if (parameter_button != 0xFF) {
+    uint8_t parameter_num;
+    if ((parameter_button & 0x80) != 0)
+      parameter_num = (parameter_button & 0x7F) + 3;
+    else
+      parameter_num = parameter_button - 5;
+    return pgm_read_byte(&main_buttons[main_button].parameter_list[parameter_num]);
+  }
+  else
+    return 0xFF;
 }
 
 static inline void toplevel_handler()
@@ -241,10 +248,11 @@ static inline void toplevel_handler()
   // Search through the list of parameter buttons pressed, and find the first
   for (uint8_t i = 5; i < 16; i++) {
     if (button_pressed(i)) {
+      parameter_button = i;
+      
       if (button_on(BTN_SHIFT))
-	parameter_button = i + 8;
-      else
-	parameter_button = i;
+	parameter_button |= 0x80;
+
       break;
     }
   }

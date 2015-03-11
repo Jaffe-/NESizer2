@@ -24,6 +24,11 @@ uint8_t mode = MODE_PROGRAM;
 uint8_t prev_input[3] = {0};
 uint8_t button_leds[24] = {0};
 
+static inline uint8_t remove_flags(uint8_t mode)
+{
+  return mode & 0x0F;
+}
+
 void ui_handler()
 /*
   Top level user interface handler. Checks whether one of the
@@ -58,10 +63,16 @@ void ui_handler()
     case MODE_TRACK: break;  // not implemented yet!
     case MODE_SETTINGS: settings(); break;
     }
-  }
     
+    if (button_on(BTN_SHIFT))
+      button_leds[BTN_SHIFT] = 0xFF;
+    else
+      button_leds[BTN_SHIFT] = 0;
+  }
+
+  
   // When mode switches, clear all button LEDs
-  if (mode != last_mode) {
+  if (remove_flags(mode) != remove_flags(last_mode)) {
     for (uint8_t i = 0; i < 24; i++) 
       button_leds[i] = 0;	
     leds_7seg_clear(3);
@@ -69,10 +80,10 @@ void ui_handler()
   }
     
   // Indicate which mode is chosen
-  button_leds[BTN_PROGRAM] = ((mode & 0x0F) == MODE_PROGRAM) * 0xFF;
-  button_leds[BTN_PATTERN] = ((mode & 0x0F) == MODE_PATTERN) * 0xFF;
-  button_leds[BTN_TRACK] = ((mode & 0x0F) == MODE_TRACK) * 0xFF;
-  button_leds[BTN_SETTINGS] = ((mode & 0x0F) == MODE_SETTINGS) * 0xFF;
+  button_leds[BTN_PROGRAM] = (remove_flags(mode) == MODE_PROGRAM) * 0xFF;
+  button_leds[BTN_PATTERN] = (remove_flags(mode) == MODE_PATTERN) * 0xFF;
+  button_leds[BTN_TRACK] = (remove_flags(mode) == MODE_TRACK) * 0xFF;
+  button_leds[BTN_SETTINGS] = (remove_flags(mode) == MODE_SETTINGS) * 0xFF;
   
   // Save current button states
   prev_input[0] = input[0];
@@ -167,8 +178,12 @@ void ui_getvalue_handler()
     leds_set(ui_getvalue_session.button1, 0);
 
     if (ui_getvalue_session.button2 != 0xFF) {
-      button_leds[ui_getvalue_session.button2] = 1;
-      leds_set(ui_getvalue_session.button2, 0);
+      button_leds[ui_getvalue_session.button2 & 0x7F] = 1;
+      leds_set(ui_getvalue_session.button2 & 0x7F, 0);
+      if ((ui_getvalue_session.button2 & 0x80) != 0) {
+	button_leds[BTN_SHIFT] = 1;
+	leds_set(BTN_SHIFT, 0);
+      }
     }
 
     ui_getvalue_session.state = SESSION_ACTIVE;
@@ -180,7 +195,7 @@ void ui_getvalue_handler()
   // When SET is pressed, store the new value in the parameter and disable LED blinking.
   // If type is VALTYPE_INVRANGE, the value is inverted. 
 
-  if (button_pressed(BTN_SET)) {
+  if (button_pressed(BTN_SAVE)) {
     if (ui_getvalue_session.parameter.type == VALTYPE_INVRANGE)
       *ui_getvalue_session.parameter.target = ui_getvalue_session.parameter.max - value;
     else
@@ -188,9 +203,12 @@ void ui_getvalue_handler()
 	
     button_leds[ui_getvalue_session.button1] = 0;
 
-    if (ui_getvalue_session.button2 != 0xFF) 
-      button_leds[ui_getvalue_session.button2] = 0;
-
+    if (ui_getvalue_session.button2 != 0xFF) {
+      button_leds[ui_getvalue_session.button2 & 0x7F] = 0;
+      if ((ui_getvalue_session.button2 & 0x80) != 0)
+	button_leds[BTN_SHIFT] = 1;      
+    }
+    
     ui_getvalue_session.state = SESSION_INACTIVE;
 	
     mode &= 0x7F;
