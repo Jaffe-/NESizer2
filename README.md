@@ -8,8 +8,10 @@ The 2A03 IC consists of a 6502 core (with some minor differences), a DMA control
 
 This project is inspired by a similar approach taken here: http://www.soniktech.com/tsundere/, but the idea here is to have the microcontroller communicate more directly with the 2A03, instead of using dedicated logic circuitry to send instructions.
 
-Here is a demo: https://www.youtube.com/watch?v=0pwFglPS3n8
-A second demo: https://www.youtube.com/watch?v=6Rg04oqwLCA
+Most resent demo: https://www.youtube.com/watch?v=pXKrs0bFvvk
+
+Old demos: https://www.youtube.com/watch?v=0pwFglPS3n8
+           https://www.youtube.com/watch?v=6Rg04oqwLCA
 
 
 ### Hardware
