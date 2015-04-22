@@ -256,21 +256,11 @@ void dmc_update()
 		  | dmc.enabled << DMC_ENABLE_p);
 }
 
-#define BUFF 256
-
 void dmc_update_sample_raw()
-{
-//  static uint8_t buffer[BUFF] = {0};
-//  static uint16_t buff_ptr = 0;
-
-//  dmc.data = (sample_read_byte() + buffer[(buff_ptr + 1) % BUFF]) >> 1;
-//  buffer[buff_ptr] = dmc.data;
-
+{  
   dmc.data = sample_read_byte();
    
   io_register_write(DMC_RAW, dmc.data);
-
-//  if (++buff_ptr == BUFF) buff_ptr = 0;
   
   if (sample.bytes_done == sample.size) {
     sample_reset();
@@ -333,14 +323,12 @@ void apu_refresh_channel(uint8_t ch_number)
   switch (ch_number) {
   case CHN_SQ1:
     io_write_changed(SQ1_VOL);
-    io_write_changed(SQ1_SWEEP);
     io_write_changed(SQ1_LO);
     io_write_changed(SQ1_HI);
     break;
 
   case CHN_SQ2:
     io_write_changed(SQ2_VOL);
-    io_write_changed(SQ2_SWEEP);
     io_write_changed(SQ2_LO);
     io_write_changed(SQ2_HI);
     break;
