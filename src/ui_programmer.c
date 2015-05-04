@@ -35,6 +35,8 @@
 #define PATCH_MIN 0
 #define PATCH_MAX 99
 
+uint8_t programmer_leds[24];
+
 typedef enum { STATE_TOPLEVEL, STATE_SAVE } State;
 
 State state = STATE_TOPLEVEL;
@@ -190,12 +192,12 @@ void programmer()
    of possible button presses and combinations. 
 */
 {
-  static uint8_t patchno = 0;
+  static int8_t patchno = 0;
 
   // Display the selected patch number
   leds_7seg_two_digit_set(3, 4, patchno);
 
-  uint8_t last_patchno = patchno;
+  int8_t last_patchno = patchno;
   // Handle UP and DOWN presses
   ui_updown(&patchno, PATCH_MIN, PATCH_MAX);
 
@@ -210,7 +212,7 @@ void programmer()
     ui_getvalue_session.button1 = BTN_SAVE;
     ui_getvalue_session.button2 = 0xFF;
     ui_getvalue_session.parameter.target = &patchno;
-    ui_getvalue_session.parameter.type = VALTYPE_RANGE;
+    ui_getvalue_session.parameter.type = RANGE;
     ui_getvalue_session.parameter.min = PATCH_MIN;
     ui_getvalue_session.parameter.max = PATCH_MAX;
     mode |= MODE_GETVALUE;
@@ -218,11 +220,11 @@ void programmer()
     return;
   }
 
-  button_leds[BTN_SQ1] = sq1.enabled * 0xFF;
-  button_leds[BTN_SQ2] = sq2.enabled * 0xFF;
-  button_leds[BTN_TRI] = tri.enabled * 0xFF;
-  button_leds[BTN_NOISE] = noise.enabled * 0xFF;
-  button_leds[BTN_DMC] = dmc.enabled * 0xFF;
+  sq1.enabled ? button_led_on(BTN_SQ1) : button_led_off(BTN_SQ1);
+  sq2.enabled ? button_led_on(BTN_SQ2) : button_led_off(BTN_SQ2);
+  tri.enabled ? button_led_on(BTN_TRI) : button_led_off(BTN_TRI);
+  noise.enabled ? button_led_on(BTN_NOISE) : button_led_off(BTN_NOISE);
+  dmc.enabled ? button_led_on(BTN_DMC) : button_led_off(BTN_DMC);
 
   toplevel_handler(); 
 }
@@ -277,7 +279,7 @@ static inline void toplevel_handler()
     else if (button_depressed(i)) {
       Parameter parameter = parameter_get(main_buttons[i].depress_parameter);
 
-      if (parameter.type == VALTYPE_BOOL) 
+      if (parameter.type == BOOL) 
 	*parameter.target ^= 1;
       else {
 	ui_getvalue_session.button1 = i;

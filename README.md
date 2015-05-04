@@ -26,7 +26,7 @@ Front panel board:
 
 The circuit essentially consists of the following parts:
 
-- Atmega168 microcontroller
+- Atmega328 microcontroller
 - 2A03 CPU/APU
 - LED matrix
 - Switch matrix
@@ -36,7 +36,7 @@ The circuit essentially consists of the following parts:
 
 #### Communication
 
-The Atmega168 accesses the 2A03, LED matrix, switch matrix and SRAM through a simple bus system consisting of a 3-bit "address bus" and an 8-bit data bus. Bits 0, 1 and 2 of **PORTB** are used as the address, while bits 0 and 1 of **PORTC** and bits 2 to 7 of **PORTD** are connected to the data bus. A 74HC238 decoder is used to decode the 3-bit address into one of eight activation signals for each component. The addresses are decoded as follows:
+The Atmega accesses the 2A03, LED matrix, switch matrix and SRAM through a simple bus system consisting of a 3-bit address bus and an 8-bit data bus. Bits 0, 1 and 2 of **PORTB** are used as the address, while bits 0 and 1 of **PORTC** and bits 2 to 7 of **PORTD** are connected to the data bus. A 74HC238 decoder is used to decode the 3-bit address into one of eight activation signals for each component. The addresses are decoded as follows:
 
 - 0: 2A03 data bus 
 - 1: LED matrix column
@@ -49,7 +49,7 @@ The Atmega168 accesses the 2A03, LED matrix, switch matrix and SRAM through a si
 
 #### 2A03 setup
 
-Both the Atmega168 and the 2A03 are clocked by a 20 MHz crystal oscillator circuit based on 74HCT04 inverters. The 2A03 divides this clock by 12 internally to provide a 1.66 MHz clock for the 6502 and APU. This is a bit lower than the usual frequency for the 2A03 (1.79 MHz), but it has no serious impact on APU operation (timer values become a bit different).
+Both the Atmega168 and the 2A03 are clocked by a 20 MHz crystal oscillator circuit based on 74HC04 inverters. The 2A03 divides this clock by 12 internally to provide a 1.66 MHz clock for the 6502 and APU. This is a bit lower than the usual frequency for the 2A03 (1.79 MHz), but it has no serious impact on APU operation (timer values become a bit different).
 
 The Atmega is hooked up to the 2A03 using the following connections:
 
@@ -97,17 +97,18 @@ The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium batte
 
 #### MIDI
 
-The MIDI input circuit is the standard circuit suggested in the MIDI standard, using an optocoupler (6N138) to isolate the MIDI current loop from the circuit. The incoming signal goes to the RX input of the Atmega. 
+The MIDI input circuit is the standard circuit suggested in the MIDI standard, using an optocoupler (6N138) to isolate the MIDI current loop from the circuit. The incoming signal goes to the RX input of the Atmega's USART. 
 
 
 #### Output audio path
 
 There are two nearly identical output paths for the two 2A03 sound outputs, differing only in the gain applied to the signal.
  
-The signal is first passed through a volume control and a high pass filter with a cutoff frequency of about 480 kHz to suppress some of the 2A03's digital noise at f_2A03 / 3. The 2A03 output is AC coupled into the audio path to reduce nosie when turning the volume potentiometer, and to remove any DC offset from the DMC channel (which can cause pops when playing samples). 
+The signal is first passed through a volume control potentiometer. The 2A03 output is AC coupled into the audio path to reduce noise when turning the volume potentiometer, and to remove any DC offset from the DMC channel (which can cause pops when playing samples). The attenuated signal is then AC coupled to the gain stage, consisting of an op-amp in a non-inverting amplifier configuration. A 2.5V bias is added to center the signal at the middle of the op-amp's linear range. The non-inverting amplifier subtracts the DC component so that the signal stays centered at 2.5V after amplification.
 
-The filtered and attenuated signal is AC coupled to the gain stage, consisting of an op-amp in a non-inverting amplifier configuration. A 0.36V bias is added to bring the signal within the op-amp's linear range. The gain for SND1 is approximately 9.3, and the gain for SND2 is approximately 12. This brings each signal to around 2V peak to peak. The output from the op-amp is AC coupled to the output jack to remove the high DC offsets present after amplification. 
-A mix of the two outputs is also made passively, with a ratio of approximately 3 : 5, as in the NES. The mixed signal is buffered by an emitter follower to keep its amplitude relatively constant when the output is loaded. The output on the second jack can be switched between the ordinary output or this mix. 
+The gain for SND1 is approximately 9.3, and the gain for SND2 is approximately 12. This brings each signal to around 2V peak to peak. The output from the op-amp is AC coupled to the output jack to remove the high DC offsets present after amplification. 
+
+A mix of the two outputs is also made passively, with a ratio of approximately 3 : 5, as in the NES. The mixed signal is buffered to keep its amplitude relatively constant when the output is loaded. The output on the second jack can be switched between the ordinary output or this mix. 
 
 
 ### Software
@@ -216,6 +217,8 @@ Reading and interpreting the data is done by the functions in `midi.c`, `midi.h`
 
 
 ### Changelog
+
+**26/03/15**: Audio circuitry updated. Op-amps are now operating at 2.5V bias to extend the linear range. Emitter follower replaced by op-amp buffer. 
 
 **08/03/15**: Optimized the cent to period calculations, now uses a period lookup table and a linear approximation in between seminotes. 
 

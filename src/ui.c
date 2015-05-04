@@ -12,6 +12,7 @@
 #include "ui_sequencer.h"
 #include "ui_programmer.h"
 #include "ui_settings.h"
+#include "ui_track.h"
 #include "leds.h"
 #include "input.h"
 #include "midi.h"
@@ -22,7 +23,8 @@
 uint8_t mode = MODE_PROGRAM;
 
 uint8_t prev_input[3] = {0};
-uint8_t button_leds[24] = {0};
+
+uint8_t* button_leds = programmer_leds;
 
 static inline uint8_t remove_flags(uint8_t mode)
 {
@@ -36,8 +38,6 @@ void ui_handler()
   the corresponding function.
 */
 {
-//    static const 
-  static uint8_t last_mode;
 
   // If a transfer is going on, simply use the 16 upper buttons as a progress
   // bar
@@ -48,71 +48,83 @@ void ui_handler()
     ui_getvalue_handler();
 
   else {
-    if (button_pressed(BTN_PROGRAM)) 
+    if (button_pressed(BTN_PROGRAM)) {
       mode = MODE_PROGRAM;
-    else if (button_pressed(BTN_PATTERN))
+      button_leds = programmer_leds;
+    }
+    else if (button_pressed(BTN_PATTERN)) {
       mode = MODE_PATTERN;
-    else if (button_pressed(BTN_TRACK))
+      button_leds = sequencer_leds;
+    }
+    else if (button_pressed(BTN_TRACK)) { 
       mode = MODE_TRACK;
-    else if (button_pressed(BTN_SETTINGS))
+      button_leds = track_leds;
+    }
+    else if (button_pressed(BTN_SETTINGS)) {
       mode = MODE_SETTINGS;
-
-    switch (mode) {
-    case MODE_PROGRAM: programmer(); break;
-    case MODE_PATTERN: sequencer(); break;
-    case MODE_TRACK: break;  // not implemented yet!
-    case MODE_SETTINGS: settings(); break;
+      button_leds = settings_leds;
     }
     
-    if (button_on(BTN_SHIFT))
-      button_leds[BTN_SHIFT] = 0xFF;
-    else
-      button_leds[BTN_SHIFT] = 0;
-  }
+    switch (mode) {
+      case MODE_PROGRAM:
+	button_led_on(BTN_PROGRAM);
+	programmer();
+	break;
 
-  
-  // When mode switches, clear all button LEDs
-  if (remove_flags(mode) != remove_flags(last_mode)) {
-    for (uint8_t i = 0; i < 24; i++) 
-      button_leds[i] = 0;	
-    leds_7seg_clear(3);
-    leds_7seg_clear(4);	
+      case MODE_PATTERN:
+	sequencer();
+	button_led_on(BTN_PATTERN);
+	break;
+      case MODE_TRACK:
+	button_led_on(BTN_TRACK);
+	break;  // not implemented yet!
+      case MODE_SETTINGS:
+	settings();
+	button_led_on(BTN_SETTINGS);
+	break;
+    }
+
+    // Todo: abstract away this ...
+    if (button_on(BTN_SHIFT))
+      button_led_on(BTN_SHIFT);
+    else
+      button_led_off(BTN_SHIFT);
   }
-    
-  // Indicate which mode is chosen
-  button_leds[BTN_PROGRAM] = (remove_flags(mode) == MODE_PROGRAM) * 0xFF;
-  button_leds[BTN_PATTERN] = (remove_flags(mode) == MODE_PATTERN) * 0xFF;
-  button_leds[BTN_TRACK] = (remove_flags(mode) == MODE_TRACK) * 0xFF;
-  button_leds[BTN_SETTINGS] = (remove_flags(mode) == MODE_SETTINGS) * 0xFF;
-  
+      
   // Save current button states
   prev_input[0] = input[0];
   prev_input[1] = input[1];
   prev_input[2] = input[2];
 
-  last_mode = mode;
+  //last_mode = mode;
 }
 
 void ui_leds_handler()
-/* Handles the updating of all button LEDs.
+/* 
+   Handles the updating of all button LEDs.
    If a button's value is 0xFF, it is on, and
    if it's 0, it's off. Otherwise the value is the
    current value of a counter which is used to blink
    the LEDs. 
 */
 {
+  static uint8_t counter;
+  
   for (uint8_t i = 0; i < 24; i++) {
-    if (button_leds[i] == 0) 
-      leds[i / 8] &= ~(1 << (i % 8));
-    else if (button_leds[i] == 0xFF)
-      leds[i / 8] |= 1 << (i % 8);
+    if (button_led_get(i) == 0)
+      leds_off(i);
+
+    else if (button_led_get(i) == 1)
+      leds_on(i);
+    
     else  {
-      if (--button_leds[i] == 0) {
-	button_leds[i] = BLINK_CNT;
-	leds[i / 8] ^= 1 << (i % 8);
+      if (counter == BLINK_CNT) {
+	leds_toggle(i);
+	counter = 0;
       }
     }
   }
+  counter++;
 }
 
 
@@ -123,7 +135,7 @@ void ui_leds_handler()
 #define WAIT_CNT 60
 #define SPEED_CNT 10
 
-void ui_updown(uint8_t* value, uint8_t min, uint8_t max)
+uint8_t ui_updown(int8_t* value, int8_t min, int8_t max)
 /* Handles up/down buttons when selecting values */
 {
   static uint8_t wait_count = 0;
@@ -135,11 +147,13 @@ void ui_updown(uint8_t* value, uint8_t min, uint8_t max)
     if (button_pressed(BTN_UP)) {
       (*value)++;
       wait_count = 0;
+      return 1;
     }
 	
     else if (button_pressed(BTN_DOWN)) {
       (*value)--;
       wait_count = 0;
+      return 1;
     }
 	
     // If the button was not just pressed, increase the wait counter and see if 
@@ -149,12 +163,14 @@ void ui_updown(uint8_t* value, uint8_t min, uint8_t max)
 	if (speed_count++ == SPEED_CNT) {
 	  speed_count = 0;
 	  *value = (button_on(BTN_UP)) ? *value + 1 : *value - 1;
+	  return 1;
 	}
       }
       else 
 	wait_count++;
     }
   }
+  return 0;
 }
 
 GetvalueSession ui_getvalue_session = {.state = SESSION_INACTIVE};
@@ -165,24 +181,28 @@ void ui_getvalue_handler()
    be changed, which buttons to blink, and the state. 
 */
 {
-  static uint8_t value;
+  static int8_t value;
     
   // If the state just changed to GETVALUE, set the value to the parameter's value
   // and last pot value to the current. 
   if (ui_getvalue_session.state == SESSION_INACTIVE) {
-    value = (ui_getvalue_session.parameter.type == VALTYPE_INVRANGE) ?
-      ui_getvalue_session.parameter.max - *ui_getvalue_session.parameter.target 
-      : *ui_getvalue_session.parameter.target;
+    if (ui_getvalue_session.parameter.type == INVRANGE) 
+      value = ui_getvalue_session.parameter.max - *ui_getvalue_session.parameter.target;
+    else
+      value = *ui_getvalue_session.parameter.target;
 	
-    button_leds[ui_getvalue_session.button1] = 1;
-    leds_set(ui_getvalue_session.button1, 0);
-
+//    button_leds[ui_getvalue_session.button1] = 1;
+//    leds_set(ui_getvalue_session.button1, 0);
+    button_led_blink(ui_getvalue_session.button1);
+    
     if (ui_getvalue_session.button2 != 0xFF) {
-      button_leds[ui_getvalue_session.button2 & 0x7F] = 1;
-      leds_set(ui_getvalue_session.button2 & 0x7F, 0);
+      //     button_leds[ui_getvalue_session.button2 & 0x7F] = 1;
+      //leds_set(ui_getvalue_session.button2 & 0x7F, 0);
+      button_led_blink(ui_getvalue_session.button2);
       if ((ui_getvalue_session.button2 & 0x80) != 0) {
-	button_leds[BTN_SHIFT] = 1;
-	leds_set(BTN_SHIFT, 0);
+//	button_leds[BTN_SHIFT] = 1;
+//	leds_set(BTN_SHIFT, 0);
+	button_led_blink(BTN_SHIFT);
       }
     }
 
@@ -196,17 +216,20 @@ void ui_getvalue_handler()
   // If type is VALTYPE_INVRANGE, the value is inverted. 
 
   if (button_pressed(BTN_SAVE)) {
-    if (ui_getvalue_session.parameter.type == VALTYPE_INVRANGE)
+    if (ui_getvalue_session.parameter.type == INVRANGE)
       *ui_getvalue_session.parameter.target = ui_getvalue_session.parameter.max - value;
     else
       *ui_getvalue_session.parameter.target = value;
 	
-    button_leds[ui_getvalue_session.button1] = 0;
-
+    //button_leds[ui_getvalue_session.button1] = 0;
+    button_led_off(ui_getvalue_session.button1);
+    
     if (ui_getvalue_session.button2 != 0xFF) {
-      button_leds[ui_getvalue_session.button2 & 0x7F] = 0;
-      if ((ui_getvalue_session.button2 & 0x80) != 0)
-	button_leds[BTN_SHIFT] = 1;      
+      //button_leds[ui_getvalue_session.button2 & 0x7F] = 0;
+      button_led_off(ui_getvalue_session.button2 & 0x7F);
+      //if ((ui_getvalue_session.button2 & 0x80) != 0)
+	//button_leds[BTN_SHIFT] = 1;
+	//button_led_on
     }
     
     ui_getvalue_session.state = SESSION_INACTIVE;
@@ -214,20 +237,18 @@ void ui_getvalue_handler()
     mode &= 0x7F;
   }	    
 
-  if (ui_getvalue_session.parameter.type != VALTYPE_POLRANGE) {
-    // Display the value on the 7 segment displays
-    leds_7seg_two_digit_set(3, 4,  value);
-  }
-  else {
-    uint8_t midpoint = (ui_getvalue_session.parameter.max - ui_getvalue_session.parameter.min) / 2;
-    if (value < midpoint) {
+  if (ui_getvalue_session.parameter.min < 0) {
+    if (value < 0) {
       leds_7seg_set(3, LEDS_7SEG_MINUS);
-      leds_7seg_set(4, midpoint - value);
+      leds_7seg_set(4, -value);
     }
     else {
       leds_7seg_clear(3);
-      leds_7seg_set(4, value - midpoint);
+      leds_7seg_set(4, value);
     }
   }
+  else 
+    leds_7seg_two_digit_set(3, 4, value);
+  
 
 }

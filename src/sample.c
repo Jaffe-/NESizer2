@@ -43,7 +43,7 @@ static inline uint8_t index_occupied(uint8_t index);
 
 /* Public */
 
-Sample sample;    // Holds the current sample being written or read
+Sample sample;
 
 void sample_clean()
 /* Writes the sample index at the start of the sample area */

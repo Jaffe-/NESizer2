@@ -19,11 +19,12 @@
 #include "leds.h"
 #include "portamento.h"
 #include "assigner.h"
+#include "sample.h"
 
 typedef enum {STATE_MESSAGE, STATE_SYSEX, STATE_TRANSFER} midi_state_e;
 
 uint8_t midi_channels[5];
-static uint8_t notes[5];
+uint8_t midi_notes[5];
 
 static midi_state_e state = STATE_MESSAGE;
 static uint8_t sysex_command;
@@ -51,71 +52,76 @@ void midi_handler()
 static inline void interpret_message()
 {
   while (midi_io_buffer_nonempty()) {
-    MIDIMessage msg = midi_io_read_message();
+    MIDIMessage msg = {0};
+    if (midi_io_read_message(&msg)) {
 
-    if (midi_is_channel_message(msg.command)) {
-      for (uint8_t i = 0; i < 5; i++) {
-	if (get_midi_channel(i) == msg.channel) {
-	  switch (msg.command) {
-			
-	  case MIDI_CMD_NOTE_ON:
-	    notes[i] = msg.data1;
-	    play_note(i, msg.data1);
-	    break;
-			
-	  case MIDI_CMD_NOTE_OFF:
-	    if (notes[i] == msg.data1)
-	      stop_note(i);
-	    break;
-			
-	  case MIDI_CMD_PITCH_BEND:
-	    if (i < 4) {
-	      mod_pitchbend_input[i] = ((uint16_t)msg.data1) | ((uint16_t)msg.data2) << 7;
+      if (midi_is_channel_message(msg.command)) {
+	for (uint8_t i = 0; i < 5; i++) {
+	  if (get_midi_channel(i) == msg.channel) {
+	    switch (msg.command) {
+	      
+	    case MIDI_CMD_NOTE_ON:
+	      midi_notes[i] = msg.data1;
+	      play_note(i, msg.data1);
+	      break;
+	      
+	    case MIDI_CMD_NOTE_OFF:
+	      if (midi_notes[i] == msg.data1) {
+		midi_notes[i] = 0;
+		stop_note(i);
+	      }
+	      break;
+	      
+	    case MIDI_CMD_PITCH_BEND:
+	      if (i < 4) {
+		mod_pitchbend_input[i] = ((uint16_t)msg.data1) | ((uint16_t)msg.data2) << 7;
+	      }
+	      break;
 	    }
-	    break;
 	  }
 	}
       }
-    }
+ 
 
-    else {
-      switch (msg.command) {
-      case MIDI_CMD_SYSEX:
-	state = STATE_SYSEX;
-	break;
+      else {
+	switch (msg.command) {
+	case MIDI_CMD_SYSEX:
+	  state = STATE_SYSEX;
+	  break;
+	  
+	case MIDI_CMD_TIMECODE:
+	  break;
 		
-      case MIDI_CMD_TIMECODE:
-	break;
-		
-      case MIDI_CMD_SONGPOS:
-	break;
+	case MIDI_CMD_SONGPOS:
+	  break;
 	    
-      case MIDI_CMD_SONGSEL:
-	break;
+	case MIDI_CMD_SONGSEL:
+	  break;
 		
-      case MIDI_CMD_TUNEREQUEST:
-	break;
+	case MIDI_CMD_TUNEREQUEST:
+	  break;
 		
-      case MIDI_CMD_SYSEX_END:
-	break;
+	case MIDI_CMD_SYSEX_END:
+	  break;
 		
-      case MIDI_CMD_CLOCK:
-	break;
+	case MIDI_CMD_CLOCK:
+	  break;
 		
-      case MIDI_CMD_START:
-	break;
+	case MIDI_CMD_START:
+	  break;
 		
-      case MIDI_CMD_CONTINUE:
-	break;
+	case MIDI_CMD_CONTINUE:
+	  break;
 		
-      case MIDI_CMD_STOP:
-	break;
+	case MIDI_CMD_STOP:
+	  break;
 		
-      case MIDI_CMD_ACTIVESENSE:
-	break;
+	case MIDI_CMD_ACTIVESENSE:
+	  break;
 		
-      case MIDI_CMD_RESET:
-	break;
+	case MIDI_CMD_RESET:
+	  break;
+	}
       }
     }
   }
@@ -159,7 +165,7 @@ static inline void sysex()
 static inline void transfer()
 /*
   Handlers transfering of data via MIDI
- */
+*/
 {
   static uint8_t nibble_flag = 0;
   static uint8_t temp_val = 0;

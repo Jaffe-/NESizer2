@@ -65,8 +65,6 @@ static inline uint8_t read_data()
   bus_dir_input();
     
   uint8_t value = bus_read();
-
-  //while(1);
     
   bus_dir_output();
     

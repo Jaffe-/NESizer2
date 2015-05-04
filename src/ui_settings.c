@@ -26,6 +26,8 @@
 
 static inline void toplevel();
 
+uint8_t settings_leds[24];
+
 void settings()
 {
   toplevel();
@@ -42,7 +44,7 @@ static inline void toplevel()
   else
     leds_7seg_dot_off(3);
 
-  uint8_t last_index = cur_index;
+  int8_t last_index = cur_index;
   ui_updown(&cur_index, 0, 99);
   if (cur_index != last_index) {
     index_state = sample_occupied(cur_index);
@@ -78,7 +80,7 @@ static inline void toplevel()
 
     if (chn != 0xFF) {
       Parameter parameter = {.target = &midi_channels[chn],
-			     .type = VALTYPE_RANGE,
+			     .type = RANGE,
 			     .min = 0,
 			     .max = 16};
       ui_getvalue_session.parameter = parameter;

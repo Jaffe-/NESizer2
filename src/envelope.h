@@ -13,10 +13,11 @@ typedef struct {
    retrigger flag (retrigger the envelope when restarted)
 */
 
-  uint8_t attack;
-  uint8_t decay;
-  uint8_t sustain;
-  uint8_t release;
+  int8_t attack;
+  int8_t decay;
+  int8_t sustain;
+  int8_t release;
+
   uint8_t gate;
   uint8_t retrigger;
 

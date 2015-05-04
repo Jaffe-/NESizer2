@@ -96,30 +96,31 @@ uint8_t midi_io_buffer_nonempty()
   return ((remaining >= 1) && (remaining > message_length(get_command(buffer[buffer_read_pos]))));
 }
 
-MIDIMessage midi_io_read_message()
+uint8_t midi_io_read_message(MIDIMessage* msg)
 /* Gets the next message from the buffer and puts the data in a struct object */
 {
-  MIDIMessage msg = {0};
+//  MIDIMessage msg = {0};
 
   uint8_t status;
   // If for some reason the read position doesn't point to the first byte of a message,
   // skip to the next one.
-  while (!((status = midi_io_read_byte()) & 0x80));
+  if (!((status = midi_io_read_byte()) & 0x80))
+    return 0;
+  
+  msg->command = get_command(status);
 
-  msg.command = get_command(status);
-
-  if (midi_is_channel_message(msg.command)) 
-    msg.channel = get_channel(status);
+  if (midi_is_channel_message(msg->command)) 
+    msg->channel = get_channel(status);
 
   // Get first databyte, if any
-  if (message_length(msg.command) > 0)
-    msg.data1 = midi_io_read_byte();
+  if (message_length(msg->command) > 0)
+    msg->data1 = midi_io_read_byte();
     
   // Check the command to see if there is one or two bytes following the status byte
-  if (message_length(msg.command) > 1)
-    msg.data2 = midi_io_read_byte();
+  if (message_length(msg->command) > 1)
+    msg->data2 = midi_io_read_byte();
         
-  return msg;
+  return 1;
 }
 
 

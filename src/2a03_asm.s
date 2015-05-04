@@ -269,10 +269,9 @@ disable_interrupts15:
 
 disable_interrupts16:
 	DISABLE_INTERRUPTS 4
-
+	
 	
 ;;; ----------------------------------------------------------------------------
-
 ;;; RESET_PC
 ;;;
 ;;; Parameters: none

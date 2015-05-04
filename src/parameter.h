@@ -2,19 +2,14 @@
 
 #include <stdint.h>
 
-#define VALTYPE_BOOL 0
-#define VALTYPE_RANGE 1
-#define VALTYPE_INVRANGE 2
-#define VALTYPE_POLRANGE 3
-
 #define NUM_PARAMETERS 55
 
 typedef struct {
-    uint8_t* target;
-    uint8_t type;
-    uint8_t min;
-    uint8_t max;
-    uint8_t initial_value;
+  int8_t* target;
+  enum {BOOL, RANGE, INVRANGE} type;
+  int8_t min;
+  int8_t max;
+  int8_t initial_value;
 } Parameter;
 
 typedef enum {

@@ -6,14 +6,14 @@
 #define SAMPLE_TYPE_DPCM 1
 
 typedef struct {
-    uint8_t type;
-    uint32_t size;
-    uint16_t first_block;
+  uint8_t type;
+  uint32_t size;
+  uint16_t first_block;
     
-    // Internal
-    uint16_t current_block;
-    uint16_t current_position;
-    uint32_t bytes_done;
+  // Internal
+  uint16_t current_block;
+  uint16_t current_position;
+  uint32_t bytes_done;
 } Sample;
 
 extern Sample sample;

@@ -2,7 +2,7 @@
 #include "portamento.h"
 #include "modulation.h"
 
-uint8_t portamento_values[3] = {0};
+int8_t portamento_values[3] = {0};
 uint16_t portamento_cs[3] = {0};
 uint8_t portamento_target_notes[3] = {0};
 

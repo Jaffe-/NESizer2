@@ -11,8 +11,8 @@
 #define CHN_DMC 4
 
 typedef struct {
-  uint8_t enabled;          // BOOL
-  uint8_t duty;             // 2-bit integer
+  int8_t enabled;          // BOOL
+  int8_t duty;             // 2-bit integer
 
   // Used internally:
   uint8_t volume;
@@ -20,16 +20,16 @@ typedef struct {
 } Square;
 
 typedef struct { 
-  uint8_t enabled;          // BOOL 
-  uint8_t silenced;          // BOOL
+  int8_t enabled;          // BOOL 
+  int8_t silenced;          // BOOL
 
   // Used internally:
   uint16_t period;
 } Triangle;
 
 typedef struct {
-  uint8_t enabled;
-  uint8_t loop;             // BOOL: Loop mode (pitched noise) 
+  int8_t enabled;
+  int8_t loop;             // BOOL: Loop mode (pitched noise) 
 
   // Used internally:
   uint8_t volume : 4;
@@ -37,8 +37,8 @@ typedef struct {
 } Noise;
 
 typedef struct {
-  uint8_t enabled;
-  uint8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
+  int8_t enabled;
+  int8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
   uint8_t sample_number;
 
   // Used internally:

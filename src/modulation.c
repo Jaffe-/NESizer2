@@ -8,36 +8,27 @@
 
 #define ABS(x) ((x > 0) ? (x) : (-x))
 
-uint8_t mod_lfo_modmatrix[4][3];
-uint8_t mod_detune[3] = {9, 9, 9};   // detune values default to 9 (translates to 0)
-uint8_t mod_envmod[4] = {9, 9, 9, 7};
-uint16_t mod_pitchbend_input[4] = {0x2000, 0x2000, 0x2000, 0x2000};
-uint8_t mod_pitchbend[3];
-uint8_t mod_coarse[3];
+/* Patch programmable parameters */
+int8_t mod_lfo_modmatrix[4][3];
+int8_t mod_detune[3] = {9, 9, 9};   // detune values default to 9 (translates to 0)
+int8_t mod_envmod[4] = {9, 9, 9, 7};
+int8_t mod_pitchbend[3];
+int8_t mod_coarse[3];
 
-static int16_t dc_temp[3];
+/* Input from MIDI  */
+uint16_t mod_pitchbend_input[4] = {0x2000, 0x2000, 0x2000, 0x2000};
 uint8_t noise_period;
 
+
+static int16_t dc_temp[3];
 static Envelope* envelopes[] = {&env1, &env2, &env3};
 
-static inline int8_t get_detune(uint8_t chn)
-{
-  return (int8_t)mod_detune[chn] - 9;
-}
 
 static inline int16_t get_pitchbend(uint8_t chn)
 {
   // test var
   uint8_t pitch_bend_val = 2;
   return (int16_t)((mod_pitchbend_input[chn] >> 7) - 0x40) * mod_pitchbend[chn];
-}
-
-int8_t get_envmod(uint8_t chn)
-{
-  if (chn == CHN_NOISE)
-    return (int8_t)mod_envmod[2] - 7;
-  else 
-    return (int8_t)mod_envmod[chn] - 9;
 }
 
 static inline int16_t get_coarse_tune(uint8_t chn)
@@ -106,12 +97,12 @@ static inline void calc_freqmod(uint8_t chn)
     dc += sum / 128;
     
     // Add detune frequency delta
-    dc += get_detune(chn);
+    dc += mod_detune[chn];
     
     // For square channels, also add in the envelope modulation, if any
     int8_t env_fmod_val = (int8_t)envelopes[chn]->value - (int8_t)envelopes[chn]->sustain;
     if (env_fmod_val > 0) 
-      dc += env_fmod_val * get_envmod(chn);
+      dc += env_fmod_val * mod_envmod[chn];
     
     // Store total dc value, which will be applied by apply_freqmod
     dc_temp[chn] = dc;
@@ -139,5 +130,5 @@ void mod_apply()
   apply_freqmod(chn); 
   if (++chn == 4) chn = 0;
 
-  apply_envelopes(); 
+  apply_envelopes();
 }

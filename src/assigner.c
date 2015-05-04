@@ -48,8 +48,6 @@ void play_note(uint8_t channel, uint8_t midi_note)
 	
   case CHN_TRI:
     tri.silenced = 0;
-    if (get_envmod(CHN_TRI) != 0)
-      env3.gate = 1;
     portamento_target_notes[2] = note;
     break;
 

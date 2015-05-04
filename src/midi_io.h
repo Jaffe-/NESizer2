@@ -34,7 +34,7 @@ typedef struct {
 void midi_io_setup();
 void midi_io_handler();
 uint8_t midi_io_buffer_nonempty();
-MIDIMessage midi_io_read_message();
+uint8_t midi_io_read_message(MIDIMessage* msg);
 uint8_t midi_io_read_byte();
 uint8_t midi_io_bytes_remaining();
 //uint8_t midi_is_channel_message(uint8_t command);

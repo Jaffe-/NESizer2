@@ -13,6 +13,7 @@
 
 #include "parameter.h"
 #include "input.h"
+#include "leds.h"
 
 #define BTN_SQ1 0 // 16
 #define BTN_SQ2 1 // 17
@@ -53,6 +54,14 @@
 // Gets the boolean value of a particular button
 #define button_getbool(BTN) ((input[button_row(BTN)] >> button_col(BTN)) & 1)
 
+#define button_led_byte(BTN) ((BTN) / 4)
+#define button_led_shift(BTN) (((BTN) % 4) * 2)
+#define button_led_set(BTN, VAL) (button_leds[button_led_byte(BTN)] |= (VAL) << button_led_shift(BTN))
+#define button_led_get(BTN) ((button_leds[button_led_byte(BTN)] >> button_led_shift(BTN)) & 0b11)
+#define button_led_on(BTN) (button_led_set(BTN, 1))
+#define button_led_blink(BTN) button_led_set(BTN, 0b10); leds_on(BTN)
+#define button_led_off(BTN) (button_leds[button_led_byte(BTN)] &= ~(0b11 << button_led_shift(BTN)))
+
 typedef enum { SESSION_INACTIVE, SESSION_ACTIVE } GetvalueState;
 
 typedef struct {
@@ -67,19 +76,12 @@ extern uint8_t mode;
 
 // Previous inputs
 extern uint8_t prev_input[3];
-
-/* 
-   Button leds format: 
-   0 - off
-   0xFF - led on
-   any other value: blink
-*/
-extern uint8_t button_leds[24];
+extern uint8_t* button_leds;
 
 extern GetvalueSession ui_getvalue_session;
 
 void ui_handler();
 void ui_leds_handler();
-void ui_updown(uint8_t* value, uint8_t min, uint8_t max);
+uint8_t ui_updown(int8_t* value, int8_t min, int8_t max);
 void ui_getvalue_handler();
 
