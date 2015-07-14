@@ -14,8 +14,7 @@ SSRC = $(wildcard *.s)
 OBJ = $(CSRC:.c=.o) $(SSRC:.s=.o)
  
 # Compiler / Linker flags:
-#CFLAGS = -mmcu=$(MCU) -Wall -Os -std=gnu99 -D F_CPU=$(F_CPU) -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
-CFLAGS = -mmcu=$(MCU) -Wall -O3 -std=gnu99 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
+CFLAGS = -mmcu=$(MCU) -Wall -O3 -std=gnu11 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 LDFLAGS = -mmcu=$(MCU) -Wl,-Map=$(TARGET).map
  
 ###################################
@@ -27,8 +26,6 @@ compile: $(TARGET).hex $(TARGET).eep $(TARGET).lss
  
 flash: compile
 	avrdude -c $(PROGRAMMER) -P usb -p $(MCU) -B 2 -U flash:w:$(TARGET).hex
-	# sleep 2
-	# avrdude -c $(PROGRAMMER) -P usb -p $(MCU) -U eeprom:w:$(TARGET).eep
  
 clean:
 	rm -f $(OBJ) $(TARGET).{hex,lss,map,eep}
