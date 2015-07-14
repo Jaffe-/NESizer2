@@ -54,7 +54,10 @@ void leds_refresh()
     
     // Address the row latch and put on bus
     bus_select(ROW_ADDRESS);
+
     bus_write(row_mirror);
+
+    bus_deselect();
     
     // Switch to column latch, the row value is latched when this happens
     bus_select(LEDCOL_ADDRESS);
