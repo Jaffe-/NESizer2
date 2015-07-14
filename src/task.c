@@ -13,24 +13,24 @@
 #include "ui.h"
 #include "ui_sequencer.h"
 
-Task tasks[14] = {
+Task tasks[] = {
   {.handler = &apu_dmc_update_handler, .period = 1, .counter = 1},
-  {&midi_io_handler, 5, 0},
-  {&apu_update_handler, 10, 1},
-  {&lfo_update_handler, 10, 2},
-  {&envelope_update_handler, 10, 3},
-  {&portamento_handler, 10, 4},
-  {&midi_handler, 10, 5},
-  {&mod_calculate, 10, 6},
-  {&mod_apply, 10, 7},
-  {&leds_refresh, 20, 8},
-  {&input_refresh, 80, 8},
-  {&sequence_handler, 80, 9},
-  {&ui_handler, 80, 9},
-  {&ui_leds_handler, 80, 9}
+  {.handler = &midi_io_handler, .period = 5, .counter = 0},
+  {.handler = &apu_update_handler, .period = 10, .counter = 1},
+  {.handler = &lfo_update_handler, .period = 10, .counter = 2},
+  {.handler = &envelope_update_handler, .period = 10, .counter = 3},
+  {.handler = &portamento_handler, .period = 10, .counter = 4},
+  {.handler = &midi_handler, .period = 10, .counter = 5},
+  {.handler = &mod_calculate, .period = 10, .counter = 6},
+  {.handler = &mod_apply, .period = 10, .counter = 7},
+  {.handler = &leds_refresh, .period = 20, .counter = 8},
+  {.handler = &input_refresh, .period = 80, .counter = 8},
+  {.handler = &sequence_handler, .period = 80, .counter = 9},
+  {.handler = &ui_handler, .period = 80, .counter = 9},
+  {.handler = &ui_leds_handler, .period = 80, .counter = 9}
 };
 
-static const uint8_t num_tasks = 14;
+static const uint8_t num_tasks = sizeof(tasks)/sizeof(Task);
 
 static volatile uint8_t ticks;
 
