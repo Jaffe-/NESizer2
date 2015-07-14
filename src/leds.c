@@ -7,7 +7,7 @@
    Low level LED control. 
 */
 
-#include <avr/io.h>
+#include <stdint.h>
 #include "leds.h"
 #include "bus.h"
 
