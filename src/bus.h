@@ -5,10 +5,14 @@
 
    Handles low level bus communication. The bus consists of three address lines 
    and eight data lines.  
- */
+*/
 #pragma once
 
 #include <avr/io.h>
+
+// Simply injects a nop instruction, handy for waiting one clock cycle (for
+// example for a write cycle to complete)
+#define nop() asm volatile("nop")
 
 // Address bus: address occupies pins 0, 1 and 2 of PORTB:
 #define ADDR_m 0b111
