@@ -6,7 +6,7 @@
 uint8_t input[3] = {0}; 
 
 void input_refresh() 
-/* Rreads one column of switch data each time it is called and auto-increments
+/* Reads one column of switch data each time it is called and auto-increments
    the current row
 */
 {
@@ -26,9 +26,6 @@ void input_refresh()
     uint8_t switch_data = bus_read();
     bus_dir_output();
     bus_deselect();
-
-    if (current_row < 2)
-	switch_data = ~switch_data;
     
     if (stage == 1) {	
 	// Expand the switch bits into individual bytes in the input array
