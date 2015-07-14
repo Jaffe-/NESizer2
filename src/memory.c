@@ -203,14 +203,14 @@ uint32_t memory_read_dword(uint32_t address)
   return val.value;
 }
 
-void memory_clean()
+void memory_clean(void)
 {
   memory_set_address(0);
   for (uint32_t i = 0; i < MEMORY_SIZE; i++) 
     memory_write_sequential(0);
 }
 
-void memory_setup()
+void memory_setup(void)
 {
   // Set WE (pin 5) as output
   DDRC |= WE;
