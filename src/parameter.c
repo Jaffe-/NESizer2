@@ -1,3 +1,29 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  Programmable parameters
+
+  Contains the list of parameters that can be programmed in a patch. 
+*/
+
+
 #include <avr/pgmspace.h>
 #include "parameter.h"
 #include "apu.h"
@@ -7,7 +33,7 @@
 #include "patch.h"
 #include "portamento.h"
 
-const Parameter parameters[] PROGMEM = {
+const struct parameter parameters[] PROGMEM = {
   {&sq1.enabled, BOOL, 0, 0, 0},
   {&sq1.duty, RANGE, 0, 3, 2},
   {&portamento_values[0], RANGE, 0, 99, 0},
@@ -75,12 +101,12 @@ const Parameter parameters[] PROGMEM = {
   {(int8_t*)&lfo3.waveform, RANGE, 1, 5, 1},
 };
 
-Parameter parameter_get(ParameterID parameter)
+struct parameter parameter_get(enum parameter_id parameter)
 {
-  Parameter p = {pgm_read_ptr_near(&parameters[parameter].target),
-		 pgm_read_byte_near(&parameters[parameter].type),
-		 pgm_read_byte_near(&parameters[parameter].min),
-		 pgm_read_byte_near(&parameters[parameter].max),
-		 pgm_read_byte_near(&parameters[parameter].initial_value)};
+  struct parameter p = {pgm_read_ptr_near(&parameters[parameter].target),
+			pgm_read_byte_near(&parameters[parameter].type),
+			pgm_read_byte_near(&parameters[parameter].min),
+			pgm_read_byte_near(&parameters[parameter].max),
+			pgm_read_byte_near(&parameters[parameter].initial_value)};
   return p;
 }

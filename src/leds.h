@@ -1,3 +1,30 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  leds.h - Low level LED control.
+
+  Provides macros and functions for setting LEDs on the front panel
+  board, and a task handler for refreshing them.
+*/
+
+
 #pragma once
 
 #include <stdint.h>
@@ -18,7 +45,7 @@ extern uint8_t leds[5];
 extern uint8_t row_mirror;
 
 // Functions
-void leds_refresh();
+void leds_refresh(void);
 void leds_7seg_set(uint8_t row, uint8_t value);
 void leds_7seg_two_digit_set(uint8_t row1, uint8_t row2, uint8_t value);
 void leds_7seg_two_digit_set_hex(uint8_t rwo1, uint8_t row2, uint8_t value);

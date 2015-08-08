@@ -1,12 +1,29 @@
 /*
-  NESIZER
-  Entry point 
+  Copyright 2014-2015 Johan Fjeldtvedt 
 
-  (c) Johan Fjeldtvedt
+  This file is part of NESIZER.
 
-  Contains the main function, which sets up the various subsystems and transfers
-  control to a task handler.
- */
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  main.c - Main entry point
+
+  Entry point for the program. Initializes the system and starts the
+  task handler.
+*/
+
 
 #include "task.h"
 #include "apu.h"
@@ -30,7 +47,7 @@ int main()
   
   // Load first patch
   patch_load(0);
-  
+   
   // The task manager takes over from here
   task_manager();
 }

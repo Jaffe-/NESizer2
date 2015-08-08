@@ -354,7 +354,7 @@ reset_pc16:
 ;;; Parameters: none
 ;;; Return:	r24: number of Atmega clock cycles per 6502 clock cycle
 ;;; 
-;;; When this function is ran, the 6502 is being fed the STA instruction with
+;;; When this function is run, the 6502 is being fed the STA instruction with
 ;;; absolute addressing, which takes four cycles. At its fourth cycle, it pulls
 ;;; the R/W line down. This can be used to measure how many clock cycles the
 ;;; Atmega has done for each cycle the 6502 has done by counting how many cycles

@@ -1,3 +1,30 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  Modulation application
+
+  Applies modulation to sound channels from various sources (LFOs,
+  envelopes, portamento, pitchbend, tuning, etc.)
+*/
+
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "modulation.h"
@@ -21,7 +48,7 @@ uint8_t noise_period;
 
 
 static int16_t dc_temp[3];
-static Envelope* envelopes[] = {&env1, &env2, &env3};
+static struct envelope* envelopes[] = {&env1, &env2, &env3};
 
 
 static inline int16_t get_pitchbend(uint8_t chn)
@@ -80,7 +107,7 @@ static inline void calc_freqmod(uint8_t chn)
 */
 {
   // Define some helper arrays
-  static const LFO* lfos[] = {&lfo1, &lfo2, &lfo3};
+  static const struct lfo* lfos[] = {&lfo1, &lfo2, &lfo3};
   
   int16_t sum = 0;
 
@@ -110,21 +137,21 @@ static inline void calc_freqmod(uint8_t chn)
   }
 }
 
-static inline void apply_envelopes()
+static inline void apply_envelopes(void)
 {
   sq1.volume = env1.value;
   sq2.volume = env2.value;
   noise.volume = env3.value;    
 }
 
-void mod_calculate()
+void mod_calculate(void)
 {
   static uint8_t chn = 0;
   calc_freqmod(chn); 
   if (++chn == 4) chn = 0;
 }
 
-void mod_apply()
+void mod_apply(void)
 {
   static uint8_t chn = 0;
   apply_freqmod(chn); 

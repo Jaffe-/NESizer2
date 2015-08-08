@@ -1,11 +1,29 @@
-/* 
-   NESIZER
-   LED interface
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
 
-   (c) Johan Fjeldtvedt
+  This file is part of NESIZER.
 
-   Low level LED control. 
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  leds.c - Low level LED control.
+
+  Provides macros and functions for setting LEDs on the front panel
+  board, and a task handler for refreshing them.
 */
+
 
 #include <stdint.h>
 #include "leds.h"
@@ -37,7 +55,7 @@ static const uint8_t leds_7seg_values[18] =
  0b00000010, // minus
 };
 
-void leds_refresh() 
+void leds_refresh(void) 
 /* This function is intended to be called by the task handler
    at a given frequency. Each time it is called, a new LED column
    is displayed. 

@@ -1,8 +1,24 @@
 /*
-  NESIZER
-  General user interface routines
-  
-  (c) Johan Fjeldtvedt
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  Patch programmer user interface
 
   Handles the user interface when in programming mode.
 */
@@ -37,13 +53,13 @@
 
 uint8_t programmer_leds[24];
 
-typedef enum { STATE_TOPLEVEL, STATE_SAVE } State;
+enum state { STATE_TOPLEVEL, STATE_SAVE };
 
-State state = STATE_TOPLEVEL;
+enum state state = STATE_TOPLEVEL;
 
 #define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
-const ParameterID sq1_parameters[] PROGMEM = {
+const enum parameter_id sq1_parameters[] PROGMEM = {
   SQ1_LFO1,
   SQ1_LFO2,
   SQ1_LFO3,
@@ -59,7 +75,7 @@ const ParameterID sq1_parameters[] PROGMEM = {
   SQ1_OCTAVE
 };
 
-const ParameterID sq2_parameters[] PROGMEM = {
+const enum parameter_id sq2_parameters[] PROGMEM = {
   SQ2_LFO1,
   SQ2_LFO2,
   SQ2_LFO3,
@@ -75,7 +91,7 @@ const ParameterID sq2_parameters[] PROGMEM = {
   SQ2_OCTAVE
 };
 
-const ParameterID tri_parameters[] PROGMEM = {
+const enum parameter_id tri_parameters[] PROGMEM = {
   TRI_LFO1,
   TRI_LFO2,
   TRI_LFO3,    
@@ -91,7 +107,7 @@ const ParameterID tri_parameters[] PROGMEM = {
   TRI_OCTAVE
 };
 
-const ParameterID noise_parameters[] PROGMEM = {
+const enum parameter_id noise_parameters[] PROGMEM = {
   NOISE_LFO1,
   NOISE_LFO2,
   NOISE_LFO3,
@@ -105,7 +121,7 @@ const ParameterID noise_parameters[] PROGMEM = {
   ENV3_RELEASE
 };
 
-const ParameterID dmc_parameters[] PROGMEM = {
+const enum parameter_id dmc_parameters[] PROGMEM = {
   0xFF,
   0xFF,
   0xFF,
@@ -119,7 +135,7 @@ const ParameterID dmc_parameters[] PROGMEM = {
   0xFF,
 };
 
-const ParameterID lfo1_parameters[] PROGMEM = {
+const enum parameter_id lfo1_parameters[] PROGMEM = {
   0xFF,
   0xFF,
   0xFF,
@@ -135,7 +151,7 @@ const ParameterID lfo1_parameters[] PROGMEM = {
     
 };
 
-const ParameterID lfo2_parameters[] PROGMEM = {
+const enum parameter_id lfo2_parameters[] PROGMEM = {
   0xFF,
   0xFF,
   0xFF,
@@ -151,7 +167,7 @@ const ParameterID lfo2_parameters[] PROGMEM = {
     
 };
 
-const ParameterID lfo3_parameters[] PROGMEM = {
+const enum parameter_id lfo3_parameters[] PROGMEM = {
   0xFF,
   0xFF,
   0xFF,
@@ -167,12 +183,12 @@ const ParameterID lfo3_parameters[] PROGMEM = {
     
 };
 
-typedef struct {
-  const ParameterID* parameter_list;
-  ParameterID depress_parameter;
-} MainButton;
+struct main_button {
+  const enum parameter_id* parameter_list;
+  enum parameter_id depress_parameter;
+};
 
-MainButton main_buttons[] = {
+struct main_button main_buttons[] = {
   {sq1_parameters, SQ1_ENABLED},
   {sq2_parameters, SQ2_ENABLED},
   {tri_parameters, TRI_ENABLED},
@@ -183,9 +199,9 @@ MainButton main_buttons[] = {
   {lfo3_parameters, LFO3_PERIOD}
 };
 
-static inline void toplevel_handler();
+static inline void toplevel_handler(void);
 
-void programmer()
+void programmer(void)
 /* Handles the front panel functions when at the top level 
    
    The whole thing is basically a large loop going through the array
@@ -229,7 +245,7 @@ void programmer()
   toplevel_handler(); 
 }
 
-static inline ParameterID get_parameter_id(uint8_t main_button, uint8_t parameter_button)
+static inline enum parameter_id get_parameter_id(uint8_t main_button, uint8_t parameter_button)
 {
   if (parameter_button != 0xFF) {
     uint8_t parameter_num;
@@ -243,7 +259,7 @@ static inline ParameterID get_parameter_id(uint8_t main_button, uint8_t paramete
     return 0xFF;
 }
 
-static inline void toplevel_handler()
+static inline void toplevel_handler(void)
 {
   uint8_t parameter_button = 0xFF;
 
@@ -262,7 +278,7 @@ static inline void toplevel_handler()
   for (uint8_t i = 0; i < 8; i++) {
     // Handle the case where the main button is currently being pressed
     if (button_on(i)) {
-      ParameterID id = get_parameter_id(i, parameter_button);
+      enum parameter_id id = get_parameter_id(i, parameter_button);
 
       // If a parameter button is being pressed and is a valid button for
       // the current main button, set up a getvalue session.
@@ -277,7 +293,7 @@ static inline void toplevel_handler()
 
     // In the case where the main button has been depressed
     else if (button_depressed(i)) {
-      Parameter parameter = parameter_get(main_buttons[i].depress_parameter);
+      struct parameter parameter = parameter_get(main_buttons[i].depress_parameter);
 
       if (parameter.type == BOOL) 
 	*parameter.target ^= 1;

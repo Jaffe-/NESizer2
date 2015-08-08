@@ -1,13 +1,30 @@
-/* 
-   NESIZER
-   External SRAM memory routines
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
 
-   (c) Johan Fjeldtvedt
+  This file is part of NESIZER.
 
-   Handles the low level details of reading and writing to/from the SRAM memory.
-   Provides means of random access using a given adress, as well as writing or 
-   reading sequentially to/from memory. 
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  memory.c - SRAM interface
+
+  Handles the low level details of reading and writing to/from the SRAM memory.
+  Provides means of random access using a given adress, as well as writing or 
+  reading sequentially to/from memory. 
 */
+
 
 #include "memory.h"
 #include <avr/io.h>
@@ -46,7 +63,7 @@ inline void set_addrhigh(uint8_t addrhigh)
   bus_write((addrhigh & 0x07) | ((addrhigh & 0x08) ? 0b01000 : 0b10000));
 }
 
-inline void deselect()
+inline void deselect(void)
 /*
   Sets both chip select bits to one in the high latch.
 */
@@ -57,7 +74,7 @@ inline void deselect()
   bus_deselect();
 }
 
-static inline uint8_t read_data()
+static inline uint8_t read_data(void)
 {
   set_addrhigh(current_high);
 
@@ -86,7 +103,7 @@ static inline void write_data(uint8_t value)
   deselect();
 }
 
-static void inc_address()
+static void inc_address(void)
 {
   set_addrlow(++current_low);
   if (current_low == 0) {
@@ -107,7 +124,7 @@ void memory_set_address(uint32_t address)
    sequential writing.
 */
 {
-  val32_t addr = {.value = address};
+  union val32 addr = {.value = address};
   
   // Put first 8 address bits in low address latch:
   set_addrlow(current_low = addr.bytes[0]);
@@ -138,7 +155,7 @@ uint8_t memory_read(uint32_t address)
   return value;
 }
 
-uint8_t memory_read_sequential()
+uint8_t memory_read_sequential(void)
 /*
   Reads a byte at the current address and increments address by 1.
 */
@@ -165,7 +182,7 @@ void memory_write_word(uint32_t address, uint16_t value)
 {
   memory_set_address(address);
 
-  val16_t val = {.value = value};
+  union val16 val = {.value = value};
   memory_write_sequential(val.bytes[0]);
   memory_write_sequential(val.bytes[1]);
 }
@@ -174,7 +191,7 @@ uint16_t memory_read_word(uint32_t address)
 {
   memory_set_address(address);
 
-  val16_t val;
+  union val16 val;
   val.bytes[0] = memory_read_sequential();
   val.bytes[1] = memory_read_sequential();
   return val.value;
@@ -184,7 +201,7 @@ void memory_write_dword(uint32_t address, uint32_t value)
 {
   memory_set_address(address);
 
-  val32_t val = {.value = value};
+  union val32 val = {.value = value};
   memory_write_sequential(val.bytes[0]);
   memory_write_sequential(val.bytes[1]);
   memory_write_sequential(val.bytes[2]);
@@ -195,7 +212,7 @@ uint32_t memory_read_dword(uint32_t address)
 {
   memory_set_address(address);
 
-  val32_t val;
+  union val32 val;
   val.bytes[0] = memory_read_sequential();
   val.bytes[1] = memory_read_sequential();
   val.bytes[2] = memory_read_sequential();

@@ -1,14 +1,30 @@
 /*
-  NESIZER
+  Copyright 2014-2015 Johan Fjeldtvedt 
 
-  MIDI IO functions 
+  This file is part of NESIZER.
 
-  (c) Johan Fjeldtvedt
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-  Performs the low level functionality of receiving MIDI input. Receiving MIDI 
-  data is performed by the USART module of the Atmega microcontroller. Incoming 
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  MIDI low level I/O
+
+  Performs the low level functionality of receiving MIDI input. Receiving MIDI
+  data is performed by the USART module of the Atmega microcontroller. Incoming
   data is read into a ring buffer. 
 */
+
 
 #include <avr/io.h>
 #include "midi_io.h"
@@ -38,7 +54,7 @@ static inline uint8_t get_channel(uint8_t status);
 
 /* Public functions */
 
-uint8_t midi_io_read_byte()
+uint8_t midi_io_read_byte(void)
 {
   uint8_t value = buffer[buffer_read_pos];
    
@@ -48,7 +64,7 @@ uint8_t midi_io_read_byte()
   return value;
 }
 
-void midi_io_setup()
+void midi_io_setup(void)
 {
   // Enable USART receiver and set frame to 8 data bits
   UBRR0H = 0;
@@ -59,7 +75,7 @@ void midi_io_setup()
   UCSR0C = (0b11 << UCSZ00);
 }
 
-void midi_io_handler()
+void midi_io_handler(void)
 /* 
 Task handler for putting incoming MIDI data in buffer
 */
@@ -81,7 +97,7 @@ uint8_t midi_is_channel_message(uint8_t command)
 }
 */
 
-uint8_t midi_io_bytes_remaining()
+uint8_t midi_io_bytes_remaining(void)
 /* Returns the raw unread buffer length */
 {
   if (buffer_write_pos >= buffer_read_pos)
@@ -90,17 +106,15 @@ uint8_t midi_io_bytes_remaining()
     return BUFFER_SIZE - (buffer_read_pos - buffer_write_pos);    
 }
 
-uint8_t midi_io_buffer_nonempty()
+uint8_t midi_io_buffer_nonempty(void)
 {
   uint8_t remaining = midi_io_bytes_remaining();
   return ((remaining >= 1) && (remaining > message_length(get_command(buffer[buffer_read_pos]))));
 }
 
-uint8_t midi_io_read_message(MIDIMessage* msg)
+uint8_t midi_io_read_message(struct midi_message *msg)
 /* Gets the next message from the buffer and puts the data in a struct object */
 {
-//  MIDIMessage msg = {0};
-
   uint8_t status;
   // If for some reason the read position doesn't point to the first byte of a message,
   // skip to the next one.

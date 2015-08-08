@@ -1,3 +1,31 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  MIDI low level I/O
+
+  Performs the low level functionality of receiving MIDI input. Receiving MIDI
+  data is performed by the USART module of the Atmega microcontroller. Incoming
+  data is read into a ring buffer. 
+*/
+
+
 #pragma once
 
 #define MIDI_CMD_NOTE_OFF 0
@@ -24,17 +52,17 @@
 
 #define midi_is_channel_message(cmd) ((cmd) < 8)
 
-typedef struct {
+struct midi_message {
     uint8_t command;
     uint8_t channel;
     uint8_t data1;
     uint8_t data2;
-} MIDIMessage;
+};
 
-void midi_io_setup();
-void midi_io_handler();
-uint8_t midi_io_buffer_nonempty();
-uint8_t midi_io_read_message(MIDIMessage* msg);
-uint8_t midi_io_read_byte();
-uint8_t midi_io_bytes_remaining();
+void midi_io_setup(void);
+void midi_io_handler(void);
+uint8_t midi_io_buffer_nonempty(void);
+uint8_t midi_io_read_message(struct midi_message *msg);
+uint8_t midi_io_read_byte(void);
+uint8_t midi_io_bytes_remaining(void);
 //uint8_t midi_is_channel_message(uint8_t command);

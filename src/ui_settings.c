@@ -1,3 +1,29 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  Settings user interface
+
+  Handles the user interface when in settings mode.
+*/
+
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "parameter.h"
@@ -24,16 +50,16 @@
 
 #define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
-static inline void toplevel();
+static inline void toplevel(void);
 
 uint8_t settings_leds[24];
 
-void settings()
+void settings(void)
 {
   toplevel();
 }
 
-static inline void toplevel()
+static inline void toplevel(void)
 {    
   static uint8_t cur_index = 0;
   static uint8_t index_state;
@@ -79,7 +105,7 @@ static inline void toplevel()
     }
 
     if (chn != 0xFF) {
-      Parameter parameter = {.target = &midi_channels[chn],
+      struct parameter parameter = {.target = &midi_channels[chn],
 			     .type = RANGE,
 			     .min = 0,
 			     .max = 16};

@@ -1,3 +1,31 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  Period tables
+
+  Contains tables of periods to apply to a channel to get a desired
+  note frequency. There are three different tables adjusted for each
+  of the three supported 2A03 chips.
+*/
+
+
 #include <stdint.h>
 #include <avr/pgmspace.h>
 #include "periods.h"
@@ -45,13 +73,13 @@ const uint16_t *period_table;
 uint8_t note_min;
 const uint8_t note_max = 72;
 
-typedef union {
+union tone {
   uint16_t raw_value;
   struct { 
     uint8_t offset : 6;
     uint16_t semitone : 10;
   } __attribute__((packed));
-} tone_t;
+};
 
 uint16_t get_period(uint8_t chn, uint16_t c)
 {
@@ -77,13 +105,11 @@ uint16_t get_period(uint8_t chn, uint16_t c)
     To simplify calculating the power of 2, a piecewise linear approximation is
     used.
   */ 
-  tone_t tone;
+  union tone tone;
   tone.raw_value = c;
 
   uint16_t val;
-
   uint8_t tri_scale = 0;
-
   uint16_t base_period;
   
   if (chn == 2 && tone.semitone < 12) {
@@ -111,7 +137,7 @@ uint16_t get_period(uint8_t chn, uint16_t c)
     return val;
 }
 
-void periods_setup()
+void periods_setup(void)
 {
   switch (io_clockdiv) {
   case 12:

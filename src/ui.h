@@ -1,13 +1,29 @@
 /*
-  NESIZER
-  General user interface routines
-  
-  (c) Johan Fjeldtvedt
+  Copyright 2014-2015 Johan Fjeldtvedt 
 
-  Contains the UI handler which checks button presses
-  and transfers control to the corresponding mode handlers,
-  and the LED refresh handler
- */
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  General user interface routines
+
+  Contains the UI handler which checks button presses and transfers control to 
+  the corresponding mode handlers, and the LED refresh handler.
+*/
+
 
 #pragma once
 
@@ -62,14 +78,14 @@
 #define button_led_blink(BTN) button_led_set(BTN, 0b10); leds_on(BTN)
 #define button_led_off(BTN) (button_leds[button_led_byte(BTN)] &= ~(0b11 << button_led_shift(BTN)))
 
-typedef enum { SESSION_INACTIVE, SESSION_ACTIVE } GetvalueState;
-
-typedef struct {
-    Parameter parameter;
-    uint8_t button1;
-    uint8_t button2;
-    GetvalueState state;
-} GetvalueSession;
+struct getvalue_session {
+  struct parameter parameter;
+  uint8_t button1;
+  uint8_t button2;
+  enum {
+    SESSION_INACTIVE, SESSION_ACTIVE
+  } state;
+};
 
 // The current mode (PROGRAM, PATTERN, TRACK or SETTINGS)
 extern uint8_t mode;
@@ -78,10 +94,10 @@ extern uint8_t mode;
 extern uint8_t prev_input[3];
 extern uint8_t* button_leds;
 
-extern GetvalueSession ui_getvalue_session;
+extern struct getvalue_session ui_getvalue_session;
 
-void ui_handler();
-void ui_leds_handler();
+void ui_handler(void);
+void ui_leds_handler(void);
 uint8_t ui_updown(int8_t* value, int8_t min, int8_t max);
-void ui_getvalue_handler();
+void ui_getvalue_handler(void);
 

@@ -1,16 +1,33 @@
-/* NESIZER
-   Bus interface
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
 
-   (c) Johan Fjeldtvedt
+  This file is part of NESIZER.
 
-   Handles low level bus communication. The bus consists of three address lines 
-   and eight data lines.  
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  bus.c - Bus interface
+
+  Handles low level bus communication. 
 */
+
 
 #include <avr/io.h>
 #include "bus.h"
 
-void bus_setup()
+void bus_setup(void)
 {
     // Set address related port pins as outputs:
     DDRB |= ADDR_m;

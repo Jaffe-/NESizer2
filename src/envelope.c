@@ -1,10 +1,36 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  envelope.c - ADSR envelope implementation
+
+  4-bit ADSR envelopes with 8-bit A, D, R settings.
+*/
+
+
 #include "envelope.h"
 
-Envelope env1;
-Envelope env2;
-Envelope env3;
+struct envelope env1;
+struct envelope env2;
+struct envelope env3;
 
-void envelope_update(Envelope* env)
+void envelope_update(struct envelope* env)
 /*
   Computes the next step in the given envelope. 
 */

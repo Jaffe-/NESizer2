@@ -1,18 +1,44 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  Programmable parameters
+
+  Contains the list of parameters that can be programmed in a patch. 
+*/
+
+
 #pragma once
 
 #include <stdint.h>
 
 #define NUM_PARAMETERS 55
 
-typedef struct {
+struct parameter {
   int8_t* target;
   enum {BOOL, RANGE, INVRANGE} type;
   int8_t min;
   int8_t max;
   int8_t initial_value;
-} Parameter;
+};
 
-typedef enum {
+enum parameter_id {
     SQ1_ENABLED,
     SQ1_DUTY,
     SQ1_GLIDE,
@@ -78,6 +104,6 @@ typedef enum {
 
     LFO3_PERIOD,
     LFO3_WAVEFORM
-} ParameterID;
+};
 
-Parameter parameter_get(uint8_t num);
+struct parameter parameter_get(uint8_t num);

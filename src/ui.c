@@ -1,12 +1,29 @@
 /*
-  NESIZER
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
   General user interface routines
-  
-  (c) Johan Fjeldtvedt
 
   Contains the UI handler which checks button presses and transfers control to 
   the corresponding mode handlers, and the LED refresh handler.
 */
+
 
 #include "ui.h"
 #include "ui_sequencer.h"
@@ -72,7 +89,7 @@ void ui_handler()
 	break;
 
       case MODE_PATTERN:
-	sequencer();
+	//sequencer();
 	button_led_on(BTN_PATTERN);
 	break;
       case MODE_TRACK:
@@ -99,7 +116,7 @@ void ui_handler()
   //last_mode = mode;
 }
 
-void ui_leds_handler()
+void ui_leds_handler(void)
 /* 
    Handles the updating of all button LEDs.
    If a button's value is 0xFF, it is on, and
@@ -120,11 +137,12 @@ void ui_leds_handler()
     else  {
       if (counter == BLINK_CNT) {
 	leds_toggle(i);
-	counter = 0;
       }
     }
   }
-  counter++;
+  if (counter++ == BLINK_CNT)
+    counter = 0;
+
 }
 
 
@@ -173,7 +191,7 @@ uint8_t ui_updown(int8_t* value, int8_t min, int8_t max)
   return 0;
 }
 
-GetvalueSession ui_getvalue_session = {.state = SESSION_INACTIVE};
+struct getvalue_session ui_getvalue_session = {.state = SESSION_INACTIVE};
 
 void ui_getvalue_handler()
 /* Handles getting a parameter value. A new getvalue-session is initiated by
@@ -191,14 +209,11 @@ void ui_getvalue_handler()
     else
       value = *ui_getvalue_session.parameter.target;
 	
-//    button_leds[ui_getvalue_session.button1] = 1;
-//    leds_set(ui_getvalue_session.button1, 0);
     button_led_blink(ui_getvalue_session.button1);
     
     if (ui_getvalue_session.button2 != 0xFF) {
-      //     button_leds[ui_getvalue_session.button2 & 0x7F] = 1;
-      //leds_set(ui_getvalue_session.button2 & 0x7F, 0);
-      button_led_blink(ui_getvalue_session.button2);
+      button_led_blink(ui_getvalue_session.button2 & 0x7F);
+
       if ((ui_getvalue_session.button2 & 0x80) != 0) {
 //	button_leds[BTN_SHIFT] = 1;
 //	leds_set(BTN_SHIFT, 0);
@@ -221,11 +236,9 @@ void ui_getvalue_handler()
     else
       *ui_getvalue_session.parameter.target = value;
 	
-    //button_leds[ui_getvalue_session.button1] = 0;
     button_led_off(ui_getvalue_session.button1);
     
     if (ui_getvalue_session.button2 != 0xFF) {
-      //button_leds[ui_getvalue_session.button2 & 0x7F] = 0;
       button_led_off(ui_getvalue_session.button2 & 0x7F);
       //if ((ui_getvalue_session.button2 & 0x80) != 0)
 	//button_leds[BTN_SHIFT] = 1;

@@ -1,11 +1,28 @@
-/* 
-   NESIZER
-   APU abstraction layer
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
 
-   (c) Johan Fjeldtvedt
+  This file is part of NESIZER.
 
-   Contains abstractions of the low level I/O functionality in 2a03_io.
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  apu.c - APU abstraction layer
+
+  Contains abstractions for easily using the 2A03 APU.
 */
+
 
 #include "apu.h"
 #include <avr/io.h>
@@ -132,10 +149,10 @@
 
 */
 
-Square sq1, sq2;
-Triangle tri;
-Noise noise;
-DMC dmc;
+struct square sq1, sq2;
+struct triangle tri;
+struct noise noise;
+struct dmc dmc;
 
 inline void register_update(uint8_t reg, uint8_t val)
 {
@@ -151,7 +168,7 @@ inline void sq_setup(uint8_t n)
   register_update(SQ1_HI + n * 4, 1 << LENGTH_CNTR_LOAD_p);
 }
 
-inline void sq_update(uint8_t n, Square* sq)
+inline void sq_update(uint8_t n, struct square* sq)
 {
   register_update(SQ1_VOL + n * 4, (io_reg_buffer[SQ1_VOL + n * 4] & ~(SQ_DUTY_m | VOLUME_m)) 
 		  | sq->volume << VOLUME_p
@@ -167,17 +184,17 @@ inline void sq_update(uint8_t n, Square* sq)
 
 }
 
-void sq1_setup()
+void sq1_setup(void)
 {
   sq_setup(0);
 }
 
-void sq2_setup()
+void sq2_setup(void)
 {
   sq_setup(1);
 }
 
-void sq1_update()
+void sq1_update(void)
 {
   register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~SQ1_ENABLE_m) 
 		  | sq1.enabled << SQ1_ENABLE_p);
@@ -185,7 +202,7 @@ void sq1_update()
   sq_update(0, &sq1);
 }
 
-void sq2_update()
+void sq2_update(void)
 {
   register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~SQ2_ENABLE_m) 
 		  | sq2.enabled << SQ2_ENABLE_p);
@@ -196,13 +213,13 @@ void sq2_update()
 
 /* Triangle channel */
 
-void tri_setup()
+void tri_setup(void)
 {
   register_update(TRI_LINEAR, TRI_LENGTH_CNTR_DISABLE | 1);
 //    register_update(TRI_HI, 0b0000);
 }
 
-void tri_update()
+void tri_update(void)
 {
   register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~TRI_ENABLE_m) 
 		  | tri.enabled << TRI_ENABLE_p);
@@ -219,13 +236,13 @@ void tri_update()
 
 /* Noise channel */
 
-void noise_setup(){
+void noise_setup(void){
 
   register_update(NOISE_VOL, NOISE_LENGTH_CNTR_DISABLE | NOISE_CONSTANT_VOLUME);
   register_update(NOISE_HI, 0b1000);
 }
 
-void noise_update()
+void noise_update(void)
 {
   register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~NOISE_ENABLE_m) 
 		  | noise.enabled << NOISE_ENABLE_p);
@@ -242,7 +259,7 @@ void noise_update()
 
 /* DMC channel */
 
-void dmc_setup()
+void dmc_setup(void)
 {
   register_update(DMC_FREQ, 0);
   register_update(DMC_RAW, 0);
@@ -250,13 +267,13 @@ void dmc_setup()
   register_update(DMC_LEN, 0);
 }
 
-void dmc_update()
+void dmc_update(void)
 {
   register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~DMC_ENABLE_m) 
 		  | dmc.enabled << DMC_ENABLE_p);
 }
 
-void dmc_update_sample_raw()
+void dmc_update_sample_raw(void)
 {  
   dmc.data = sample_read_byte();
    
@@ -306,7 +323,7 @@ void dmc_update_sample_raw()
   }
 */
 
-void dmc_update_sample()
+void dmc_update_sample(void)
 {
 
   if (sample.type == SAMPLE_TYPE_RAW)
@@ -348,7 +365,7 @@ void apu_refresh_channel(uint8_t ch_number)
    
 }
 
-void apu_refresh_all()
+void apu_refresh_all(void)
 {
   for (uint8_t i = CHN_SQ1; i <= CHN_DMC; i++) 
     apu_refresh_channel(i);
@@ -369,21 +386,22 @@ inline void apu_update_channel(uint8_t chn)
 }
 
 // Task handler for updating APU channels
-void apu_update_handler()
+void apu_update_handler(void)
 {
   static uint8_t chn = CHN_SQ1;
 
   apu_update_channel(chn);
   apu_refresh_channel(chn);
-  if (++chn == 4) {
+  // Keep 6502's PC in check 
+  io_reset_pc();
+
+  if (++chn == 4) 
     chn = 0;
-    // Keep 6502's PC in check 
-    io_reset_pc();
-  }
+  
 }
 
 // Update handler for the DMC specifically
-void apu_dmc_update_handler()
+void apu_dmc_update_handler(void)
 {
   if (dmc.enabled && dmc.sample_enabled) 
     dmc_update_sample();

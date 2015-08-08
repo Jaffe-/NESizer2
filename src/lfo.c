@@ -1,14 +1,40 @@
+/*
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+  lfo.c - LFO implementation
+
+  An 8-bit LFO with selectable wave shapes and variable frequency.
+*/
+
+
 #include "lfo.h"
 #include <avr/pgmspace.h>
 #include <stdint.h>
 #include "apu.h" 
 #include "data/sine.c"
 
-LFO lfo1;
-LFO lfo2;
-LFO lfo3;
+struct lfo lfo1;
+struct lfo lfo2;
+struct lfo lfo3;
 
-void lfo_update(LFO* lfo)
+void lfo_update(struct lfo *lfo)
 {
   if (++lfo->counter == lfo->period) {
     lfo->counter = 0;
@@ -49,7 +75,7 @@ void lfo_update(LFO* lfo)
   }
 }
 
-int16_t lfo_value(LFO* lfo, uint8_t intensity)
+int16_t lfo_value(struct lfo *lfo, uint8_t intensity)
 {
   if (intensity == 0) 
     return 0;
@@ -57,7 +83,7 @@ int16_t lfo_value(LFO* lfo, uint8_t intensity)
     return lfo->value;
 }
 
-void lfo_update_handler()
+void lfo_update_handler(void)
 {  
   lfo_update(&lfo1);
   lfo_update(&lfo2);

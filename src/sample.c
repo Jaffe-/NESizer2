@@ -1,12 +1,28 @@
 /*
-  NESIZER
+  Copyright 2014-2015 Johan Fjeldtvedt 
+
+  This file is part of NESIZER.
+
+  NESIZER is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  NESIZER is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with NESIZER.  If not, see <http://www.gnu.org/licenses/>.
+
+
 
   Sample system
 
-  (c) Johan Fjeldtvedt
-
-  Contains functions for writing and reading samples to and from SRAM memory. 
+  Contains functions for writing and reading samples to and from SRAM memory.   
 */
+
 
 #include "sample.h"
 #include "memory.h"
@@ -33,7 +49,7 @@ static inline uint16_t get_next_block(uint16_t block);
 static inline void link_blocks(uint16_t block, uint16_t next_block);
 static inline void write_to_block(uint16_t block, uint16_t pos, uint8_t value);
 static inline uint8_t read_from_block(uint16_t block, uint16_t pos);
-static uint16_t allocate_block();
+static uint16_t allocate_block(void);
 static inline void free_block(uint16_t block);
 static inline uint32_t index_address(uint8_t index);
 static void write_to_index(uint8_t index);
@@ -43,9 +59,9 @@ static inline uint8_t index_occupied(uint8_t index);
 
 /* Public */
 
-Sample sample;
+struct sample sample;
 
-void sample_clean()
+void sample_clean(void)
 /* Writes the sample index at the start of the sample area */
 {
   for (uint8_t i = 0; i < NUM_SAMPLES; i++) {
@@ -54,7 +70,7 @@ void sample_clean()
   }
 }
 
-void sample_reset()
+void sample_reset(void)
 {
   // Reset counters
   sample.current_position = 0;
@@ -70,7 +86,7 @@ void sample_load(uint8_t index)
   sample_reset();
 }
 
-uint8_t sample_read_byte()
+uint8_t sample_read_byte(void)
 {
   uint8_t value = read_from_block(sample.current_block, sample.current_position);
 
@@ -161,7 +177,7 @@ static inline uint8_t read_from_block(uint16_t block, uint16_t pos)
   return memory_read_sequential();
 }
 
-static uint16_t allocate_block()
+static uint16_t allocate_block(void)
 {
   for (uint16_t i = 0; i < NUM_BLOCKS; i++) {
     uint16_t block_entry = memory_read_word(BLOCKTABLE_START + i * 2); 
