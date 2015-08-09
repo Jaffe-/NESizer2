@@ -37,16 +37,6 @@
 
 #define MEMORY_SIZE 0x100000UL  // 1MB of memory
 
-union val32 {
-  uint8_t bytes[4];
-  uint32_t value;
-};
-
-union val16 {
-  uint8_t bytes[2];
-  uint16_t value;
-};
-
 void memory_set_address(uint32_t address);
 
 void memory_write(uint32_t address, uint8_t value);

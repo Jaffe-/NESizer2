@@ -30,6 +30,18 @@
 #include <avr/io.h>
 #include "bus.h"
 
+// Useful unions for accessing individual bytes
+union val32 {
+  uint8_t bytes[4];
+  uint32_t value;
+};
+
+union val16 {
+  uint8_t bytes[2];
+  uint16_t value;
+};
+
+
 // Internal three byte representation of the current address. 
 static uint8_t current_low;
 static uint8_t current_mid;
