@@ -75,7 +75,7 @@ void ui_handler()
     }
     else if (button_pressed(BTN_TRACK)) { 
       mode = MODE_TRACK;
-      button_leds = track_leds;
+      //button_leds = track_leds;
     }
     else if (button_pressed(BTN_SETTINGS)) {
       mode = MODE_SETTINGS;
