@@ -41,27 +41,25 @@ union val16 {
   uint16_t value;
 };
 
-
-// Internal three byte representation of the current address. 
 static uint8_t current_low;
 static uint8_t current_mid;
 static uint8_t current_high;
 
 // Functions for writing to each of the three address latches
 
-inline void set_addrlow(uint8_t addrlow)
+static inline void set_addrlow(uint8_t addrlow)
 {
   bus_select(MEMORY_LOW_ADDRESS);
   bus_write(addrlow);
 }
 
-inline void set_addrmid(uint8_t addrmid)
+static inline void set_addrmid(uint8_t addrmid)
 {
   bus_select(MEMORY_MID_ADDRESS);
   bus_write(addrmid);
 }
 
-inline void set_addrhigh(uint8_t addrhigh)
+static inline void set_addrhigh(uint8_t addrhigh)
 {
   bus_select(MEMORY_HIGH_ADDRESS);
 
@@ -75,7 +73,8 @@ inline void set_addrhigh(uint8_t addrhigh)
   bus_write((addrhigh & 0x07) | ((addrhigh & 0x08) ? 0b01000 : 0b10000));
 }
 
-inline void deselect(void)
+static void inc_address(void)
+static inline void deselect(void)
 /*
   Sets both chip select bits to one in the high latch.
 */
