@@ -142,13 +142,6 @@
 #define SQ2_ENABLE_p 1
 #define SQ1_ENABLE_p 0
 
-/* 
-   APU abstraction layer 
-
-   Contains functions for putting channel data in registers. 
-
-*/
-
 struct square sq1, sq2;
 struct triangle tri;
 struct noise noise;
