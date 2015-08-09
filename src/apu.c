@@ -268,12 +268,12 @@ void dmc_update(void)
 
 void dmc_update_sample_raw(void)
 {  
-  dmc.data = sample_read_byte();
+  dmc.data = sample_read_byte(&dmc.sample);
    
   io_register_write(DMC_RAW, dmc.data);
   
-  if (sample.bytes_done == sample.size) {
-    sample_reset();
+  if (dmc.sample.bytes_done == dmc.sample.size) {
+    sample_reset(&dmc.sample);
 
     if (!dmc.sample_loop) 
       dmc.sample_enabled = 0;
@@ -319,7 +319,7 @@ void dmc_update_sample_raw(void)
 void dmc_update_sample(void)
 {
 
-  if (sample.type == SAMPLE_TYPE_RAW)
+  if (dmc.sample.type == SAMPLE_TYPE_RAW)
     dmc_update_sample_raw();
 //    else
 //	dmc_update_sample_dpcm();

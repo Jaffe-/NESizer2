@@ -75,8 +75,8 @@ void play_note(uint8_t channel, uint8_t midi_note)
 
   case CHN_DMC:
     if (sample_occupied(midi_note - 60)) {
-      sample_load(midi_note - 60);
-      if (sample.size != 0)
+      sample_load(&dmc.sample, midi_note - 60);
+      if (dmc.sample.size != 0)
 	dmc.sample_enabled = 1;
       break;
     }

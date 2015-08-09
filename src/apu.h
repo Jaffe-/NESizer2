@@ -70,6 +70,8 @@ struct dmc {
   // Used internally:
   uint8_t sample_enabled : 1;
   uint8_t data : 7;
+
+  struct sample sample;
 };
 
 extern struct square sq1, sq2;

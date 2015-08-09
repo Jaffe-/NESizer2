@@ -47,19 +47,17 @@
 
 static inline uint16_t get_next_block(uint16_t block);
 static inline void link_blocks(uint16_t block, uint16_t next_block);
-static inline void write_to_block(uint16_t block, uint16_t pos, uint8_t value);
-static inline uint8_t read_from_block(uint16_t block, uint16_t pos);
+static inline void write_to_block(struct memory_context *mem_ctx, uint16_t block, uint16_t pos, uint8_t value);
+static inline uint8_t read_from_block(struct memory_context *mem_ctx, uint16_t block, uint16_t pos);
 static uint16_t allocate_block(void);
 static inline void free_block(uint16_t block);
 static inline uint32_t index_address(uint8_t index);
-static void write_to_index(uint8_t index);
-static void read_from_index(uint8_t index);
+static void write_to_index(struct sample *sample, uint8_t index);
+static void read_from_index(struct sample *sample, uint8_t index);
 static void remove_from_index(uint8_t index);
 static inline uint8_t index_occupied(uint8_t index);
 
 /* Public */
-
-struct sample sample;
 
 void sample_clean(void)
 /* Writes the sample index at the start of the sample area */
@@ -70,67 +68,68 @@ void sample_clean(void)
   }
 }
 
-void sample_reset(void)
+void sample_reset(struct sample *sample)
 {
   // Reset counters
-  sample.current_position = 0;
-  sample.current_block = sample.first_block;
-  sample.bytes_done = 0;
+  sample->current_position = 0;
+  sample->current_block = sample->first_block;
+  sample->bytes_done = 0;
 }
 
-void sample_load(uint8_t index)
+void sample_load(struct sample *sample, uint8_t index)
 {
   // Read sample data from index table
-  read_from_index(index);
+  read_from_index(sample, index);
   
-  sample_reset();
+  sample_reset(sample);
 }
 
-uint8_t sample_read_byte(void)
+uint8_t sample_read_byte(struct sample *sample)
 {
-  uint8_t value = read_from_block(sample.current_block, sample.current_position);
+  uint8_t value = read_from_block(&sample->mem_ctx, sample->current_block, sample->current_position);
 
-  if (++sample.current_position == BLOCK_SIZE) {
-    sample.current_position = 0;
-    sample.current_block = get_next_block(sample.current_block);
+  if (++sample->current_position == BLOCK_SIZE) {
+    sample->current_position = 0;
+    sample->current_block = get_next_block(sample->current_block);
   }
 
-  sample.bytes_done++;
+  sample->bytes_done++;
 
   return value;
 }
 
-void sample_new(uint8_t index)
+void sample_new(struct sample *sample, uint8_t index)
 {
   if (index_occupied(index)) 
     sample_delete(index);
 
-  sample.first_block = allocate_block();
-  sample_reset();
+  sample->first_block = allocate_block();
+  sample_reset(sample);
 
-  write_to_index(index);
+  write_to_index(sample, index);
 }
 
-void sample_write_serial(uint8_t value) 
+void sample_write_serial(struct sample *sample, uint8_t value) 
 {
-  write_to_block(sample.current_block, sample.current_position, value);
-    
-  sample.bytes_done++;
+  write_to_block(&sample->mem_ctx, sample->current_block, sample->current_position, value);
 
-  if (++sample.current_position == BLOCK_SIZE) {
-    sample.current_position = 0;
+  sample->bytes_done++;
+
+  if (++sample->current_position == BLOCK_SIZE) {
+    sample->current_position = 0;
     uint16_t new_block = allocate_block();
-    link_blocks(sample.current_block, new_block);
-    sample.current_block = new_block;
+    link_blocks(sample->current_block, new_block);
+    sample->current_block = new_block;
   }
 }
 
 void sample_delete(uint8_t index)
 {
-  read_from_index(index);
-    
+  struct sample sample;
+  read_from_index(&sample, index);
+
   uint16_t block = sample.first_block;
-    
+
   for (uint16_t i = 0; i < sample.size / BLOCK_SIZE; i++) {
     uint16_t next_block = get_next_block(block);
     free_block(block);
@@ -160,21 +159,21 @@ static inline void link_blocks(uint16_t block, uint16_t next_block)
   memory_write_word(BLOCKTABLE_START + block * 2, next_block + 1); 
 }
 
-static inline void write_to_block(uint16_t block, uint16_t pos, uint8_t value)
+static inline void write_to_block(struct memory_context *mem_ctx, uint16_t block, uint16_t pos, uint8_t value)
 {
   if (pos == 0)
-    memory_set_address(BLOCK_START + (uint32_t)block * BLOCK_SIZE);
-  memory_write_sequential(value);
+    memory_set_address(mem_ctx, BLOCK_START + (uint32_t)block * BLOCK_SIZE);
+  memory_write_sequential(mem_ctx, value);
 }
 
-static inline uint8_t read_from_block(uint16_t block, uint16_t pos)
+static inline uint8_t read_from_block(struct memory_context *mem_ctx, uint16_t block, uint16_t pos)
 {
   // Need to update the address only when starting on a new block:
   if (pos == 0)
-    memory_set_address(BLOCK_START + (uint32_t)block * BLOCK_SIZE);
+    memory_set_address(mem_ctx, BLOCK_START + (uint32_t)block * BLOCK_SIZE);
 	
   // Otherwise, just read sequentially from the block:
-  return memory_read_sequential();
+  return memory_read_sequential(mem_ctx);
 }
 
 static uint16_t allocate_block(void)
@@ -205,32 +204,32 @@ static inline uint32_t index_address(uint8_t index)
   return INDEX_START + (uint16_t)index * INDEX_ENTRY_SIZE;
 }
 
-static void write_to_index(uint8_t index)
+static void write_to_index(struct sample *sample, uint8_t index)
 {
   uint32_t address = index_address(index);
 
   // Mark index as occupied
   memory_write(address++, 1);
 
-  memory_write(address++, sample.type);
+  memory_write(address++, sample->type);
 
-  memory_write_dword(address, sample.size);
+  memory_write_dword(address, sample->size);
     
   address += 4;
 
-  memory_write_word(address, sample.first_block);
+  memory_write_word(address, sample->first_block);
 }
 
-static void read_from_index(uint8_t index)
+static void read_from_index(struct sample *sample, uint8_t index)
 {
   uint32_t address = index_address(index) + 1;
    
-  sample.type = memory_read(address++);
+  sample->type = memory_read(address++);
 
-  sample.size = memory_read_dword(address);
+  sample->size = memory_read_dword(address);
     
   address += 4;
-  sample.first_block = memory_read_word(address);
+  sample->first_block = memory_read_word(address);
 }
 
 static void remove_from_index(uint8_t index)

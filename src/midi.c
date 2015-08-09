@@ -151,32 +151,34 @@ static inline void interpret_message()
 uint8_t midi_transfer_progress = 0;
 static uint8_t dmc_state;
 
+static struct sample sample;
+
 static inline void sysex()
 {
   // When the state just changed, we need to look at the first few bytes
   // to determine what sysex message we're dealing with
   if (midi_io_bytes_remaining() >= 6) {
     sysex_command = midi_io_read_byte();
-      
+
     if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
-	
+
       // Read sample descriptor and store in sample object
       uint8_t sample_number = midi_io_read_byte();
       sample.type = midi_io_read_byte();
       sample.size = midi_io_read_byte();
       sample.size |= (uint32_t)midi_io_read_byte() << 7;
       sample.size |= (uint32_t)midi_io_read_byte() << 14;
-      sample_new(sample_number);
+      sample_new(&sample, sample_number);
 
       initiate_transfer();
     }
-      
+
     else if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
       // To do
       state = STATE_TRANSFER;
     }
   }
- 
+
 }
 
 static inline void transfer()
@@ -209,7 +211,7 @@ static inline void transfer()
       
       else if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
 	if (sample.bytes_done < sample.size) {
-	  sample_write_serial(val);
+	  sample_write_serial(&sample, val);
 	  midi_transfer_progress = (sample.bytes_done << 4) / sample.size;
 	}
       }
