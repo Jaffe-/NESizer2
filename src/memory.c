@@ -41,9 +41,8 @@ union val16 {
   uint16_t value;
 };
 
-static uint8_t current_low;
-static uint8_t current_mid;
-static uint8_t current_high;
+struct memory_context default_context;
+struct memory_context *current_context;
 
 // Functions for writing to each of the three address latches
 
@@ -74,6 +73,20 @@ static inline void set_addrhigh(uint8_t addrhigh)
 }
 
 static void inc_address(void)
+{
+  set_addrlow(++current_context->low);
+  if (current_context->low == 0) {
+    // Current high is increased, but not written to the latch until
+    // the SRAM is about to be used (the chip select bits have to be set).
+    if (++current_context->mid == 0)
+      current_context->high++;
+
+    set_addrmid(current_context->mid);
+  }
+
+  bus_deselect();
+}
+
 static inline void deselect(void)
 /*
   Sets both chip select bits to one in the high latch.
@@ -87,7 +100,7 @@ static inline void deselect(void)
 
 static inline uint8_t read_data(void)
 {
-  set_addrhigh(current_high);
+  set_addrhigh(current_context->high);
 
   bus_deselect();
   bus_dir_input();
@@ -103,7 +116,7 @@ static inline uint8_t read_data(void)
 
 static inline void write_data(uint8_t value)
 {
-  set_addrhigh(current_high);
+  set_addrhigh(current_context->high);
     
   // Switch to memory data address and put value on bus:
   bus_deselect();
@@ -114,44 +127,61 @@ static inline void write_data(uint8_t value)
   deselect();
 }
 
-static void inc_address(void)
+static inline uint8_t read_sequential(void)
 {
-  set_addrlow(++current_low);
-  if (current_low == 0) {
-    // Current high is increased, but not written to the latch until
-    // the SRAM is about to be used (the chip select bits have to be set).
-    if (++current_mid == 0)
-      current_high++;
-	
-    set_addrmid(current_mid);
-  }
+  uint8_t value = read_data();
 
-  bus_deselect();
+  inc_address();
+
+  return value;
 }
 
-void memory_set_address(uint32_t address)
-/* 
-   Sets an adress. The latch values are saved for
-   sequential writing.
+static inline void write_sequential(uint8_t value)
+{
+  write_data(value);
+  inc_address();
+}
+
+static void apply_context(struct memory_context *context)
+{
+  set_addrlow(context->low);
+  set_addrmid(context->mid);
+  set_addrhigh(context->high);
+  current_context = context;
+}
+
+static inline void check_context(struct memory_context *context)
+{
+  // If we changed context, the address latches need to be updated
+  if (context != current_context)
+    apply_context(context);
+}
+
+void memory_set_address(struct memory_context *context, uint32_t address)
+/*
+   Sets an adress. The latch values are saved in the context for
+   sequential writing later.
 */
 {
-  union val32 addr = {.value = address};
+  current_context = context;
   
+  union val32 addr = {.value = address};
+
   // Put first 8 address bits in low address latch:
-  set_addrlow(current_low = addr.bytes[0]);
-    
+  set_addrlow(context->low = addr.bytes[0]);
+
   // Put next 8 address bits in mid address latch:
-  set_addrmid(current_mid = addr.bytes[1]);
+  set_addrmid(context->mid = addr.bytes[1]);
 
   // Put next 4 address bits in high address latch.
   // The final bit decides between the first and second memory bank.
   // This needs to be translated to corresponding chip select signals.
-  current_high = addr.bytes[2] & 0x0F;
+  context->high = addr.bytes[2] & 0x0F;
 }
 
 void memory_write(uint32_t address, uint8_t value)
 {
-  memory_set_address(address);
+  memory_set_address(&default_context, address);
 
   write_data(value);
 }
@@ -159,83 +189,75 @@ void memory_write(uint32_t address, uint8_t value)
 uint8_t memory_read(uint32_t address)
 {    
   // Set address:
-  memory_set_address(address);
+  memory_set_address(&default_context, address);
 
   uint8_t value = read_data();
 	
   return value;
 }
 
-uint8_t memory_read_sequential(void)
+uint8_t memory_read_sequential(struct memory_context *context)
 /*
   Reads a byte at the current address and increments address by 1.
 */
 {
-  // Set high byte. This has to be done even though the high byte 
-  // might not have (and probably hasn't) changed, because the chip 
-  // select bit has to be set. 
-
-  uint8_t value = read_data();
-
-  inc_address();
-
-  return value;
+  check_context(context);
+  return read_sequential();
 }
 
-void memory_write_sequential(uint8_t value)
+void memory_write_sequential(struct memory_context *context, uint8_t value)
 {
-  write_data(value);
-
-  inc_address();
+  check_context(context);
+  write_sequential(value);
 }
 
 void memory_write_word(uint32_t address, uint16_t value)
 {
-  memory_set_address(address);
+  memory_set_address(&default_context, address);
 
   union val16 val = {.value = value};
-  memory_write_sequential(val.bytes[0]);
-  memory_write_sequential(val.bytes[1]);
+  write_sequential(val.bytes[0]);
+  write_sequential(val.bytes[1]);
 }
 
 uint16_t memory_read_word(uint32_t address)
 {
-  memory_set_address(address);
+  memory_set_address(&default_context, address);
 
   union val16 val;
-  val.bytes[0] = memory_read_sequential();
-  val.bytes[1] = memory_read_sequential();
+  val.bytes[0] = read_sequential();
+  val.bytes[1] = read_sequential();
   return val.value;
 }
 
 void memory_write_dword(uint32_t address, uint32_t value)
 {
-  memory_set_address(address);
+  memory_set_address(&default_context, address);
 
   union val32 val = {.value = value};
-  memory_write_sequential(val.bytes[0]);
-  memory_write_sequential(val.bytes[1]);
-  memory_write_sequential(val.bytes[2]);
-  memory_write_sequential(val.bytes[3]);
+  write_sequential(val.bytes[0]);
+  write_sequential(val.bytes[1]);
+  write_sequential(val.bytes[2]);
+  write_sequential(val.bytes[3]);
 }
 
 uint32_t memory_read_dword(uint32_t address)
 {
-  memory_set_address(address);
+  memory_set_address(&default_context, address);
 
   union val32 val;
-  val.bytes[0] = memory_read_sequential();
-  val.bytes[1] = memory_read_sequential();
-  val.bytes[2] = memory_read_sequential();
-  val.bytes[3] = memory_read_sequential();
+  val.bytes[0] = read_sequential();
+  val.bytes[1] = read_sequential();
+  val.bytes[2] = read_sequential();
+  val.bytes[3] = read_sequential();
   return val.value;
 }
 
 void memory_clean(void)
 {
-  memory_set_address(0);
+  memory_set_address(&default_context, 0);
   for (uint32_t i = 0; i < MEMORY_SIZE; i++) 
-    memory_write_sequential(0);
+    memory_write_sequential(&default_context, 0);
 }
 
 void memory_setup(void)

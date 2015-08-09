@@ -18,7 +18,7 @@
 
 
 
-  memory.h - SRAM interface
+  SRAM interface with context switching
 
   Handles the low level details of reading and writing to/from the SRAM memory.
   Provides means of random access using a given adress, as well as writing or 
@@ -37,7 +37,17 @@
 
 #define MEMORY_SIZE 0x100000UL  // 1MB of memory
 
-void memory_set_address(uint32_t address);
+/*
+   The memory context is needed to perform sequential operations while the
+   memory is shared by several tasks.
+*/
+struct memory_context {
+  uint8_t low;
+  uint8_t mid;
+  uint8_t high;
+};
+
+void memory_set_address(struct memory_context *context, uint32_t address);
 
 void memory_write(uint32_t address, uint8_t value);
 void memory_write_word(uint32_t address, uint16_t value);
@@ -46,8 +56,8 @@ void memory_write_dword(uint32_t address, uint32_t value);
 uint8_t memory_read(uint32_t address);
 uint16_t memory_read_word(uint32_t address);
 uint32_t memory_read_dword(uint32_t address);
-uint8_t memory_read_sequential(void);
-void memory_write_sequential(uint8_t value);
+uint8_t memory_read_sequential(struct memory_context *context);
+void memory_write_sequential(struct memory_context *context, uint8_t value);
 
 void memory_setup(void);
 void memory_clean(void);
