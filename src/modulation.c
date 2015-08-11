@@ -32,6 +32,7 @@
 #include "lfo.h"
 #include "envelope.h"
 #include "portamento.h"
+#include "periods.h"
 
 #define ABS(x) ((x > 0) ? (x) : (-x))
 
