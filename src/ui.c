@@ -29,7 +29,6 @@
 #include "ui_sequencer.h"
 #include "ui_programmer.h"
 #include "ui_settings.h"
-#include "ui_track.h"
 #include "leds.h"
 #include "input.h"
 #include "midi.h"
