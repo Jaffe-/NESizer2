@@ -1,6 +1,3 @@
-###################################
-# Makefile, for AVR Programming
- 
 # Target name:
 TARGET = nesizer_fw
  
@@ -10,15 +7,13 @@ PROGRAMMER=jtag3isp
 F_CPU=20000000L
  
 CSRC = $(wildcard *.c)
-SSRC = $(wildcard *.s)
-OBJ = $(CSRC:.c=.o) $(SSRC:.s=.o)
+OBJ = $(CSRC:.c=.o) 2a03_io.s
  
 # Compiler / Linker flags:
 CFLAGS = -mmcu=$(MCU) -Wall -O3 -std=gnu11 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
 LDFLAGS = -mmcu=$(MCU) -Wl,-Map=$(TARGET).map
  
 ###################################
-# Makerules:
  
 .PHONY: compile flash clean
  
@@ -33,7 +28,6 @@ clean:
 .SECONDARY: $(OBJS) 
  
 ###################################
-# Psudorules:
  
 %.eep: %.hex
 	avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 --no-change-warnings -O ihex $< $@
@@ -49,5 +43,5 @@ clean:
  
 %.o : %.c
 	avr-gcc $(CFLAGS) -c $< -o $@ 
-%.o : %.s
+2a03_io_s.o : 2a03_io.s
 	avr-as -mmcu=$(MCU) -c $< -o $@
