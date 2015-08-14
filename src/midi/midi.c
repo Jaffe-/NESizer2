@@ -18,7 +18,7 @@
 
 
 
-  midi.c - MIDI interpreter
+  MIDI interpreter
 
   Interprets MIDI messages and acts accordingly.
 */

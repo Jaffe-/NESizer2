@@ -18,7 +18,7 @@
 
 
 
-  2a03_io.c - Low level 2A03 I/O interface
+  Low level 2A03 I/O interface
 
   Contains functions for communicating with and controlling the 
   2A03.

@@ -18,7 +18,7 @@
 
 
 
-  envelope.c - ADSR envelope implementation
+  ADSR envelope implementation
 
   4-bit ADSR envelopes with 8-bit A, D, R settings.
 */

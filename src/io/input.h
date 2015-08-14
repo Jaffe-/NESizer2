@@ -18,7 +18,7 @@
 
 
 
-  input.c - Button io/input.handling
+  Button io/input.handling
 
   Reads button states
 */

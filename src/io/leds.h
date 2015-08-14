@@ -18,7 +18,7 @@
 
 
 
-  io/leds.h - Low level LED control.
+  Low level LED control.
 
   Provides macros and functions for setting LEDs on the front panel
   board, and a task/task.handler for refreshing them.
