@@ -97,7 +97,7 @@ void select_pattern(void)
     state = STATE_TOPLEVEL;
   }
   
-  else if (ui_updown(&current_pattern, 0, 99))
+  else if (ui_updown((int8_t*)&current_pattern, 0, 99))
     pattern_load(current_pattern);
   
   else if (button_pressed(BTN_SAVE)) {
@@ -128,11 +128,11 @@ void select_note(void)
   display_pattern();
   
   if (button_on(BTN_SHIFT)) {
-    if (ui_updown(&current_page, 0, 9)) 
+    if (ui_updown((int8_t*)&current_page, 0, 9))
       pattern_load_data(current_pattern, current_page);
   }
   else {
-    if (ui_updown(&current_channel, 1, 5))
+    if (ui_updown((int8_t*)&current_channel, 1, 5))
       current_channel--;
   }
   
@@ -188,12 +188,12 @@ void enter_note(void)
     
   else if (button_on(BTN_OCTAVE)) {
     leds_7seg_two_digit_set(3, 4, channel_octave[current_channel]);
-    ui_updown(&channel_octave[current_channel], 1, 7);
+    ui_updown((int8_t*)&channel_octave[current_channel], 1, 7);
   }
 
   else {
     leds_7seg_two_digit_set(3, 4, channel_length[current_channel]);
-    if (ui_updown(&channel_length[current_channel], 1, 4))
+    if (ui_updown((int8_t*)&channel_length[current_channel], 1, 4))
       pattern_data[current_channel][current_note].length = channel_length[current_channel];
   }
 
