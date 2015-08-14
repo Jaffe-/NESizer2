@@ -18,7 +18,7 @@
 
 
 
-  assigner/assigner.h - Channel note assignment
+  Channel note assignment
 
   Assigns notes from MIDI or button input to sound channels.
 */

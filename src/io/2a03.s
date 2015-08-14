@@ -16,7 +16,7 @@
 ;;; along with Foobar.  If not, see <http: //www.gnu.org/licenses/>.
 
 
-;;; 2a03_asm.s - Low level 2A03 I/O interfrace
+;;; Low level 2A03 I/O interfrace
 ;;;
 ;;; Functions for communicating with the 6502 processor in the 2A03.
 ;;; Provides functions for

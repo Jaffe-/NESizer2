@@ -18,7 +18,7 @@
 
 
 
-  apu.c - APU abstraction layer
+  APU abstraction layer
 
   Contains abstractions for easily using the 2A03 APU.
 */

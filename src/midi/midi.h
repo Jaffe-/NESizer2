@@ -18,7 +18,7 @@
 
 
 
-  midi/midi.h - MIDI interpreter
+  MIDI interpreter
 
   Interprets MIDI messages and acts accordingly.
 */

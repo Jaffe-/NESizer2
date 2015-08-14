@@ -18,7 +18,7 @@
 
 
 
-  memory.c - SRAM interface
+  SRAM interface with context switching
 
   Handles the low level details of reading and writing to/from the SRAM memory.
   Provides means of random access using a given adress, as well as writing or 

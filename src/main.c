@@ -18,7 +18,7 @@
 
 
 
-  main.c - Main entry point
+  Main entry point
 
   Entry point for the program. Initializes the system and starts the
   task/task.handler.

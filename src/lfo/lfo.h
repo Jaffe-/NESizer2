@@ -18,7 +18,7 @@
 
 
 
-  lfo/lfo.h - LFO implementation
+  LFO implementation
 
   An 8-bit LFO with selectable wave shapes and variable frequency.
 */

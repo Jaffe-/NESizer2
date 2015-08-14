@@ -18,7 +18,7 @@
 
 
 
-  bus.c - Bus interface
+  Bus interface
 
   Handles low level bus communication. 
 */
