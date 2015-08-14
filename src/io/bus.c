@@ -18,36 +18,23 @@
 
 
 
-  main.c - Main entry point
+  bus.c - Bus interface
 
-  Entry point for the program. Initializes the system and starts the
-  task/task.handler.
+  Handles low level bus communication. 
 */
 
 
-#include "task/task.h"
-#include "apu/apu.h"
-#include "io/2a03.h"
-#include "io/memory.h"
+#include <avr/io.h>
 #include "io/bus.h"
-#include "patch/patch.h"
-#include "io/midi.h"
-#include "modulation/periods.h"
 
-int main() 
+void bus_setup(void)
 {
-  // Set up low level systems:
-  bus_setup();
-  io_setup();
-  periods_setup();
-  memory_setup();
-  task_setup();
-  midi_io_setup();
-  apu_setup();
-  
-  // Load first patch
-  patch_load(0);
-   
-  // The task manager takes over from here
-  task_manager();
+    // Set address related port pins as outputs:
+    DDRB |= ADDR_m;
+    DDRD |= BUS_EN_m;
+
+    // The bus_dir_output macro will take care of setting the databus pins
+    // correctly:
+    bus_dir_output();
 }
+  

@@ -18,36 +18,33 @@
 
 
 
-  main.c - Main entry point
+  io/2a03_io.h - Low level 2A03 I/O interface
 
-  Entry point for the program. Initializes the system and starts the
-  task/task.handler.
+  Contains functions for communicating with and controlling the 
+  2A03.
 */
 
 
-#include "task/task.h"
-#include "apu/apu.h"
-#include "io/2a03.h"
-#include "io/memory.h"
-#include "io/bus.h"
-#include "patch/patch.h"
-#include "io/midi.h"
-#include "modulation/periods.h"
+#pragma once
 
-int main() 
-{
-  // Set up low level systems:
-  bus_setup();
-  io_setup();
-  periods_setup();
-  memory_setup();
-  task_setup();
-  midi_io_setup();
-  apu_setup();
-  
-  // Load first patch
-  patch_load(0);
-   
-  // The task manager takes over from here
-  task_manager();
-}
+#include <stdint.h>
+
+// The 6502 opcodes needed
+#define LDA_imm 0xA9
+#define STA_abs 0x8D
+#define STA_zp 0x85
+#define JMP_abs 0x4C
+
+// Pins used to interface with 6502
+#define RES 100             // PC2
+#define RW 0b1000          // PC3
+
+#define nop() asm volatile("nop")
+
+void io_register_write(uint8_t reg, uint8_t value);
+void io_write_changed(uint8_t reg);
+void io_setup(void);
+void io_reset_pc(void);
+
+extern uint8_t io_reg_buffer[0x16];
+extern uint8_t io_clockdiv;
