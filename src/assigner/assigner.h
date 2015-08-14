@@ -18,36 +18,15 @@
 
 
 
-  main.c - Main entry point
+  assigner/assigner.h - Channel note assignment
 
-  Entry point for the program. Initializes the system and starts the
-  task/task.handler.
+  Assigns notes from MIDI or button input to sound channels.
 */
 
 
-#include "task/task.h"
-#include "apu/apu.h"
-#include "io/2a03.h"
-#include "io/memory.h"
-#include "io/bus.h"
-#include "patch/patch.h"
-#include "io/midi.h"
-#include "modulation/periods.h"
+#pragma once
+#include <stdint.h>
 
-int main() 
-{
-  // Set up low level systems:
-  bus_setup();
-  io_setup();
-  periods_setup();
-  memory_setup();
-  task_setup();
-  midi_io_setup();
-  apu_setup();
-  
-  // Load first patch
-  patch_load(0);
-   
-  // The task manager takes over from here
-  task_manager();
-}
+uint16_t note_to_period(uint8_t channel, uint8_t note);
+void play_note(uint8_t channel, uint8_t note);
+void stop_note(uint8_t channel);

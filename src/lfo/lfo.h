@@ -18,36 +18,32 @@
 
 
 
-  main.c - Main entry point
+  lfo/lfo.h - LFO implementation
 
-  Entry point for the program. Initializes the system and starts the
-  task/task.handler.
+  An 8-bit LFO with selectable wave shapes and variable frequency.
 */
 
 
-#include "task/task.h"
-#include "apu/apu.h"
-#include "io/2a03.h"
-#include "io/memory.h"
-#include "io/bus.h"
-#include "patch/patch.h"
-#include "io/midi.h"
-#include "modulation/periods.h"
+#pragma once
 
-int main() 
-{
-  // Set up low level systems:
-  bus_setup();
-  io_setup();
-  periods_setup();
-  memory_setup();
-  task_setup();
-  midi_io_setup();
-  apu_setup();
-  
-  // Load first patch
-  patch_load(0);
-   
-  // The task manager takes over from here
-  task_manager();
-}
+#include "apu/apu.h"
+
+struct lfo {
+  int8_t period;
+  enum {
+    SINE = 1, RAMP_DOWN, RAMP_UP, SQUARE, TRIANGLE
+  } waveform;
+
+  // Used by LFO logic:
+  int8_t value;
+  uint8_t counter;
+  uint8_t position;
+};
+
+extern struct lfo lfo1;
+extern struct lfo lfo2;
+extern struct lfo lfo3;
+
+void lfo_update(struct lfo* lfo);
+int16_t lfo_value(struct lfo* lfo, uint8_t intensity);
+void lfo_update_handler(void);

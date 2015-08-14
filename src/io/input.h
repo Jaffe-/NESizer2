@@ -18,36 +18,16 @@
 
 
 
-  main.c - Main entry point
+  input.c - Button io/input.handling
 
-  Entry point for the program. Initializes the system and starts the
-  task/task.handler.
+  Reads button states
 */
 
 
-#include "task/task.h"
-#include "apu/apu.h"
-#include "io/2a03.h"
-#include "io/memory.h"
-#include "io/bus.h"
-#include "patch/patch.h"
-#include "io/midi.h"
-#include "modulation/periods.h"
+#pragma once
 
-int main() 
-{
-  // Set up low level systems:
-  bus_setup();
-  io_setup();
-  periods_setup();
-  memory_setup();
-  task_setup();
-  midi_io_setup();
-  apu_setup();
-  
-  // Load first patch
-  patch_load(0);
-   
-  // The task manager takes over from here
-  task_manager();
-}
+#include <stdint.h>
+
+extern uint8_t input[3];
+
+void input_refresh(void);
