@@ -61,7 +61,7 @@ uint8_t io_clockdiv;
 
 /* Internal utility functions */
 
-inline void register_write(uint8_t reg, uint8_t value)
+static inline void register_write(uint8_t reg, uint8_t value)
 /* Write to register
   
    Writes a value to an APU register by feeding the 6502
