@@ -29,7 +29,11 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 #include "modulation/periods.h"
-#include "io/2a03.h"
+#ifdef TARGET
+    #include "io/2a03.h"
+#else
+    #include "io_stubs/2a03.h"
+#endif
 
 /* 
    The tables were auto generated using

@@ -11,7 +11,7 @@ CSRC = $(foreach m, $(MODULES), $(wildcard $(m)*.c))
 OBJ = $(CSRC:.c=.o) 2a03_s.o
  
 # Compiler / Linker flags:
-CFLAGS = -mmcu=$(MCU) -Wall -O3 -std=gnu11 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -I$(shell pwd)
+CFLAGS = -mmcu=$(MCU) -Wall -O3 -std=gnu11 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -I$(shell pwd) -DTARGET
 LDFLAGS = -mmcu=$(MCU) -Wl,-Map=$(TARGET).map
  
 ###################################

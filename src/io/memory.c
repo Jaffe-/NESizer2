@@ -26,9 +26,9 @@
 */
 
 
-#include "io/memory.h"
+#include "memory.h"
 #include <avr/io.h>
-#include "io/bus.h"
+#include "bus.h"
 
 // Useful unions for accessing individual bytes
 union val32 {

@@ -24,10 +24,13 @@
 */
 
 
-#include <avr/io.h>
-#include <avr/pgmspace.h>
-#include "midi/midi.h"
-#include "io/midi.h"
+#include <stdint.h>
+#include "midi.h"
+#ifdef TARGET
+    #include "io/midi.h"
+#else
+    #include "io_stubs/midi.h"
+#endif
 #include "envelope/envelope.h"
 #include "lfo/lfo.h"
 #include "ui/ui.h"

@@ -24,11 +24,10 @@
 */
 
 
-#include "ui/ui.h"
-#include "ui/ui_programmer.h"
+#include "ui.h"
+#include "ui_programmer.h"
 #include <avr/pgmspace.h>
 #include "patch/patch.h"
-#include "io/leds.h"
 #include "apu/apu.h"
 
 #define BTN_LFO1 5 // 21

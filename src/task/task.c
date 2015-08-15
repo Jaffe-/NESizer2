@@ -26,7 +26,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "task/task.h"
+#include "task.h"
 #include "apu/apu.h"
 #include "io/midi.h"
 #include "lfo/lfo.h"

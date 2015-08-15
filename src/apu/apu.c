@@ -23,13 +23,16 @@
   Contains abstractions for easily using the 2A03 APU.
 */
 
-
-#include "apu/apu.h"
-#include <avr/io.h>
-#include <avr/pgmspace.h>
-#include "io/2a03.h"
+#include <stdint.h>
+#include "apu.h"
 #include "../tools/deltacompress.h"
 #include "lfo/lfo.h"
+
+#ifdef TARGET
+    #include "io/2a03.h"
+#else
+    #include "io_stubs/2a03.h"
+#endif
 
 /* APU channel bit masks */
 

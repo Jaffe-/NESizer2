@@ -26,10 +26,8 @@
 
 #include <stdint.h>
 #include <avr/pgmspace.h>
-#include "io/leds.h"
-#include "ui/ui_sequencer.h"
-#include "ui/ui.h"
-#include "io/input.h"
+#include "ui_sequencer.h"
+#include "ui.h"
 #include "midi/midi.h"
 #include "assigner/assigner.h"
 

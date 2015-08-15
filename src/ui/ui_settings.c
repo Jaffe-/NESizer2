@@ -27,17 +27,24 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "parameter/parameter.h"
-#include "ui/ui_settings.h"
+#include "ui_settings.h"
 #include "midi/midi.h"
-#include "io/input.h"
-#include "io/leds.h"
-#include "ui/ui.h"
+#include "ui.h"
 #include "midi/midi.h"
 #include "patch/patch.h"
 #include "sample/sample.h"
-#include "io/memory.h"
-#include "io/leds.h"
-#include "io/2a03.h"
+#ifdef TARGET
+    #include "io/leds.h"
+    #include "io/input.h"
+    #include "io/memory.h"
+    #include "io/2a03.h"
+#else
+    #include "io_stubs/leds.h"
+    #include "io_stubs/input.h"
+    #include "io_stubs/memory.h"
+    #include "io_stubs/2a03.h"
+#endif
+
 
 #define BTN_MIDI_CHN 5
 #define BTN_BLOCKSTATS 6

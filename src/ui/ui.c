@@ -29,8 +29,13 @@
 #include "ui/ui_sequencer.h"
 #include "ui/ui_programmer.h"
 #include "ui/ui_settings.h"
-#include "io/leds.h"
-#include "io/input.h"
+#ifdef TARGET
+    #include "io/leds.h"
+    #include "io/input.h"
+#else
+    #include "io_stubs/leds.h"
+    #include "io_stubs/input.h"
+#endif
 #include "midi/midi.h"
 #include "modulation/modulation.h"
 
