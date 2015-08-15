@@ -137,7 +137,7 @@ void io_write_changed(uint8_t reg)
   }
 }
 
-void io_reset_pc()
+void io_reset_pc(void)
 {
   bus_write(STA_zp);
 
@@ -150,7 +150,7 @@ void io_reset_pc()
   bus_deselect();
 }
 
-void io_setup()
+void io_setup(void)
 /* 
    Initializes the interface to communicate with 6502 
 */

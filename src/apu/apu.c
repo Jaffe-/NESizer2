@@ -401,7 +401,7 @@ void apu_dmc_update_handler(void)
 }
 
 // Setup routine
-void apu_setup()
+void apu_setup(void)
 {
   sq1_setup();
   sq2_setup();
