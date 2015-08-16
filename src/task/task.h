@@ -27,14 +27,5 @@
 
 #pragma once
 
-#include <stdint.h>
-
-struct task {
-  void (*const handler)();
-  const uint8_t period;
-  uint8_t counter;
-};
-
-void task_add(void (*handler)(), uint8_t period, uint8_t offset);
 void task_manager(void);
 void task_setup(void);

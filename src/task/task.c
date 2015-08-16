@@ -39,6 +39,12 @@
 #include "ui/ui.h"
 #include "ui/ui_sequencer.h"
 
+struct task {
+  void (*const handler)();
+  const uint8_t period;
+  uint8_t counter;
+};
+
 struct task tasks[] = {
   {.handler = &apu_dmc_update_handler, .period = 1, .counter = 1},
   {.handler = &midi_io_handler, .period = 5, .counter = 0},
