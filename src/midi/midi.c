@@ -26,11 +26,7 @@
 
 #include <stdint.h>
 #include "midi.h"
-#ifdef TARGET
-    #include "io/midi.h"
-#else
-    #include "io_stubs/midi.h"
-#endif
+#include "io/midi.h"
 #include "envelope/envelope.h"
 #include "lfo/lfo.h"
 #include "ui/ui.h"

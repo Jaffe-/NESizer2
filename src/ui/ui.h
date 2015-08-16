@@ -28,13 +28,8 @@
 #pragma once
 
 #include "parameter/parameter.h"
-#ifdef TARGET
-    #include "io/leds.h"
-    #include "io/input.h"
-#else
-    #include "io_stubs/leds.h"
-    #include "io_stubs/input.h"
-#endif
+#include "io/leds.h"
+#include "io/input.h"
 
 #define BTN_SQ1 0 // 16
 #define BTN_SQ2 1 // 17

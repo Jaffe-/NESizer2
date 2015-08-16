@@ -25,11 +25,7 @@
 
 
 #include "patch/patch.h"
-#ifdef TARGET
-    #include "io/memory.h"
-#else
-    #include "io_stubs/memory.h"
-#endif
+#include "io/memory.h"
 #include "parameter/parameter.h"
 
 // First 256 bytes of SRAM not used.

@@ -33,17 +33,10 @@
 #include "midi/midi.h"
 #include "patch/patch.h"
 #include "sample/sample.h"
-#ifdef TARGET
-    #include "io/leds.h"
-    #include "io/input.h"
-    #include "io/memory.h"
-    #include "io/2a03.h"
-#else
-    #include "io_stubs/leds.h"
-    #include "io_stubs/input.h"
-    #include "io_stubs/memory.h"
-    #include "io_stubs/2a03.h"
-#endif
+#include "io/leds.h"
+#include "io/input.h"
+#include "io/memory.h"
+#include "io/2a03.h"
 
 
 #define BTN_MIDI_CHN 5

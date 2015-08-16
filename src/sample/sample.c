@@ -25,11 +25,7 @@
 
 
 #include "sample.h"
-#ifdef TARGET
-    #include "io/memory.h"
-#else
-    #include "io_stubs/memory.h"
-#endif
+#include "io/memory.h"
 #include <stdint.h>
 
 #define NUM_SAMPLES 100

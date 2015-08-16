@@ -27,12 +27,7 @@
 #include "apu.h"
 #include "../tools/deltacompress.h"
 #include "lfo/lfo.h"
-
-#ifdef TARGET
-    #include "io/2a03.h"
-#else
-    #include "io_stubs/2a03.h"
-#endif
+#include "io/2a03.h"
 
 /* APU channel bit masks */
 
