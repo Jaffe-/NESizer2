@@ -1,6 +1,6 @@
 # Target name:
 TARGET = nesizer_fw
- 
+
 # Target type
 MCU=atmega328
 PROGRAMMER=jtag3isp
@@ -8,6 +8,7 @@ F_CPU=20000000L
 
 MODULES = ./ $(shell ls -d */)
 CSRC = $(foreach m, $(MODULES), $(wildcard $(m)*.c))
+HEADERS = $(foreach m, $(MODULES), $(wildcard $(m)*.h))
 OBJ = $(CSRC:.c=.o) 2a03_s.o
 
 # Compiler / Linker flags:
@@ -36,7 +37,7 @@ clean:
 %.elf: $(OBJ)
 	avr-gcc $^ $(LDFLAGS) -o $@
 
-%.o : %.c
+%.o : %.c $(HEADERS)
 	avr-gcc $(CFLAGS) -c $< -o $@ 
 
 2a03_s.o : io/2a03.s
