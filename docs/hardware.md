@@ -76,7 +76,9 @@ There are two SRAM ICs of 512KByte each, thus a 20 bit address is needed to addr
 
 The write enable (/WE) line of the SRAM ICs is connected to pin 4 of **PORTC**. This pin must be kept high at all times except when a write is to performed. When an address is set up and a desired value is put on the databus, this pin is pulled low and thereafter pulled high to write the value to the address in memory. 
 
-The SRAM ICs are powered by both the 5V supply (VCC) and also a 3V lithium battery to keep the memories powered at all times. A Maxim DS1210 IC is used for this; it handles switching over from the 5V supply to the battery when power is shut off, and also takes care of pulling chip enable signals up during unstable voltages during power-on/off. Since there are two SRAMs, the DS1210's CE (chip enable) input is grounded and its CEO (chip enable output) signal is used to switch two PNP transistors instead. These transistors switch the respective CE signals for each SRAM IC. 
+The SRAM ICs will retain their data as long as their supply voltage is larger than 1.5 V and the chip select lines are held high. The battery backup circuit takes care of this. A constant supply voltage is supplied by either a 3 V coin cell battery, or the regulated 5 V supply when the NESizer is powered on. The supplies are connected through diodes to prevent the 5 V supply from being applied to the battery, and to minimize the current flowing out of the battery when the 5 V supply is off.
+
+A simple transistor switch circuit is used to force the chip select lines high when the 5 V supply is turned off. R19 and R20 set up a resistive divider giving a base voltage of the transistors that is about 0.15 * VCC. Assuming a typical VBE drop of 0.6 V, this gives a threshold of about 4 V for the transistor to start turning on. The pullups R21 and R22 ensure that the chip enable outputs are tied to MEM_VCC when the transistors are off. As the transistors are turned on, the outputs will follow the inputs closely, with a small drop between the emitter and collector.
 
 
 #### MIDI
@@ -86,17 +88,9 @@ The MIDI input circuit is the standard circuit suggested in the MIDI standard, u
 
 #### Output audio path
 
-There are two nearly identical output paths for the two 2A03 sound outputs, differing only in the gain applied to the signal.
+There are two identical output paths for the two 2A03 sound outputs, and a mixer that mixes the two audio signals with approximately the same ratio as in the NES.
+
+The signal is AC-coupled by C8, C11 to the volume potentiometers set up as voltage dividers (VR1L, VR1R). The AC coupling is necessary to avoid noises when turning the volume potentiometers. It is then AC coupled by C9, C12 in to the virtual ground of an inverting amplifier with a gain of -6.8 set up by R8/R7 and R11/R10.  The non-inverting input of the op-amps IC3A, IC3B is set by a voltage divider to 2.5 V, so the output voltage is 2.5 V - 6.8 * v_in. In the feedback loop capacitors C26, C27 stabilize and also set the upper corner frequency of the bandwidth. The mix is done by passively summing the two resulting signals at the virtual ground of a third inverting amplifier. This ensure minimal crossbleed between the two output paths.
+
+
  
-The signal is first passed through a volume control potentiometer. The 2A03 output is AC coupled into the audio path to reduce noise when turning the volume potentiometer, and to remove any DC offset from the DMC channel (which can cause pops when playing samples). The attenuated signal is then AC coupled to the gain stage, consisting of an op-amp in a non-inverting amplifier configuration. A 2.5V bias is added to center the signal at the middle of the op-amp's linear range. The non-inverting amplifier subtracts the DC component so that the signal stays centered at 2.5V after amplification.
-
-The gain for SND1 is approximately 9.3, and the gain for SND2 is approximately 12. This brings each signal to around 2V peak to peak. The output from the op-amp is AC coupled to the output jack to remove the 2.5V DC offset present after amplification. 
-
-A mix of the two amplified signals is also made passively. It is buffered to keep its amplitude relatively constant when the output is loaded. The output on the second jack can be switched between the ordinary output or this mix.
-
-
-### Battery backup circuit
-
-The SRAM ICs will retain their data as long as their supply voltage is larger than 1.5 V and the chip select lines are held high. The battery backup circuit takes care of this. A constant supply voltage is supplied by either a 3 V coin cell battery, or the regulated 5 V supply when the NESizer is powered on. The supplies are connected through diodes to prevent the 5 V supply from being applied to the battery, and to minimize the current flowing out of the battery when the 5 V supply is off.
-
-A simple transistor switch circuit is used to force the chip select lines high when the 5 V supply is turned off. R19 and R20 set up a resistive divider giving a base voltage of the transistors that is about 0.15 * VCC. Assuming a typical VBE drop of 0.6 V, this gives a threshold of about 4 V for the transistor to start turning on. The pullups R21 and R22 ensure that the chip enable outputs are tied to MEM_VCC when the transistors are off. As the transistors are turned on, the outputs will follow the inputs closely, with a small drop between the emitter and collector.
