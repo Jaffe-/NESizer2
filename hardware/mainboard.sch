@@ -21588,8 +21588,8 @@ DIN A3, landscape with extra doc field</description>
 <part name="R17" library="rcl" deviceset="R-US_" device="0207/7" value="4.7k"/>
 <part name="D1" library="gm-diodes" deviceset="1N400X" device=".3"/>
 <part name="R15" library="rcl" deviceset="R-US_" device="0207/7" value="15k"/>
-<part name="C26" library="capacitor-wima" deviceset="C" device="2.5/2" value="47p"/>
-<part name="C27" library="capacitor-wima" deviceset="C" device="2.5/2" value="47p"/>
+<part name="C26" library="capacitor-wima" deviceset="C" device="2.5/2" value="22pF"/>
+<part name="C27" library="capacitor-wima" deviceset="C" device="2.5/2" value="22pF"/>
 <part name="C28" library="capacitor-wima" deviceset="C" device="2.5/2" value="22pF"/>
 <part name="R21" library="rcl" deviceset="R-US_" device="0207/7" value="4.7k"/>
 <part name="T2" library="transistor" deviceset="BC547" device=""/>
