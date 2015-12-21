@@ -40,8 +40,8 @@ else:
         for octave in range(0, 7):
             fileobj.write("  ")
             for note in range(0, 12):
-                f = f_C1 * 2 ** (octave + note/12)
-                T = round((20e6 / divisor) / (16 * f))
+                f = f_C1 * 2 ** (octave + note/12.0)
+                T = int(round((20e6 / divisor) / (16 * f)))
                 fileobj.write(str(T))
                 if not (octave == 6 and note == 11):
                     fileobj.write(", ")
