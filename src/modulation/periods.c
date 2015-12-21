@@ -121,7 +121,7 @@ uint16_t get_period(uint8_t chn, uint16_t c)
       tri_scale = 1;
   }
     
-  val = (1.0f - 0.00087696f * tone.offset) * base_period;  
+  val = (1.0f - 0.00087696f * tone.offset) * base_period - 1;
 
   // Triangle channel timer value is exactly half of (T - 1).
   if (tri_scale) {
