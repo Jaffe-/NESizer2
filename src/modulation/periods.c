@@ -54,20 +54,7 @@ uint16_t get_period(uint8_t chn, uint16_t c)
     Lower 6 bits is steps between semitones
     Rest of bits are semitones, where 0 corresponds to C1 etc.
     
-    DETAILS:
-
-    By direct computation, 
-    dT = f_2A03 / (16 * (f + df)) - f_2A03 / (16 * f)
-    = f_2A03 / 16 * (f/(f(f + df)) - (f + df) / (f(f + df)))
-    = f_2A03 / (16 f) * df / (f + df) 
-    = T * (1 - f / (f + df))
-    Further more, by the definition of cents and adjusting for dc's 10 cent scale:
-    f + df = f * (2^(dc/120) 
-    Putting these two together yields
-    dT = T * (2^(-dc/120) - 1).
-
-    To simplify calculating the power of 2, a piecewise linear approximation is
-    used.
+    This is detailed in the periods.pdf document.
   */ 
   union tone tone;
   tone.raw_value = c;
