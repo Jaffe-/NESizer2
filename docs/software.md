@@ -39,6 +39,11 @@ The NESIZER supports three different kinds of chips: 2A03, 2A07 (PAL version) an
 When the NESIZER boots, `detect` is run, and the result is used to make the function pointers `register_set`, `reset_pc` and `disable_interrupts` point to the correct functions in `2a03_io.s`. It is also used to select which table of timer values to use in `periods.c`.
 
 
+#### Calculating period values for APU channels
+
+This is detailed in [periods.pdf](docs/periods.pdf).
+
+
 #### APU abstaction layer
 
 The APU abstraction layer (`apu`) contains structs and functions for manipulating the 2A03 channels in a high level manner without having to deal with register writes manually. The channels are represented by structs having fields corresponding to each (used/interesting) parameter of the channel. 
