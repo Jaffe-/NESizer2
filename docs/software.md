@@ -41,7 +41,7 @@ When the NESIZER boots, `detect` is run, and the result is used to make the func
 
 #### Calculating period values for APU channels
 
-This is detailed in [periods.pdf](docs/periods.pdf).
+This is detailed in [periods.pdf](periods.pdf).
 
 
 #### APU abstaction layer
