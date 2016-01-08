@@ -107,23 +107,23 @@ void io_write_changed(uint8_t reg)
       
       if ((reg_mirror[reg] & 0x07) - (io_reg_buffer[reg] & 0x07) == 1) {
 	uint8_t low_val = reg_mirror[0x02];
-	register_write(0x02, 0);    // low value = 0
-	register_write(0x01, 0x8F); // enable sweep, negate, shift = 7
+	register_write(reg - 1, 0);    // low value = 0
+	register_write(reg - 2, 0x8F); // enable sweep, negate, shift = 7
 	register_write(0x17, 0xC0); // clock sweep immediately
-	register_write(0x01, 0x0F); // disable sweep 
-	register_write(0x02, low_val); // put back low value
-	reg_mirror[0x02] = low_val;
+	register_write(reg - 2, 0x0F); // disable sweep 
+	register_write(reg - 1, low_val); // put back low value
+	reg_mirror[reg - 1] = low_val;
 	reg_mirror[reg] = io_reg_buffer[reg];
       }
 
       else if ((io_reg_buffer[reg] & 0x07) - (reg_mirror[reg] & 0x07) == 1) {
 	uint8_t low_val = reg_mirror[0x02];
-	register_write(0x02, 0xFF);
-	register_write(0x01, 0x87); // enable sweep, negate, shift = 7
+	register_write(reg - 1, 0xFF);
+	register_write(reg - 2, 0x87); // enable sweep, negate, shift = 7
 	register_write(0x17, 0xC0); // clock sweep immediately
-	register_write(0x01, 0x0F); // disable sweep 
-	register_write(0x02, low_val); // put back low value
-	reg_mirror[0x02] = low_val;
+	register_write(reg - 2, 0x0F); // disable sweep 
+	register_write(reg - 1, low_val); // put back low value
+	reg_mirror[reg - 1] = low_val;
 	reg_mirror[reg] = io_reg_buffer[reg];
       }
 	
