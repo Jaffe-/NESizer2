@@ -106,7 +106,7 @@ void io_write_changed(uint8_t reg)
       /* Trick for avoiding phase reset when changing high bits of timer period */
       
       if ((reg_mirror[reg] & 0x07) - (io_reg_buffer[reg] & 0x07) == 1) {
-	uint8_t low_val = reg_mirror[0x02];
+	uint8_t low_val = reg_mirror[reg - 1];
 	register_write(reg - 1, 0);    // low value = 0
 	register_write(reg - 2, 0x8F); // enable sweep, negate, shift = 7
 	register_write(0x17, 0xC0); // clock sweep immediately
@@ -114,10 +114,11 @@ void io_write_changed(uint8_t reg)
 	register_write(reg - 1, low_val); // put back low value
 	reg_mirror[reg - 1] = low_val;
 	reg_mirror[reg] = io_reg_buffer[reg];
+	return;
       }
 
       else if ((io_reg_buffer[reg] & 0x07) - (reg_mirror[reg] & 0x07) == 1) {
-	uint8_t low_val = reg_mirror[0x02];
+	uint8_t low_val = reg_mirror[reg - 1];
 	register_write(reg - 1, 0xFF);
 	register_write(reg - 2, 0x87); // enable sweep, negate, shift = 7
 	register_write(0x17, 0xC0); // clock sweep immediately
@@ -125,15 +126,11 @@ void io_write_changed(uint8_t reg)
 	register_write(reg - 1, low_val); // put back low value
 	reg_mirror[reg - 1] = low_val;
 	reg_mirror[reg] = io_reg_buffer[reg];
+	return;
       }
-	
-      else
-	register_write(reg, io_reg_buffer[reg]);
     }
-
-    else 
-      register_write(reg, io_reg_buffer[reg]);
-
+    
+    register_write(reg, io_reg_buffer[reg]);
   }
 }
 
