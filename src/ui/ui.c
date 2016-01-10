@@ -99,12 +99,6 @@ void ui_handler(void)
 	button_led_on(BTN_SETTINGS);
 	break;
     }
-
-    // Todo: abstract away this ...
-    if (button_on(BTN_SHIFT))
-      button_led_on(BTN_SHIFT);
-    else
-      button_led_off(BTN_SHIFT);
   }
       
   // Save current button states
@@ -214,9 +208,7 @@ void ui_getvalue_handler()
       button_led_blink(ui_getvalue_session.button2 & 0x7F);
 
       if ((ui_getvalue_session.button2 & 0x80) != 0) {
-//	button_leds[BTN_SHIFT] = 1;
-//	leds_set(BTN_SHIFT, 0);
-	button_led_blink(BTN_SHIFT);
+	button_led_blink(BTN_SAVE);
       }
     }
 
@@ -229,7 +221,7 @@ void ui_getvalue_handler()
   // When SET is pressed, store the new value in the parameter and disable LED blinking.
   // If type is VALTYPE_INVRANGE, the value is inverted. 
 
-  if (button_pressed(BTN_SAVE)) {
+  if (button_pressed(BTN_SET)) {
     if (ui_getvalue_session.parameter.type == INVRANGE)
       *ui_getvalue_session.parameter.target = ui_getvalue_session.parameter.max - value;
     else
@@ -239,9 +231,6 @@ void ui_getvalue_handler()
     
     if (ui_getvalue_session.button2 != 0xFF) {
       button_led_off(ui_getvalue_session.button2 & 0x7F);
-      //if ((ui_getvalue_session.button2 & 0x80) != 0)
-	//button_leds[BTN_SHIFT] = 1;
-	//button_led_on
     }
     
     ui_getvalue_session.state = SESSION_INACTIVE;

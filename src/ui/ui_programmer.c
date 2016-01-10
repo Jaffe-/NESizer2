@@ -266,10 +266,6 @@ static inline void toplevel_handler(void)
   for (uint8_t i = 5; i < 16; i++) {
     if (button_pressed(i)) {
       parameter_button = i;
-      
-      if (button_on(BTN_SHIFT))
-	parameter_button |= 0x80;
-
       break;
     }
   }
