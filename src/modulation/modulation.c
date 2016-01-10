@@ -47,15 +47,10 @@ int8_t mod_coarse[3];
 uint16_t mod_pitchbend_input[4] = {0x2000, 0x2000, 0x2000, 0x2000};
 uint8_t noise_period;
 
-
 static int16_t dc_temp[3];
-static struct envelope* envelopes[] = {&env1, &env2, &env3};
-
 
 static inline int16_t get_pitchbend(uint8_t chn)
 {
-  // test var
-  uint8_t pitch_bend_val = 2;
   return (int16_t)((mod_pitchbend_input[chn] >> 7) - 0x40) * mod_pitchbend[chn];
 }
 
