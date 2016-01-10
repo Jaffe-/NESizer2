@@ -36,16 +36,25 @@
 
 #define BTN_DUTY 8
 #define BTN_LOOP 8
+
 #define BTN_WAVE 9
 #define BTN_GLIDE 9
+
 #define BTN_DETUNE 10
+
 #define BTN_ENVMOD 11
-#define BTN_OCTAVE 0
 #define BTN_SAMPLEFREQ 11
+
 #define BTN_A 12
+
 #define BTN_D 13
+
 #define BTN_S 14
+
 #define BTN_R 15
+
+#define BTN_OCTAVE 0
+
 
 #define PATCH_MIN 0
 #define PATCH_MAX 99
