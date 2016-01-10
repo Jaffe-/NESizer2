@@ -71,6 +71,7 @@ const enum parameter_id sq1_parameters[] PROGMEM = {
   SQ1_LFO1,
   SQ1_LFO2,
   SQ1_LFO3,
+
   SQ1_DUTY,
   SQ1_DETUNE,
   SQ1_GLIDE,
@@ -85,6 +86,7 @@ const enum parameter_id sq2_parameters[] PROGMEM = {
   SQ2_LFO1,
   SQ2_LFO2,
   SQ2_LFO3,
+
   SQ2_DUTY,
   SQ2_DETUNE,
   SQ2_GLIDE,
@@ -99,7 +101,7 @@ const enum parameter_id tri_parameters[] PROGMEM = {
   TRI_LFO1,
   TRI_LFO2,
   TRI_LFO3,
-  
+
   0xFF,
   TRI_DETUNE,
   TRI_GLIDE,
@@ -114,7 +116,7 @@ const enum parameter_id noise_parameters[] PROGMEM = {
   NOISE_LFO1,
   NOISE_LFO2,
   NOISE_LFO3,
-  
+
   NOISE_LOOP,
   0xFF,
   0xFF,
@@ -129,7 +131,7 @@ const enum parameter_id dmc_parameters[] PROGMEM = {
   0xFF,
   0xFF,
   0xFF,
-  
+
   DMC_SAMPLE_LOOP,
   0xFF,
   0xFF,
