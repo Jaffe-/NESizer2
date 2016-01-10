@@ -41,7 +41,7 @@ const struct parameter parameters[] PROGMEM = {
   [SQ1_LFO1] = {&mod_lfo_modmatrix[0][0], RANGE, 0, 99, 0},
   [SQ1_LFO2] = {&mod_lfo_modmatrix[0][1], RANGE, 0, 99, 0},
   [SQ1_LFO3] = {&mod_lfo_modmatrix[0][2], RANGE, 0, 99, 0},
-  [SQ1_PITCHBEND] = {&mod_pitchbend[0], RANGE, 0, 12, 1},
+  [SQ1_PITCHBEND] = {&mod_pitchbend[0], RANGE, 0, 24, 1},
   [SQ1_COARSE] = {&mod_coarse[0], RANGE, 0, 36, 0},
   
   [SQ2_ENABLED] = {&sq2.enabled, BOOL, 0, 0, 0},
@@ -51,7 +51,7 @@ const struct parameter parameters[] PROGMEM = {
   [SQ2_LFO1] = {&mod_lfo_modmatrix[1][0], RANGE, 0, 99, 0},
   [SQ2_LFO2] = {&mod_lfo_modmatrix[1][1], RANGE, 0, 99, 0},
   [SQ2_LFO3] = {&mod_lfo_modmatrix[1][2], RANGE, 0, 99, 0},
-  [SQ2_PITCHBEND] = {&mod_pitchbend[1], RANGE, 0, 12, 1},
+  [SQ2_PITCHBEND] = {&mod_pitchbend[1], RANGE, 0, 24, 1},
   [SQ2_COARSE] = {&mod_coarse[1], RANGE, 0, 36, 0},
   
   [TRI_ENABLED] = {&tri.enabled, BOOL, 0, 0, 0},
@@ -60,7 +60,7 @@ const struct parameter parameters[] PROGMEM = {
   [TRI_LFO1] = {&mod_lfo_modmatrix[2][0], RANGE, 0, 99, 0},
   [TRI_LFO2] = {&mod_lfo_modmatrix[2][1], RANGE, 0, 99, 0},
   [TRI_LFO3] = {&mod_lfo_modmatrix[2][2], RANGE, 0, 99, 0},
-  [TRI_PITCHBEND] = {&mod_pitchbend[2], RANGE, 0, 12, 1},
+  [TRI_PITCHBEND] = {&mod_pitchbend[2], RANGE, 0, 24, 1},
   [TRI_COARSE] = {&mod_coarse[2], RANGE, 0, 36, 0},
 
   [NOISE_ENABLED] = {&noise.enabled, BOOL, 0, 0, 0},
