@@ -253,10 +253,7 @@ static inline enum parameter_id get_parameter_id(uint8_t main_button, uint8_t pa
 {
   if (parameter_button != 0xFF) {
     uint8_t parameter_num;
-    if ((parameter_button & 0x80) != 0)
-      parameter_num = (parameter_button & 0x7F) + 3;
-    else
-      parameter_num = parameter_button - 5;
+    parameter_num = parameter_button - 5;
     return pgm_read_byte(&main_buttons[main_button].parameter_list[parameter_num]);
   }
   else
