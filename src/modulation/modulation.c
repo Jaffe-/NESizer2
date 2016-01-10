@@ -122,11 +122,6 @@ static inline void calc_freqmod(uint8_t chn)
     // Add detune frequency delta
     dc += mod_detune[chn];
     
-    // For square channels, also add in the envelope modulation, if any
-    int8_t env_fmod_val = (int8_t)envelopes[chn]->value - (int8_t)envelopes[chn]->sustain;
-    if (env_fmod_val > 0) 
-      dc += env_fmod_val * mod_envmod[chn];
-    
     // Store total dc value, which will be applied by apply_freqmod
     dc_temp[chn] = dc;
     
