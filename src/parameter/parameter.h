@@ -47,7 +47,7 @@ enum parameter_id {
     SQ1_LFO2,
     SQ1_LFO3,
     SQ1_PITCHBEND,
-    SQ1_OCTAVE,
+    SQ1_COARSE,
 
     SQ2_ENABLED,
     SQ2_DUTY,
@@ -57,7 +57,7 @@ enum parameter_id {
     SQ2_LFO2,
     SQ2_LFO3,
     SQ2_PITCHBEND,
-    SQ2_OCTAVE,
+    SQ2_COARSE,
 
     TRI_ENABLED,
     TRI_GLIDE,
@@ -66,7 +66,7 @@ enum parameter_id {
     TRI_LFO2,
     TRI_LFO3,
     TRI_PITCHBEND,
-    TRI_OCTAVE,
+    TRI_COARSE,
 
     NOISE_ENABLED,
     NOISE_LOOP,
