@@ -73,6 +73,7 @@ enum parameter_id {
     NOISE_LFO1,
     NOISE_LFO2,
     NOISE_LFO3,
+    NOISE_PITCHBEND,
 
     DMC_ENABLED,
     DMC_SAMPLE_LOOP,
