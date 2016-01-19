@@ -40,6 +40,7 @@ uint8_t mode = MODE_PROGRAM;
 
 uint8_t prev_input[3] = {0};
 
+/* Pointer to array holding LED states for chosen mode */
 uint8_t* button_leds = programmer_leds;
 
 static inline uint8_t remove_flags(uint8_t mode)
@@ -54,13 +55,7 @@ void ui_handler(void)
   the corresponding function.
 */
 {
-
-  // If a transfer is going on, simply use the 16 upper buttons as a progress
-  // bar
-  if (mode & MODE_TRANSFER)
-    button_leds[midi_transfer_progress] = 0xFF;
-
-  else if (mode & MODE_GETVALUE)
+  if (mode & MODE_GETVALUE)
     ui_getvalue_handler();
 
   else {
@@ -68,12 +63,12 @@ void ui_handler(void)
       mode = MODE_PROGRAM;
       button_leds = programmer_leds;
     }
-    else if (button_pressed(BTN_PATTERN)) {
-      mode = MODE_PATTERN;
+    else if (button_pressed(BTN_SEQUENCER)) {
+      mode = MODE_SEQUENCER;
       button_leds = sequencer_leds;
     }
-    else if (button_pressed(BTN_TRACK)) { 
-      mode = MODE_TRACK;
+    else if (button_pressed(BTN_ASSIGNER)) {
+      mode = MODE_ASSIGNER;
       //button_leds = track_leds;
     }
     else if (button_pressed(BTN_SETTINGS)) {
@@ -87,12 +82,12 @@ void ui_handler(void)
 	programmer();
 	break;
 
-      case MODE_PATTERN:
+      case MODE_SEQUENCER:
 	//sequencer();
-	button_led_on(BTN_PATTERN);
+	button_led_on(BTN_SEQUENCER);
 	break;
-      case MODE_TRACK:
-	button_led_on(BTN_TRACK);
+      case MODE_ASSIGNER:
+	button_led_on(BTN_ASSIGNER);
 	break;  // not implemented yet!
       case MODE_SETTINGS:
 	settings();
