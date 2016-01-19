@@ -100,9 +100,12 @@ void ui_handler(void)
   prev_input[0] = input[0];
   prev_input[1] = input[1];
   prev_input[2] = input[2];
-
-  //last_mode = mode;
 }
+
+
+#define LED_STATE_OFF
+#define LED_STATE_ON
+#define LED_STATE_BLINK
 
 void ui_leds_handler(void)
 /* 
@@ -116,10 +119,10 @@ void ui_leds_handler(void)
   static uint8_t counter;
   
   for (uint8_t i = 0; i < 24; i++) {
-    if (button_led_get(i) == 0)
+    if (button_led_get(i) == LED_STATE_OFF)
       leds_off(i);
 
-    else if (button_led_get(i) == 1)
+    else if (button_led_get(i) == LED_STATE_ON)
       leds_on(i);
     
     else  {
@@ -130,7 +133,6 @@ void ui_leds_handler(void)
   }
   if (counter++ == BLINK_CNT)
     counter = 0;
-
 }
 
 
