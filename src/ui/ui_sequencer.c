@@ -64,7 +64,7 @@ static uint8_t current_page;
 static uint8_t current_pattern;
 static uint8_t current_note;
 
-uint8_t sequencer_leds[24];
+uint8_t sequencer_leds[6];
 
 void (*state_handlers[])(void) = {
   [STATE_TOPLEVEL] = select_pattern,
