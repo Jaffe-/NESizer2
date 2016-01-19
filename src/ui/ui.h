@@ -69,6 +69,10 @@
 // Gets the boolean value of a particular button
 #define button_getbool(BTN) ((input[button_row(BTN)] >> button_col(BTN)) & 1)
 
+/*
+   Functions for handling LED states that are compressed into 2-bit values.
+   0 means off, 1 means on and 2 means blink.
+*/
 #define button_led_byte(BTN) ((BTN) / 4)
 #define button_led_shift(BTN) (((BTN) % 4) * 2)
 #define button_led_set(BTN, VAL) (button_leds[button_led_byte(BTN)] |= (VAL) << button_led_shift(BTN))
