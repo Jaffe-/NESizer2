@@ -83,8 +83,18 @@ struct getvalue_session {
   } state;
 };
 
-// The current mode (PROGRAM, PATTERN, TRACK or SETTINGS)
-extern uint8_t mode;
+// The current mode (PROGRAMMER, PATTERN, ASSIGNER or SETTINGS, or GETVALUE, TRANSFER)
+
+enum mode {
+  MODE_PROGRAMMER,
+  MODE_SEQUENCER,
+  MODE_ASSIGNER,
+  MODE_SETTINGS,
+  MODE_GETVALUE,
+  MODE_TRANSFER
+};
+
+extern enum mode mode;
 
 // Previous inputs
 extern uint8_t prev_input[3];
