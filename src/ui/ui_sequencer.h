@@ -31,4 +31,4 @@
 void sequencer(void);
 void sequence_handler(void);
 
-extern uint8_t sequencer_leds[24];
+extern uint8_t sequencer_leds[6];

@@ -103,9 +103,9 @@ void ui_handler(void)
 }
 
 
-#define LED_STATE_OFF
-#define LED_STATE_ON
-#define LED_STATE_BLINK
+#define LED_STATE_OFF 0
+#define LED_STATE_ON 1
+#define LED_STATE_BLINK 2
 
 void ui_leds_handler(void)
 /* 
