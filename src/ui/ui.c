@@ -62,18 +62,22 @@ void ui_handler(void)
     if (button_pressed(BTN_PROGRAM)) {
       mode = MODE_PROGRAM;
       button_leds = programmer_leds;
+      button_led_on(BTN_PROGRAM);
     }
     else if (button_pressed(BTN_SEQUENCER)) {
       mode = MODE_SEQUENCER;
       button_leds = sequencer_leds;
+      button_led_on(BTN_SEQUENCER);
     }
     else if (button_pressed(BTN_ASSIGNER)) {
       mode = MODE_ASSIGNER;
-      //button_leds = track_leds;
+      button_leds = assigner_leds;
+      button_led_on(BTN_ASSIGNER);
     }
     else if (button_pressed(BTN_SETTINGS)) {
       mode = MODE_SETTINGS;
       button_leds = settings_leds;
+      button_led_on(BTN_SETTINGS);
     }
     
     switch (mode) {
