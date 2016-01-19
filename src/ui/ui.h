@@ -39,19 +39,12 @@
 
 #define BTN_SAVE 16 // 0
 #define BTN_SET 17 // 1
-#define BTN_PROGRAM 18 // 2
+#define BTN_PROGRAMMER 18 // 2
 #define BTN_SEQUENCER 19 // 3
 #define BTN_ASSIGNER 20 // 4
 #define BTN_SETTINGS 21 // 5
 #define BTN_UP 22 // 6
 #define BTN_DOWN 23 // 7
-
-#define MODE_PROGRAM 0
-#define MODE_SEQUENCER 1
-#define MODE_ASSIGNER 2
-#define MODE_SETTINGS 3
-#define MODE_GETVALUE 0x80
-#define MODE_TRANSFER 0x40
 
 #define button_row(BTN) ((BTN) / 8)
 #define button_col(BTN) ((BTN) % 8)

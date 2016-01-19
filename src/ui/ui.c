@@ -37,7 +37,7 @@
 
 #define BLINK_CNT 30
 
-uint8_t mode = MODE_PROGRAM;
+enum mode mode = MODE_PROGRAMMER;
 
 uint8_t prev_input[3] = {0};
 
@@ -60,10 +60,10 @@ void ui_handler(void)
     ui_getvalue_handler();
 
   else {
-    if (button_pressed(BTN_PROGRAM)) {
-      mode = MODE_PROGRAM;
+    if (button_pressed(BTN_PROGRAMMER)) {
+      mode = MODE_PROGRAMMER;
       button_leds = programmer_leds;
-      button_led_on(BTN_PROGRAM);
+      button_led_on(BTN_PROGRAMMER);
     }
     else if (button_pressed(BTN_SEQUENCER)) {
       mode = MODE_SEQUENCER;
@@ -82,8 +82,8 @@ void ui_handler(void)
     }
     
     switch (mode) {
-      case MODE_PROGRAM:
-	button_led_on(BTN_PROGRAM);
+      case MODE_PROGRAMMER:
+	button_led_on(BTN_PROGRAMMER);
 	programmer();
 	break;
 
