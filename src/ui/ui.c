@@ -28,6 +28,7 @@
 #include "ui/ui.h"
 #include "ui/ui_sequencer.h"
 #include "ui/ui_programmer.h"
+#include "ui/ui_assigner.h"
 #include "ui/ui_settings.h"
 #include "io/leds.h"
 #include "io/input.h"
