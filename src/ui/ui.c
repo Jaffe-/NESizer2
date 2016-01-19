@@ -186,9 +186,9 @@ uint8_t ui_updown(int8_t* value, int8_t min, int8_t max)
   return 0;
 }
 
-struct getvalue_session ui_getvalue_session = {.state = SESSION_INACTIVE};
+struct getvalue_config getvalue = {.state = SESSION_INACTIVE};
 
-void ui_getvalue_handler()
+void getvalue_handler()
 /* Handles getting a parameter value. A new getvalue-session is initiated by
    using ui_getvalue_session. This structure holds the current parameter to
    be changed, which buttons to blink, and the state. 
@@ -196,51 +196,51 @@ void ui_getvalue_handler()
 {
   static int8_t value;
     
-  // If the state just changed to GETVALUE, set the value to the parameter's value
-  // and last pot value to the current. 
-  if (ui_getvalue_session.state == SESSION_INACTIVE) {
-    if (ui_getvalue_session.parameter.type == INVRANGE) 
-      value = ui_getvalue_session.parameter.max - *ui_getvalue_session.parameter.target;
+  // If the state just changed to GETVALUE, set the value to the parameter's
+  // current value
+  if (getvalue.state == SESSION_INACTIVE) {
+    if (getvalue.parameter.type == INVRANGE) 
+      value = getvalue.parameter.max - *getvalue.parameter.target;
     else
-      value = *ui_getvalue_session.parameter.target;
+      value = *getvalue.parameter.target;
 	
-    button_led_blink(ui_getvalue_session.button1);
+    button_led_blink(getvalue.button1);
     
-    if (ui_getvalue_session.button2 != 0xFF) {
-      button_led_blink(ui_getvalue_session.button2 & 0x7F);
+    if (getvalue.button2 != 0xFF) {
+      button_led_blink(getvalue.button2 & 0x7F);
 
-      if ((ui_getvalue_session.button2 & 0x80) != 0) {
+      if ((getvalue.button2 & 0x80) != 0) {
 	button_led_blink(BTN_SAVE);
       }
     }
 
-    ui_getvalue_session.state = SESSION_ACTIVE;
+    getvalue.state = SESSION_ACTIVE;
   }
 
   // Handle up and down buttons
-  ui_updown(&value, ui_getvalue_session.parameter.min, ui_getvalue_session.parameter.max);
+  ui_updown(&value, getvalue.parameter.min, getvalue.parameter.max);
 
   // When SET is pressed, store the new value in the parameter and disable LED blinking.
   // If type is VALTYPE_INVRANGE, the value is inverted. 
 
   if (button_pressed(BTN_SET)) {
-    if (ui_getvalue_session.parameter.type == INVRANGE)
-      *ui_getvalue_session.parameter.target = ui_getvalue_session.parameter.max - value;
+    if (getvalue.parameter.type == INVRANGE)
+      *getvalue.parameter.target = getvalue.parameter.max - value;
     else
-      *ui_getvalue_session.parameter.target = value;
+      *getvalue.parameter.target = value;
 	
-    button_led_off(ui_getvalue_session.button1);
+    button_led_off(getvalue.button1);
     
-    if (ui_getvalue_session.button2 != 0xFF) {
-      button_led_off(ui_getvalue_session.button2 & 0x7F);
+    if (getvalue.button2 != 0xFF) {
+      button_led_off(getvalue.button2 & 0x7F);
     }
     
-    ui_getvalue_session.state = SESSION_INACTIVE;
+    getvalue.state = SESSION_INACTIVE;
 	
-    mode &= 0x7F;
+    mode = getvalue.previous_mode;
   }	    
 
-  if (ui_getvalue_session.parameter.min < 0) {
+  if (getvalue.parameter.min < 0) {
     if (value < 0) {
       leds_7seg_set(3, LEDS_7SEG_MINUS);
       leds_7seg_set(4, -value);
@@ -252,6 +252,4 @@ void ui_getvalue_handler()
   }
   else 
     leds_7seg_two_digit_set(3, 4, value);
-  
-
 }

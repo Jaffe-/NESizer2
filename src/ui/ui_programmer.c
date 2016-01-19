@@ -229,13 +229,13 @@ void programmer(void)
     patch_load(patchno);
     
   if (button_pressed(BTN_SAVE)) {
-    ui_getvalue_session.button1 = BTN_SAVE;
-    ui_getvalue_session.button2 = 0xFF;
-    ui_getvalue_session.parameter.target = &patchno;
-    ui_getvalue_session.parameter.type = RANGE;
-    ui_getvalue_session.parameter.min = PATCH_MIN;
-    ui_getvalue_session.parameter.max = PATCH_MAX;
-    mode |= MODE_GETVALUE;
+    getvalue.button1 = BTN_SAVE;
+    getvalue.button2 = 0xFF;
+    getvalue.parameter.target = &patchno;
+    getvalue.parameter.type = RANGE;
+    getvalue.parameter.min = PATCH_MIN;
+    getvalue.parameter.max = PATCH_MAX;
+    getvalue.previous_mode = mode;
     state = STATE_SAVE;
     return;
   }
@@ -279,9 +279,9 @@ static inline void toplevel_handler(void)
       // If a parameter button is being pressed and is a valid button for
       // the current main button, set up a getvalue session.
       if (id != 0xFF) {
-	ui_getvalue_session.button1 = i;
-	ui_getvalue_session.button2 = parameter_button;
-	ui_getvalue_session.parameter = parameter_get(id);
+	getvalue.button1 = i;
+	getvalue.button2 = parameter_button;
+	getvalue.parameter = parameter_get(id);
 	mode |= MODE_GETVALUE;
 	return;
       }
@@ -294,9 +294,9 @@ static inline void toplevel_handler(void)
       if (parameter.type == BOOL) 
 	*parameter.target ^= 1;
       else {
-	ui_getvalue_session.button1 = i;
-	ui_getvalue_session.button2 = 0xFF;
-	ui_getvalue_session.parameter = parameter;
+	getvalue.button1 = i;
+	getvalue.button2 = 0xFF;
+	getvalue.parameter = parameter;
 	mode |= MODE_GETVALUE;
 	return;
       }

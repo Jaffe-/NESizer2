@@ -74,15 +74,6 @@
 #define button_led_blink(BTN) button_led_set(BTN, 0b10); leds_on(BTN)
 #define button_led_off(BTN) (button_leds[button_led_byte(BTN)] &= ~(0b11 << button_led_shift(BTN)))
 
-struct getvalue_session {
-  struct parameter parameter;
-  uint8_t button1;
-  uint8_t button2;
-  enum {
-    SESSION_INACTIVE, SESSION_ACTIVE
-  } state;
-};
-
 // The current mode (PROGRAMMER, PATTERN, ASSIGNER or SETTINGS, or GETVALUE, TRANSFER)
 
 enum mode {
@@ -96,14 +87,23 @@ enum mode {
 
 extern enum mode mode;
 
+struct getvalue_config {
+  struct parameter parameter;
+  uint8_t button1;
+  uint8_t button2;
+  enum {
+    SESSION_INACTIVE, SESSION_ACTIVE
+  } state;
+  enum mode previous_mode;
+};
+
 // Previous inputs
 extern uint8_t prev_input[3];
 extern uint8_t* button_leds;
 
-extern struct getvalue_session ui_getvalue_session;
+struct getvalue_config getvalue;
 
 void ui_handler(void);
 void ui_leds_handler(void);
 uint8_t ui_updown(int8_t* value, int8_t min, int8_t max);
-void ui_getvalue_handler(void);
 

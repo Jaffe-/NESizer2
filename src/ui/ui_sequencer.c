@@ -229,12 +229,12 @@ void pattern_save(uint8_t a)
 
 void save_init(uint8_t* pattern)
 {
-  ui_getvalue_session.button1 = BTN_SAVE;
-  ui_getvalue_session.button2 = 0xFF;
-  ui_getvalue_session.parameter.target = pattern;
-  ui_getvalue_session.parameter.type = RANGE;
-  ui_getvalue_session.parameter.min = 0;
-  ui_getvalue_session.parameter.max = 99;
+  getvalue.button1 = BTN_SAVE;
+  getvalue.button2 = 0xFF;
+  getvalue.parameter.target = pattern;
+  getvalue.parameter.type = RANGE;
+  getvalue.parameter.min = 0;
+  getvalue.parameter.max = 99;
   mode |= MODE_GETVALUE;
   state = STATE_SAVE;
 }

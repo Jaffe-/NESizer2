@@ -109,9 +109,9 @@ static inline void toplevel(void)
 			     .type = RANGE,
 			     .min = 0,
 			     .max = 16};
-      ui_getvalue_session.parameter = parameter;
-      ui_getvalue_session.button1 = BTN_MIDI_CHN;
-      ui_getvalue_session.button2 = chn;
+      getvalue.parameter = parameter;
+      getvalue.button1 = BTN_MIDI_CHN;
+      getvalue.button2 = chn;
       mode |= MODE_GETVALUE;
     }
   }
