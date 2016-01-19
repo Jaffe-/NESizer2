@@ -112,7 +112,8 @@ static inline void toplevel(void)
       getvalue.parameter = parameter;
       getvalue.button1 = BTN_MIDI_CHN;
       getvalue.button2 = chn;
-      mode |= MODE_GETVALUE;
+      getvalue.previous_mode = mode;
+      mode = MODE_GETVALUE;
     }
   }
 }

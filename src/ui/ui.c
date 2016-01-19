@@ -49,6 +49,35 @@ static inline uint8_t remove_flags(uint8_t mode)
   return mode & 0x0F;
 }
 
+struct mode_data {
+  uint8_t button;
+  uint8_t* leds;
+  void (*handler)(void);
+};
+
+void getvalue_handler(void);
+
+struct mode_data modes[] = {
+  [MODE_PROGRAMMER] = {.button = BTN_PROGRAMMER,
+		       .leds = programmer_leds,
+		       .handler = programmer},
+  [MODE_SEQUENCER] = {.button = BTN_SEQUENCER,
+		      .leds = sequencer_leds,
+		      .handler = sequencer},
+  [MODE_ASSIGNER] = {.button = BTN_ASSIGNER,
+		     .leds = assigner_leds,
+		     .handler = 0},
+  [MODE_SETTINGS] = {.button = BTN_SETTINGS,
+		     .leds = settings_leds,
+		     .handler = settings},
+  [MODE_GETVALUE] = {.button = 0xFF,
+		     .leds = 0,
+		     .handler = getvalue_handler},
+  [MODE_TRANSFER] = {.button = 0xFF,
+		     .leds = 0xFF,
+		     .handler = 0}
+};
+
 void ui_handler(void)
 /*
   Top level user interface handler. Checks whether one of the
@@ -56,50 +85,15 @@ void ui_handler(void)
   the corresponding function.
 */
 {
-  if (mode & MODE_GETVALUE)
-    ui_getvalue_handler();
-
-  else {
-    if (button_pressed(BTN_PROGRAMMER)) {
-      mode = MODE_PROGRAMMER;
-      button_leds = programmer_leds;
-      button_led_on(BTN_PROGRAMMER);
-    }
-    else if (button_pressed(BTN_SEQUENCER)) {
-      mode = MODE_SEQUENCER;
-      button_leds = sequencer_leds;
-      button_led_on(BTN_SEQUENCER);
-    }
-    else if (button_pressed(BTN_ASSIGNER)) {
-      mode = MODE_ASSIGNER;
-      button_leds = assigner_leds;
-      button_led_on(BTN_ASSIGNER);
-    }
-    else if (button_pressed(BTN_SETTINGS)) {
-      mode = MODE_SETTINGS;
-      button_leds = settings_leds;
-      button_led_on(BTN_SETTINGS);
-    }
-    
-    switch (mode) {
-      case MODE_PROGRAMMER:
-	button_led_on(BTN_PROGRAMMER);
-	programmer();
-	break;
-
-      case MODE_SEQUENCER:
-	//sequencer();
-	button_led_on(BTN_SEQUENCER);
-	break;
-      case MODE_ASSIGNER:
-	button_led_on(BTN_ASSIGNER);
-	break;  // not implemented yet!
-      case MODE_SETTINGS:
-	settings();
-	button_led_on(BTN_SETTINGS);
-	break;
+  for (enum mode m = MODE_PROGRAMMER; m <= MODE_SETTINGS; m++) {
+    if (button_pressed(modes[m].button)) {
+      mode = m;
+      button_leds = modes[m].leds;
+      button_led_on(modes[m].button);
     }
   }
+
+  modes[mode].handler();
       
   // Save current button states
   prev_input[0] = input[0];
