@@ -59,7 +59,7 @@
 #define PATCH_MIN 0
 #define PATCH_MAX 99
 
-uint8_t programmer_leds[24];
+uint8_t programmer_leds[6];
 
 enum state { STATE_TOPLEVEL, STATE_SAVE };
 

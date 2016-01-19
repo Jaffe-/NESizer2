@@ -29,4 +29,4 @@
 
 void programmer(void);
 
-extern uint8_t programmer_leds[24];
+extern uint8_t programmer_leds[6];

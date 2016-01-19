@@ -29,4 +29,4 @@
 
 void settings(void);
 
-extern uint8_t settings_leds[24];
+extern uint8_t settings_leds[6];
