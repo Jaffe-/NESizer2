@@ -235,7 +235,8 @@ void save_init(uint8_t* pattern)
   getvalue.parameter.type = RANGE;
   getvalue.parameter.min = 0;
   getvalue.parameter.max = 99;
-  mode |= MODE_GETVALUE;
+  getvalue.previous_mode = mode;
+  mode = MODE_GETVALUE;
   state = STATE_SAVE;
 }
       
