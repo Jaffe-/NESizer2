@@ -282,7 +282,8 @@ static inline void toplevel_handler(void)
 	getvalue.button1 = i;
 	getvalue.button2 = parameter_button;
 	getvalue.parameter = parameter_get(id);
-	mode |= MODE_GETVALUE;
+	getvalue.previous_mode = mode;
+	mode = MODE_GETVALUE;
 	return;
       }
     }
@@ -297,7 +298,8 @@ static inline void toplevel_handler(void)
 	getvalue.button1 = i;
 	getvalue.button2 = 0xFF;
 	getvalue.parameter = parameter;
-	mode |= MODE_GETVALUE;
+	getvalue.previous_mode = mode;
+	mode = MODE_GETVALUE;
 	return;
       }
     }
