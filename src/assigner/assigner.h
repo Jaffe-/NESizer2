@@ -30,3 +30,14 @@
 uint16_t note_to_period(uint8_t channel, uint8_t note);
 void play_note(uint8_t channel, uint8_t note);
 void stop_note(uint8_t channel);
+
+enum arp_mode {
+  ARP_UP,
+  ARP_DOWN,
+  ARP_UPDOWN,
+  ARP_RANDOM
+};
+
+extern enum arp_mode assigner_arp_mode;
+extern uint8_t assigner_arp_range;
+extern uint8_t assigner_arp_on;

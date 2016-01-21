@@ -34,6 +34,12 @@
 #include "sample/sample.h"
 #include "modulation/periods.h"
 
+
+enum arp_mode assigner_arp_mode;
+uint8_t assigner_arp_range;
+uint8_t assigner_arp_on;
+
+
 int8_t midi_note_to_note(uint8_t midi_note)
 /* 
    Takes a note in MIDI note format and returns its corresponding period 

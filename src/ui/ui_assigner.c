@@ -30,17 +30,26 @@
 #include "ui.h"
 #include "assigner/assigner.h"
 
-#define BTN_ARP_RANGE_1 8 
-#define BTN_ARP_RANGE_2 9
-#define BTN_ARP_RANGE_3 10
-#define BTN_ARP_RANGE_4 11
-#define BTN_ARP_UP 12
-#define BTN_ARP_DOWN 13
-#define BTN_ARP_RANDOM 14
-#define BTN_ARP_ON 15
-#define BTN_POLY_1 6
-#define BTN_POLY_2 7
+#define BTN_ARP_ON 0
+#define BTN_ARP_CHN 1
+#define BTN_ARP_RATE 2
 
+#define BTN_MONO 4
+#define BTN_POLY1 5
+#define BTN_POLY2 6
+#define BTN_CHORD 7
+
+#define BTN_ARP_UP 8
+#define BTN_ARP_DOWN 9
+#define BTN_ARP_UPDOWN 10
+#define BTN_ARP_RANDOM 11
+#define BTN_ARP_RANGE1 12
+#define BTN_ARP_RANGE2 13
+#define BTN_ARP_RANGE3 14
+#define BTN_ARP_RANGE4 15
 
 uint8_t assigner_leds[6];
 
+void assigner(void)
+{
+}
