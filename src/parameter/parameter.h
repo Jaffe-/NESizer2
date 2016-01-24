@@ -100,7 +100,13 @@ enum parameter_id {
     LFO2_WAVEFORM,
 
     LFO3_PERIOD,
-    LFO3_WAVEFORM
+    LFO3_WAVEFORM,
+
+    ARP_RANGE,
+    ARP_MODE,
+    ARP_CHANNEL,
+    ARP_RATE,
+    ARP_SYNC
 };
 
 struct parameter parameter_get(uint8_t num);

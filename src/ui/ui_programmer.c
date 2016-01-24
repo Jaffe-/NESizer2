@@ -29,6 +29,7 @@
 #include <avr/pgmspace.h>
 #include "patch/patch.h"
 #include "apu/apu.h"
+#include "assigner/assigner.h"
 
 #define BTN_LFO1 5 // 21
 #define BTN_LFO2 6 // 22
@@ -46,12 +47,16 @@
 #define BTN_SAMPLEFREQ 11
 
 #define BTN_A 12
+#define BTN_ARP_SYNC 12
 
 #define BTN_D 13
+#define BTN_MONO 13
 
 #define BTN_S 14
+#define BTN_POLY1 14
 
 #define BTN_R 15
+#define BTN_POLY2 15
 
 #define BTN_OCTAVE 0
 
@@ -202,6 +207,26 @@ struct main_button main_buttons[] = {
   {lfo2_parameters, LFO2_PERIOD},
   {lfo3_parameters, LFO3_PERIOD}
 };
+
+struct main_button p2_main_buttons[] = {
+  {p2_sq1_parameters, SQ1_ENABLED},
+  {p2_sq2_parameters, SQ2_ENABLED},
+  {p2_tri_parameters, TRI_ENABLED},
+  {p2_noise_parameters, NOISE_ENABLED},
+  {0, DMC_ENABLED},
+  {0, 0xFF},
+  {0, 0xFF},
+  {0, 0xFF},
+  {0, ARP_RANGE},
+  {0, ARP_MODE},
+  {0, ARP_CHANNEL},
+  {0, ARP_RATE},
+  {0, ARP_SYNC}
+};
+
+static struct main_button* main_buttons;
+static uint8_t main_buttons_length;
+static uint8_t param_length;
 
 static inline void toplevel_handler(void);
 

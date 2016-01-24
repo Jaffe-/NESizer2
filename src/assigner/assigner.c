@@ -37,8 +37,11 @@
 
 enum arp_mode assigner_arp_mode;
 uint8_t assigner_arp_range;
-uint8_t assigner_arp_on;
+uint8_t assigner_arp_channel;
+uint8_t assigner_arp_rate;
+uint8_t assigner_arp_sync;
 
+uint8_t assigner_mode = 1;
 
 int8_t midi_note_to_note(uint8_t midi_note)
 /* 
