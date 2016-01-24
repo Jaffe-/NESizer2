@@ -48,6 +48,7 @@ enum parameter_id {
     SQ1_LFO3,
     SQ1_PITCHBEND,
     SQ1_COARSE,
+    SQ1_VOLMOD,
 
     SQ2_ENABLED,
     SQ2_DUTY,
@@ -58,6 +59,7 @@ enum parameter_id {
     SQ2_LFO3,
     SQ2_PITCHBEND,
     SQ2_COARSE,
+    SQ2_VOLMOD,
 
     TRI_ENABLED,
     TRI_GLIDE,
@@ -74,6 +76,7 @@ enum parameter_id {
     NOISE_LFO2,
     NOISE_LFO3,
     NOISE_PITCHBEND,
+    NOISE_VOLMOD,
 
     DMC_ENABLED,
     DMC_SAMPLE_LOOP,

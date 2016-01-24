@@ -80,11 +80,17 @@ const enum parameter_id sq1_parameters[] PROGMEM = {
   SQ1_DUTY,
   SQ1_DETUNE,
   SQ1_GLIDE,
-  SQ1_PITCHBEND,
+  0xFF,
   ENV1_ATTACK,
   ENV1_DECAY,
   ENV1_SUSTAIN,
   ENV1_RELEASE
+};
+
+const enum parameter_id p2_sq1_parameters[] PROGMEM = {
+  SQ1_COARSE,
+  SQ1_PITCHBEND,
+  SQ1_VOLMOD
 };
 
 const enum parameter_id sq2_parameters[] PROGMEM = {
@@ -95,11 +101,17 @@ const enum parameter_id sq2_parameters[] PROGMEM = {
   SQ2_DUTY,
   SQ2_DETUNE,
   SQ2_GLIDE,
-  SQ2_PITCHBEND,
+  0xFF,
   ENV2_ATTACK,
   ENV2_DECAY,
   ENV2_SUSTAIN,
   ENV2_RELEASE
+};
+
+const enum parameter_id p2_sq2_parameters[] PROGMEM = {
+  SQ2_COARSE,
+  SQ2_PITCHBEND,
+  SQ2_VOLMOD
 };
 
 const enum parameter_id tri_parameters[] PROGMEM = {
@@ -110,10 +122,16 @@ const enum parameter_id tri_parameters[] PROGMEM = {
   0xFF,
   TRI_DETUNE,
   TRI_GLIDE,
+  0xFF,
+  0xFF,
+  0xFF,
+  0xFF,
+  0xFF
+};
+
+const enum parameter_id p2_tri_parameters[] PROGMEM = {
+  TRI_COARSE,
   TRI_PITCHBEND,
-  0xFF,
-  0xFF,
-  0xFF,
   0xFF
 };
 
@@ -125,11 +143,17 @@ const enum parameter_id noise_parameters[] PROGMEM = {
   NOISE_LOOP,
   0xFF,
   0xFF,
-  NOISE_PITCHBEND,
+  0xFF,
   ENV3_ATTACK,
   ENV3_DECAY,
   ENV3_SUSTAIN,
   ENV3_RELEASE
+};
+
+const enum parameter_id p2_noise_parameters[] PROGMEM = {
+  0xFF,
+  NOISE_PITCHBEND,
+  NOISE_VOLMOD
 };
 
 const enum parameter_id dmc_parameters[] PROGMEM = {
@@ -159,7 +183,7 @@ const enum parameter_id lfo1_parameters[] PROGMEM = {
   0xFF,
   0xFF,
   0xFF,
-  0xFF    
+  0xFF
 };
 
 const enum parameter_id lfo2_parameters[] PROGMEM = {
@@ -197,7 +221,7 @@ struct main_button {
   enum parameter_id depress_parameter;
 };
 
-struct main_button main_buttons[] = {
+struct main_button p1_main_buttons[] = {
   {sq1_parameters, SQ1_ENABLED},
   {sq2_parameters, SQ2_ENABLED},
   {tri_parameters, TRI_ENABLED},
