@@ -31,7 +31,7 @@
 // First 256 bytes of SRAM not used.
 #define PATCH_START 0x100
 
-#define PATCH_SIZE 64
+#define PATCH_SIZE NUM_PARAMETERS
 
 void patch_initialize(uint8_t num)
 /* Initializes patch memory by writing initial values to the patch memory */

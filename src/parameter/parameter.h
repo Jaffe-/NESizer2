@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#define NUM_PARAMETERS 55
+#define NUM_PARAMETERS (ARP_SYNC - SQ1_ENABLED + 1)
 
 struct parameter {
   int8_t* target;
