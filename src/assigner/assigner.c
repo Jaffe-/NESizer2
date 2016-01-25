@@ -73,6 +73,17 @@ void assigner_notify_on(uint8_t channel, uint8_t note)
   note_list.length[channel]++;
 }
 
+void assigner_notify_off(uint8_t channel, uint8_t note)
+{
+  uint8_t* p = note_list.data[channel];
+  for (uint8_t i = 0; i < note_list.length[channel]; i++) {
+    if (note_list.data[channel][i] == note)
+      i += 1;
+    *(p++) = note_list.data[channel][i];
+  }
+  note_list.length[channel]--;
+}
+
 int8_t midi_note_to_note(uint8_t midi_note)
 /* 
    Takes a note in MIDI note format and returns its corresponding period 
