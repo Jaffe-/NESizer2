@@ -38,10 +38,16 @@ enum arp_mode {
   ARP_RANDOM
 };
 
-extern enum arp_mode assigner_arp_mode;
-extern uint8_t assigner_arp_range;
-extern uint8_t assigner_arp_channel;
-extern uint8_t assigner_arp_rate;
-extern uint8_t assigner_arp_sync;
+enum assigner_mode {
+  MONO,
+  POLY1,
+  POLY2
+};
 
-extern uint8_t assigner_mode;
+extern enum arp_mode assigner_arp_mode;
+extern int8_t assigner_arp_range;
+extern int8_t assigner_arp_channel;
+extern int8_t assigner_arp_rate;
+extern int8_t assigner_arp_sync;
+
+extern enum assigner_mode assigner_mode;
