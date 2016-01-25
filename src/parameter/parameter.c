@@ -98,7 +98,7 @@ const struct parameter parameters[] PROGMEM = {
   [LFO3_WAVEFORM] = {(int8_t*)&lfo3.waveform, RANGE, 1, 5, 1},
 
   [ARP_RANGE] = {&assigner_arp_range, RANGE, 0, 3, 0},
-  [ARP_MODE] = {&assigner_arp_mode, RANGE, 1, 4, 1},
+  [ARP_MODE] = {(int8_t*)&assigner_arp_mode, RANGE, 1, 4, 1},
   [ARP_CHANNEL] = {&assigner_arp_channel, RANGE, 1, 16, 1},
   [ARP_RATE] = {&assigner_arp_rate, RANGE, 1, 99, 1},
   [ARP_SYNC] = {&assigner_arp_sync, BOOL, 0, 0, 0}
