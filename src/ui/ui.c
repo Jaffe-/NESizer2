@@ -37,7 +37,7 @@
 
 #define BLINK_CNT 30
 
-enum mode mode = MODE_PROGRAMMER;
+enum mode mode = MODE_PAGE1;
 
 uint8_t prev_input[3] = {0};
 
@@ -58,15 +58,15 @@ struct mode_data {
 void getvalue_handler(void);
 
 struct mode_data modes[] = {
-  [MODE_PROGRAMMER] = {.button = BTN_PROGRAMMER,
-		       .leds = programmer_leds,
-		       .handler = programmer},
+  [MODE_PAGE1] = {.button = BTN_PAGE1,
+		  .leds = programmer_leds,
+		  .handler = programmer},
+  [MODE_PAGE2] = {.button = BTN_PAGE2,
+		  .leds = programmer_leds,
+		  .handler = programmer},
   [MODE_SEQUENCER] = {.button = BTN_SEQUENCER,
 		      .leds = sequencer_leds,
 		      .handler = sequencer},
-  [MODE_ASSIGNER] = {.button = BTN_ASSIGNER,
-		     .leds = assigner_leds,
-		     .handler = 0},
   [MODE_SETTINGS] = {.button = BTN_SETTINGS,
 		     .leds = settings_leds,
 		     .handler = settings},
@@ -85,11 +85,14 @@ void ui_handler(void)
   the corresponding function.
 */
 {
-  for (enum mode m = MODE_PROGRAMMER; m <= MODE_SETTINGS; m++) {
+  button_led_on(BTN_PAGE1 + mode);
+  for (enum mode m = MODE_PAGE1; m <= MODE_SETTINGS; m++) {
     if (button_pressed(modes[m].button)) {
+      button_led_off(modes[mode].button);
       mode = m;
-      button_leds = modes[m].leds;
-      button_led_on(modes[m].button);
+      if (modes[m].leds != 0)
+	button_leds = modes[m].leds;
+      //      button_led_on(modes[m].button);
     }
   }
 
@@ -180,7 +183,7 @@ uint8_t ui_updown(int8_t* value, int8_t min, int8_t max)
   return 0;
 }
 
-struct getvalue_config getvalue = {.state = SESSION_INACTIVE};
+struct getvalue_config getvalue = {.state = INACTIVE};
 
 void getvalue_handler()
 /* Handles getting a parameter value. A new getvalue-session is initiated by
@@ -192,12 +195,12 @@ void getvalue_handler()
     
   // If the state just changed to GETVALUE, set the value to the parameter's
   // current value
-  if (getvalue.state == SESSION_INACTIVE) {
-    if (getvalue.parameter.type == INVRANGE) 
+  if (getvalue.state == INACTIVE) {
+    if (getvalue.parameter.type == INVRANGE)
       value = getvalue.parameter.max - *getvalue.parameter.target;
     else
       value = *getvalue.parameter.target;
-	
+
     button_led_blink(getvalue.button1);
     
     if (getvalue.button2 != 0xFF) {
@@ -208,7 +211,7 @@ void getvalue_handler()
       }
     }
 
-    getvalue.state = SESSION_ACTIVE;
+    getvalue.state = ACTIVE;
   }
 
   // Handle up and down buttons
@@ -229,7 +232,7 @@ void getvalue_handler()
       button_led_off(getvalue.button2 & 0x7F);
     }
     
-    getvalue.state = SESSION_INACTIVE;
+    getvalue.state = INACTIVE;
 	
     mode = getvalue.previous_mode;
   }	    

@@ -285,6 +285,7 @@ void programmer(void)
     getvalue.parameter.min = PATCH_MIN;
     getvalue.parameter.max = PATCH_MAX;
     getvalue.previous_mode = mode;
+    mode = MODE_GETVALUE;
     state = STATE_SAVE;
     return;
   }
@@ -295,17 +296,46 @@ void programmer(void)
   noise.enabled ? button_led_on(BTN_NOISE) : button_led_off(BTN_NOISE);
   dmc.enabled ? button_led_on(BTN_DMC) : button_led_off(BTN_DMC);
 
+  // In page 2 we also want to indicate the assigner mode
+  mode == MODE_PAGE2 && assigner_mode == 1 ?
+    button_led_on(BTN_MONO) : button_led_off(BTN_MONO);
+  mode == MODE_PAGE2 && assigner_mode == 2 ?
+    button_led_on(BTN_POLY1) : button_led_off(BTN_POLY1);
+  mode == MODE_PAGE2 && assigner_mode == 3 ?
+    button_led_on(BTN_POLY2) : button_led_off(BTN_POLY2);
+  mode == MODE_PAGE2 && assigner_arp_sync ?
+    button_led_on(BTN_ARP_SYNC) : button_led_off(BTN_ARP_SYNC);
+
+  if (mode == MODE_PAGE1) {
+    main_buttons = p1_main_buttons;
+    main_buttons_length = sizeof(p1_main_buttons)/sizeof(p1_main_buttons[0]);
+    param_length = 11;
+  }
+  else {
+    main_buttons = p2_main_buttons;
+    main_buttons_length = sizeof(p2_main_buttons)/sizeof(p2_main_buttons[0]);
+    param_length = 3;
+  }
+  
   toplevel_handler(); 
 }
 
 static inline enum parameter_id get_parameter_id(uint8_t main_button, uint8_t parameter_button)
 {
-  if (parameter_button != 0xFF) {
-    uint8_t parameter_num = parameter_button - 5;
-    return pgm_read_byte(&main_buttons[main_button].parameter_list[parameter_num]);
-  }
-  else
+  if (main_buttons[main_button].parameter_list == 0)
     return 0xFF;
+  uint8_t parameter_num = parameter_button - 5;
+  return pgm_read_byte(&main_buttons[main_button].parameter_list[parameter_num]);
+}
+
+static inline void init_getvalue(uint8_t button1, uint8_t button2,
+				 struct parameter* param)
+{
+  getvalue.button1 = button1;
+  getvalue.button2 = button2;
+  getvalue.parameter = *param;
+  getvalue.previous_mode = mode;
+  mode = MODE_GETVALUE;
 }
 
 static inline void toplevel_handler(void)

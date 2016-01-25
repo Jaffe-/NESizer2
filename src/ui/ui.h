@@ -39,9 +39,9 @@
 
 #define BTN_SAVE 16 // 0
 #define BTN_SET 17 // 1
-#define BTN_PROGRAMMER 18 // 2
-#define BTN_SEQUENCER 19 // 3
-#define BTN_ASSIGNER 20 // 4
+#define BTN_PAGE1 18 // 2
+#define BTN_PAGE2 19 // 3
+#define BTN_SEQUENCER 20 // 4
 #define BTN_SETTINGS 21 // 5
 #define BTN_UP 22 // 6
 #define BTN_DOWN 23 // 7
@@ -77,9 +77,9 @@
 // The current mode (PROGRAMMER, PATTERN, ASSIGNER or SETTINGS, or GETVALUE, TRANSFER)
 
 enum mode {
-  MODE_PROGRAMMER,
+  MODE_PAGE1,
+  MODE_PAGE2,
   MODE_SEQUENCER,
-  MODE_ASSIGNER,
   MODE_SETTINGS,
   MODE_GETVALUE,
   MODE_TRANSFER
@@ -92,7 +92,7 @@ struct getvalue_config {
   uint8_t button1;
   uint8_t button2;
   enum {
-    SESSION_INACTIVE, SESSION_ACTIVE
+    INACTIVE, ACTIVE
   } state;
   enum mode previous_mode;
 };
