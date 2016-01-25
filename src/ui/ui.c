@@ -203,14 +203,9 @@ void getvalue_handler()
       value = *getvalue.parameter.target;
 
     button_led_blink(getvalue.button1);
-    
-    if (getvalue.button2 != 0xFF) {
-      button_led_blink(getvalue.button2 & 0x7F);
 
-      if ((getvalue.button2 & 0x80) != 0) {
-	button_led_blink(BTN_SAVE);
-      }
-    }
+    if (getvalue.button2 != 0xFF)
+      button_led_blink(getvalue.button2);
 
     getvalue.state = ACTIVE;
   }
@@ -226,13 +221,12 @@ void getvalue_handler()
       *getvalue.parameter.target = getvalue.parameter.max - value;
     else
       *getvalue.parameter.target = value;
-	
+
     button_led_off(getvalue.button1);
     
-    if (getvalue.button2 != 0xFF) {
-      button_led_off(getvalue.button2 & 0x7F);
-    }
-    
+    if (getvalue.button2 != 0xFF)
+      button_led_off(getvalue.button2);
+
     getvalue.state = INACTIVE;
 	
     mode = getvalue.previous_mode;
