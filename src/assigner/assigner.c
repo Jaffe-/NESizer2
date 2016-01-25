@@ -36,12 +36,42 @@
 
 
 enum arp_mode assigner_arp_mode;
-uint8_t assigner_arp_range;
-uint8_t assigner_arp_channel;
-uint8_t assigner_arp_rate;
-uint8_t assigner_arp_sync;
+int8_t assigner_arp_range;
+int8_t assigner_arp_channel;
+int8_t assigner_arp_rate;
+int8_t assigner_arp_sync;
 
-uint8_t assigner_mode = 1;
+enum assigner_mode assigner_mode = 1;
+
+#define NOTE_LIST_MAX 8
+
+struct {
+  uint8_t data[5][NOTE_LIST_MAX];
+  uint8_t length[5];
+} note_list;
+
+void assigner_notify_on(uint8_t channel, uint8_t note)
+{
+  if (note_list.length[channel] == NOTE_LIST_MAX)
+    return;
+
+  uint8_t i, tmp;
+  for (i = 0; i < note_list.length[channel] + 1; i++) {
+    if (note < note_list.data[channel][i] || note_list.data[channel][i] == 0) {
+      tmp = note_list.data[channel][i];
+      note_list.data[channel][i] = note;
+      break;
+    }
+  }
+
+  for (i += 1; i < note_list.length[channel] + 1; i++) {
+    uint8_t t = note_list.data[channel][i];
+    note_list.data[channel][i] = tmp;
+    tmp = t;
+  }
+
+  note_list.length[channel]++;
+}
 
 int8_t midi_note_to_note(uint8_t midi_note)
 /* 
