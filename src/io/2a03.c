@@ -36,7 +36,19 @@
 #include "task/task.h"
 #include "modulation/periods.h"
 
-uint8_t io_reg_buffer[0x16];
+// The 6502 opcodes needed
+#define LDA_imm 0xA9
+#define STA_abs 0x8D
+#define STA_zp 0x85
+#define JMP_abs 0x4C
+
+// Pins used to interface with 6502
+#define RES 100             // PC2
+#define RW 0b1000          // PC3
+
+#define nop() asm volatile("nop")
+
+uint8_t io_reg_buffer[0x18];
 uint8_t reg_mirror[0x16];
 uint8_t reg_update[0x16];
 
