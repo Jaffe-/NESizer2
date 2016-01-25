@@ -89,8 +89,6 @@ int8_t midi_note_to_note(uint8_t midi_note)
   return (int8_t)midi_note - 24;
 }
 
-static uint8_t notes[5];
-
 void play_note(uint8_t channel, uint8_t midi_note)
 {
   //   notes[channel] = note;
