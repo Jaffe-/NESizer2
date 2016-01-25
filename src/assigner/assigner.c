@@ -85,11 +85,6 @@ void assigner_notify_off(uint8_t channel, uint8_t note)
 }
 
 int8_t midi_note_to_note(uint8_t midi_note)
-/* 
-   Takes a note in MIDI note format and returns its corresponding period 
-   
-   The channel parameter is used to adjust the period for the triangle channel
-*/
 {
   return (int8_t)midi_note - 24;
 }
