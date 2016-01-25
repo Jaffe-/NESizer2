@@ -350,36 +350,41 @@ static inline void toplevel_handler(void)
     }
   }
 
-  for (uint8_t i = 0; i < 8; i++) {
-    // Handle the case where the main button is currently being pressed
-    if (button_on(i)) {
-      enum parameter_id id = get_parameter_id(i, parameter_button);
+  for (uint8_t i = 0; i < main_buttons_length; i++) {
 
-      // If a parameter button is being pressed and is a valid button for
-      // the current main button, set up a getvalue session.
-      if (id != 0xFF) {
-	getvalue.button1 = i;
-	getvalue.button2 = parameter_button;
-	getvalue.parameter = parameter_get(id);
-	getvalue.previous_mode = mode;
-	mode = MODE_GETVALUE;
-	return;
+    // Handle the case where the main button is currently being pressed
+    if (button_on(i) && main_buttons[i].parameter_list != 0) {
+      if (parameter_button < 5 + param_length) {
+	enum parameter_id id = get_parameter_id(i, parameter_button);
+
+	if (id != 0xFF) {
+	  struct parameter parameter = parameter_get(id);
+	  init_getvalue(i, parameter_button, &parameter);
+
+	  break;
+	}
       }
     }
 
     // In the case where the main button has been depressed
-    else if (button_depressed(i)) {
+    else if (button_depressed(i) && main_buttons[i].depress_parameter != 0xFF) {
       struct parameter parameter = parameter_get(main_buttons[i].depress_parameter);
 
       if (parameter.type == BOOL) 
 	*parameter.target ^= 1;
       else {
-	getvalue.button1 = i;
-	getvalue.button2 = 0xFF;
-	getvalue.parameter = parameter;
-	getvalue.previous_mode = mode;
-	mode = MODE_GETVALUE;
-	return;
+	init_getvalue(i, 0xFF, &parameter);
+
+	break;
+      }
+    }
+  }
+
+  // In page 2 we also need to check the three assigner mode buttons.
+  if (mode == MODE_PAGE2) {
+    for (int i = 13; i <= 15; i++) {
+      if (button_pressed(i)) {
+	assigner_mode = i - 12;
       }
     }
   }
