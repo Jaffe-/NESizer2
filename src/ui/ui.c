@@ -85,14 +85,15 @@ void ui_handler(void)
   the corresponding function.
 */
 {
-  button_led_on(BTN_PAGE1 + mode);
-  for (enum mode m = MODE_PAGE1; m <= MODE_SETTINGS; m++) {
-    if (button_pressed(modes[m].button)) {
-      button_led_off(modes[mode].button);
-      mode = m;
-      if (modes[m].leds != 0)
-	button_leds = modes[m].leds;
-      //      button_led_on(modes[m].button);
+  if (mode <= MODE_SETTINGS) {
+    button_led_on(BTN_PAGE1 + mode);
+    for (enum mode m = MODE_PAGE1; m <= MODE_SETTINGS; m++) {
+      if (button_pressed(modes[m].button)) {
+	button_led_off(modes[mode].button);
+	mode = m;
+	if (modes[m].leds != 0)
+	  button_leds = modes[m].leds;
+      }
     }
   }
 
