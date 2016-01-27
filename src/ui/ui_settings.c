@@ -106,9 +106,9 @@ static inline void toplevel(void)
 
     if (chn != 0xFF) {
       struct parameter parameter = {.target = &midi_channels[chn],
-			     .type = RANGE,
-			     .min = 0,
-			     .max = 16};
+				    .type = RANGE,
+				    .min = 0,
+				    .max = 16};
       getvalue.parameter = parameter;
       getvalue.button1 = BTN_MIDI_CHN;
       getvalue.button2 = chn;
