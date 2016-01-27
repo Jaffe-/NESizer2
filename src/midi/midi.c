@@ -68,7 +68,7 @@ struct midi_channel* midi_channel_allocate(uint8_t midi_chn)
     if (midi_channels[i].listeners_count == 0) {
       midi_channels[i].channel = midi_chn;
       midi_channels[i].note_list_length = 0;
-      for (uint8_t j = 0; j < NOTE_LIST_MAX; j++)
+      for (uint8_t j = 0; j < MIDI_NOTE_LIST_MAX; j++)
 	midi_channels[i].note_list[j] = 0;
       return &midi_channels[i];
     }
@@ -98,7 +98,7 @@ void midi_channel_unsubscribe(uint8_t midi_chn, uint8_t chn)
 
 void midi_channel_note_on(struct midi_channel* midi_channel, uint8_t note)
 {
-  if (midi_channel->note_list_length == NOTE_LIST_MAX)
+  if (midi_channel->note_list_length == MIDI_NOTE_LIST_MAX)
     return;
 
   if (midi_channel->note_list_length == 0) {
