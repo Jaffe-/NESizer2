@@ -37,8 +37,6 @@
 #include "assigner/assigner.h"
 #include "sample/sample.h"
 
-#define NOTE_LIST_MAX 8
-
 typedef enum {STATE_MESSAGE, STATE_SYSEX, STATE_TRANSFER} midi_state_e;
 
 uint8_t midi_notes[5];
@@ -52,14 +50,6 @@ static inline void sysex();
 
 static inline void initiate_transfer();
 static inline uint8_t get_midi_channel(uint8_t channel);
-
-struct midi_channel {
-  uint8_t note_list[NOTE_LIST_MAX];
-  uint8_t note_list_length;
-  uint8_t channel;
-  uint8_t listeners_count;
-  uint8_t listeners;
-};
 
 struct midi_channel midi_channels[5];
 

@@ -27,6 +27,16 @@
 #pragma once
 #include <stdint.h>
 
+#define MIDI_NOTE_LIST_MAX 8
+
+struct midi_channel {
+  uint8_t note_list[MIDI_NOTE_LIST_MAX];
+  uint8_t note_list_length;
+  uint8_t channel;
+  uint8_t listeners_count;
+  uint8_t listeners;
+};
+
 extern uint8_t midi_transfer_progress;
 extern uint8_t midi_notes[5];
 extern struct midi_channel midi_channels[5];
