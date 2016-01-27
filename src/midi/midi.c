@@ -37,9 +37,10 @@
 #include "assigner/assigner.h"
 #include "sample/sample.h"
 
+#define NOTE_LIST_MAX 8
+
 typedef enum {STATE_MESSAGE, STATE_SYSEX, STATE_TRANSFER} midi_state_e;
 
-uint8_t midi_channels[5];
 uint8_t midi_notes[5];
 
 static midi_state_e state = STATE_MESSAGE;
@@ -51,6 +52,126 @@ static inline void sysex();
 
 static inline void initiate_transfer();
 static inline uint8_t get_midi_channel(uint8_t channel);
+
+struct midi_channel {
+  uint8_t note_list[NOTE_LIST_MAX];
+  uint8_t note_list_length;
+  uint8_t channel;
+  uint8_t listeners_count;
+  uint8_t listeners;
+};
+
+struct midi_channel midi_channels[5];
+
+struct midi_channel* midi_channel_get(uint8_t midi_chn)
+{
+  for (uint8_t i = 0; i < 5; i++) {
+    if (midi_channels[i].channel == midi_chn)
+      return &midi_channels[i];
+  }
+  return 0;
+}
+
+struct midi_channel* midi_channel_allocate(uint8_t midi_chn)
+{
+  for (uint8_t i = 0; i < 5; i++) {
+    if (midi_channels[i].listeners_count == 0) {
+      midi_channels[i].channel = midi_chn;
+      midi_channels[i].note_list_length = 0;
+      for (uint8_t j = 0; j < NOTE_LIST_MAX; j++)
+	midi_channels[i].note_list[j] = 0;
+      return &midi_channels[i];
+    }
+  }
+}
+
+/* Make an APU channel listen to the given MIDI channel */
+void midi_channel_subscribe(uint8_t midi_chn, uint8_t chn)
+{
+  struct midi_channel* midi_channel;
+
+  if (!(midi_channel = midi_channel_get(midi_chn))) {
+    midi_channel = midi_channel_allocate(midi_chn);
+  }
+
+  midi_channel->listeners |= (1 << chn);
+  midi_channel->listeners_count++;
+}
+
+void midi_channel_unsubscribe(uint8_t midi_chn, uint8_t chn)
+{
+  struct midi_channel* midi_channel = midi_channel_get(midi_chn);
+
+  midi_channel->listeners &= ~(1 << chn);
+  midi_channel->listeners_count--;
+}
+
+void midi_channel_note_on(struct midi_channel* midi_channel, uint8_t note)
+{
+  if (midi_channel->note_list_length == NOTE_LIST_MAX)
+    return;
+
+  if (midi_channel->note_list_length == 0) {
+    midi_channel->note_list[0] = note;
+  }
+  else {
+    uint8_t next, set = 0;
+    for (uint8_t i = 0; i < midi_channel->note_list_length + 1; i++) {
+      if (!set && note < midi_channel->note_list[i]) {
+	set = 1;
+	next = midi_channel->note_list[i];
+	midi_channel->note_list[i++] = note;
+      }
+      if (set) {
+	uint8_t temp = midi_channel->note_list[i];
+	midi_channel->note_list[i] = next;
+	next = temp;
+      }
+    }
+    if (!set)
+      midi_channel->note_list[midi_channel->note_list_length] = note;
+  }
+  midi_channel->note_list_length++;
+}
+
+void midi_channel_note_off(struct midi_channel* midi_channel, uint8_t note)
+{
+  uint8_t* p = midi_channel->note_list;
+  for (uint8_t i = 0; i < midi_channel->note_list_length; i++) {
+    if (midi_channel->note_list[i] == note)
+      i += 1;
+    *(p++) = midi_channel->note_list[i];
+  }
+  midi_channel->note_list_length--;
+}
+
+void midi_channel_put(struct midi_message* msg)
+{
+  struct midi_channel* midi_chn;
+  if (!(midi_chn = get_midi_channel(msg->channel)))
+    return;
+
+  switch (msg->command) {
+  case MIDI_CMD_NOTE_ON:
+    midi_channel_note_on(midi_chn, msg->data1);
+    break;
+
+  case MIDI_CMD_NOTE_OFF:
+    midi_channel_note_off(midi_chn, msg->data1);
+    break;
+
+  case MIDI_CMD_PITCH_BEND:
+    for (uint8_t i = 0; i < 5; i++) {
+      if (midi_chn->listeners & (1 << i)) {
+	if (i < 3)
+	  mod_pitchbend_input[i] = ((uint16_t)msg->data1) | ((uint16_t)msg->data2) << 7;
+	else if (i == 4)
+	  mod_pitchbend_input[i] = msg->data2 >> 3;
+      }
+    }
+    break;
+  }
+}
 
 void midi_handler()
 {
@@ -72,33 +193,9 @@ static inline void interpret_message()
     if (midi_io_read_message(&msg)) {
 
       if (midi_is_channel_message(msg.command)) {
-	for (uint8_t i = 0; i < 5; i++) {
-	  if (get_midi_channel(i) == msg.channel) {
-	    switch (msg.command) {
-	      
-	    case MIDI_CMD_NOTE_ON:
-	      midi_notes[i] = msg.data1;
-	      play_note(i, msg.data1);
-	      break;
-	      
-	    case MIDI_CMD_NOTE_OFF:
-	      if (midi_notes[i] == msg.data1) {
-		midi_notes[i] = 0;
-		stop_note(i);
-	      }
-	      break;
-	      
-	    case MIDI_CMD_PITCH_BEND:
-	      if (i < 4) {
-		mod_pitchbend_input[i] = ((uint16_t)msg.data1) | ((uint16_t)msg.data2) << 7;
-	      }
-	      break;
-	    }
-	  }
-	}
+	midi_channel_put(&msg);
       }
  
-
       else {
 	switch (msg.command) {
 	case MIDI_CMD_SYSEX:
@@ -216,11 +313,6 @@ static inline void transfer()
       }
     }
   }
-}
-
-static inline uint8_t get_midi_channel(uint8_t channel)
-{
-  return midi_channels[channel] - 1;
 }
 
 static inline void initiate_transfer()
