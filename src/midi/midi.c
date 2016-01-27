@@ -187,7 +187,7 @@ static inline void interpret_message()
     if (midi_io_read_message(&msg)) {
 
       if (midi_is_channel_message(msg.command)) {
-	midi_channel_put(&msg);
+	midi_channel_apply(&msg);
       }
  
       else {
