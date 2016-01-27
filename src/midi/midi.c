@@ -142,7 +142,7 @@ void midi_channel_note_off(struct midi_channel* midi_channel, uint8_t note)
 void midi_channel_apply(struct midi_message* msg)
 {
   struct midi_channel* midi_chn;
-  if (!(midi_chn = get_midi_channel(msg->channel)))
+  if (!(midi_chn = midi_channel_get(msg->channel)))
     return;
 
   switch (msg->command) {
