@@ -88,6 +88,7 @@ void midi_channel_subscribe(uint8_t midi_chn, uint8_t chn)
   midi_channel->listeners_count++;
 }
 
+/* Remove the given APU channel from listening to the given MIDI channel */
 void midi_channel_unsubscribe(uint8_t midi_chn, uint8_t chn)
 {
   struct midi_channel* midi_channel = midi_channel_get(midi_chn);
@@ -96,6 +97,7 @@ void midi_channel_unsubscribe(uint8_t midi_chn, uint8_t chn)
   midi_channel->listeners_count--;
 }
 
+/* Put a new note into the given MIDI channel's note list */
 void midi_channel_note_on(struct midi_channel* midi_channel, uint8_t note)
 {
   if (midi_channel->note_list_length == MIDI_NOTE_LIST_MAX)
@@ -124,6 +126,7 @@ void midi_channel_note_on(struct midi_channel* midi_channel, uint8_t note)
   midi_channel->note_list_length++;
 }
 
+/* Remove a note from the given MIDI channel's note list */
 void midi_channel_note_off(struct midi_channel* midi_channel, uint8_t note)
 {
   uint8_t* p = midi_channel->note_list;
@@ -135,7 +138,8 @@ void midi_channel_note_off(struct midi_channel* midi_channel, uint8_t note)
   midi_channel->note_list_length--;
 }
 
-void midi_channel_put(struct midi_message* msg)
+/* Apply a new message */
+void midi_channel_apply(struct midi_message* msg)
 {
   struct midi_channel* midi_chn;
   if (!(midi_chn = get_midi_channel(msg->channel)))
