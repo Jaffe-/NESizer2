@@ -29,5 +29,8 @@
 
 extern uint8_t midi_transfer_progress;
 extern uint8_t midi_notes[5];
+extern struct midi_channel midi_channels[5];
 
+void midi_channel_subscribe(uint8_t midi_chn, uint8_t chn);
+void midi_channel_unsubscribe(uint8_t midi_chn, uint8_t chn);
 void midi_handler(void);
