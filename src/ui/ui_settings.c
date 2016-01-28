@@ -62,7 +62,7 @@ static inline void toplevel(void);
 uint8_t settings_leds[6];
 uint8_t assigned_midi_chn[5];
 
-uint8_t assign_midi_chn;
+int8_t assign_midi_chn;
 uint8_t assign_chn;
 
 void settings(void)
