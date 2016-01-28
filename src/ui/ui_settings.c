@@ -129,6 +129,7 @@ static inline void toplevel(void)
 
     if (chn != 0xFF) {
       assign_chn = chn;
+      assign_midi_chn = assigned_midi_chn[chn];
       struct parameter parameter = {.target = &assign_midi_chn,
 				    .type = RANGE,
 				    .min = 0,
