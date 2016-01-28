@@ -50,13 +50,36 @@
 
 #define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
+enum state {
+  STATE_TOPLEVEL,
+  STATE_MIDI_CHANNEL
+};
+
+static enum state state = STATE_TOPLEVEL;
+
 static inline void toplevel(void);
 
 uint8_t settings_leds[6];
+uint8_t assigned_midi_chn[5];
+
+uint8_t assign_midi_chn;
+uint8_t assign_chn;
 
 void settings(void)
 {
-  toplevel();
+  if (state == STATE_TOPLEVEL)
+    toplevel();
+  else if (state == STATE_MIDI_CHANNEL) {
+    // If we're in this state, it means that a MIDI channel has been entered
+    // by the user. We now need to subscribe the channel to the new MIDI channel and
+    // unsubscribe from the previous one, if any.
+
+    if (assigned_midi_chn[assign_chn] != 0)
+      midi_channel_unsubscribe(assigned_midi_chn[assign_chn], assign_chn);
+    midi_channel_subscribe(assign_midi_chn, assign_chn);
+    assigned_midi_chn[assign_chn] = assign_midi_chn;
+    state = STATE_TOPLEVEL;
+  }
 }
 
 static inline void toplevel(void)
@@ -105,7 +128,8 @@ static inline void toplevel(void)
     }
 
     if (chn != 0xFF) {
-      struct parameter parameter = {.target = &midi_channels[chn],
+      assign_chn = chn;
+      struct parameter parameter = {.target = &assign_midi_chn,
 				    .type = RANGE,
 				    .min = 0,
 				    .max = 16};
@@ -114,6 +138,8 @@ static inline void toplevel(void)
       getvalue.button2 = chn;
       getvalue.previous_mode = mode;
       mode = MODE_GETVALUE;
+
+      state = STATE_MIDI_CHANNEL;
     }
   }
 }
