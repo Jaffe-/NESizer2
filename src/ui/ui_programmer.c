@@ -68,7 +68,7 @@ uint8_t programmer_leds[6];
 
 enum state { STATE_TOPLEVEL, STATE_SAVE };
 
-enum state state = STATE_TOPLEVEL;
+static enum state state = STATE_TOPLEVEL;
 
 #define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
