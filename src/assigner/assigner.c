@@ -33,7 +33,7 @@
 #include "assigner/assigner.h"
 #include "sample/sample.h"
 #include "modulation/periods.h"
-
+#include "midi/midi.h"
 
 enum arp_mode assigner_arp_mode;
 int8_t assigner_arp_range;
