@@ -102,14 +102,11 @@ static inline void calc_freqmod(uint8_t chn)
   detuning, LFOs and envelope modulation. 
 */
 {
-  // Define some helper arrays
-  static const struct lfo* lfos[] = {&lfo1, &lfo2, &lfo3};
-  
   int16_t sum = 0;
 
   for (uint8_t j = 0; j < 3; j++) { 
     if (mod_lfo_modmatrix[chn][j] > 0) 
-      sum += mod_lfo_modmatrix[chn][j] * lfos[j]->value;
+      sum += mod_lfo_modmatrix[chn][j] * lfo[j].value;
   }
     
   if (chn <= CHN_TRI) {

@@ -40,9 +40,7 @@ struct lfo {
   uint8_t position;
 };
 
-extern struct lfo lfo1;
-extern struct lfo lfo2;
-extern struct lfo lfo3;
+extern struct lfo lfo[3];
 
 void lfo_update(struct lfo* lfo);
 int16_t lfo_value(struct lfo* lfo, uint8_t intensity);

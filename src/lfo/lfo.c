@@ -30,9 +30,7 @@
 #include "apu/apu.h" 
 #include "data/sine.c"
 
-struct lfo lfo1;
-struct lfo lfo2;
-struct lfo lfo3;
+struct lfo lfo[3];
 
 void lfo_update(struct lfo *lfo)
 {
@@ -85,8 +83,8 @@ int16_t lfo_value(struct lfo *lfo, uint8_t intensity)
 
 void lfo_update_handler(void)
 {  
-  lfo_update(&lfo1);
-  lfo_update(&lfo2);
-  lfo_update(&lfo3);
+  lfo_update(&lfo[0]);
+  lfo_update(&lfo[1]);
+  lfo_update(&lfo[2]);
 }
 

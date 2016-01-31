@@ -89,14 +89,14 @@ const struct parameter parameters[] PROGMEM = {
   [ENV3_SUSTAIN] = {&env[2].sustain, RANGE, 0, 15, 15},
   [ENV3_RELEASE] = {&env[2].release, RANGE, 0, 99, 0},
 
-  [LFO1_PERIOD] = {&lfo1.period, INVRANGE, 0, 99, 01},
-  [LFO1_WAVEFORM] = {(int8_t*)&lfo1.waveform, RANGE, 1, 5, 1},
+  [LFO1_PERIOD] = {&lfo[0].period, INVRANGE, 0, 99, 01},
+  [LFO1_WAVEFORM] = {(int8_t*)&lfo[0].waveform, RANGE, 1, 5, 1},
 
-  [LFO2_PERIOD] = {&lfo2.period, INVRANGE, 0, 99, 01},
-  [LFO2_WAVEFORM] = {(int8_t*)&lfo2.waveform, RANGE, 1, 5, 1},
+  [LFO2_PERIOD] = {&lfo[1].period, INVRANGE, 0, 99, 01},
+  [LFO2_WAVEFORM] = {(int8_t*)&lfo[1].waveform, RANGE, 1, 5, 1},
 
-  [LFO3_PERIOD] = {&lfo3.period, INVRANGE, 0, 99, 01},
-  [LFO3_WAVEFORM] = {(int8_t*)&lfo3.waveform, RANGE, 1, 5, 1},
+  [LFO3_PERIOD] = {&lfo[2].period, INVRANGE, 0, 99, 01},
+  [LFO3_WAVEFORM] = {(int8_t*)&lfo[2].waveform, RANGE, 1, 5, 1},
 
   [ARP_RANGE] = {&assigner_arp_range, RANGE, 0, 3, 0},
   [ARP_MODE] = {(int8_t*)&assigner_arp_mode, RANGE, 1, 4, 1},
