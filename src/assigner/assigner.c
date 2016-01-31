@@ -116,5 +116,36 @@ void stop_note(uint8_t channel)
 
 void assigner_handler(void)
 {
-    
+  for (uint8_t i = 0; i < 5; i++) {
+    if (midi_channels[i].listeners_count > 0) {
+      //&& assigner_arp_channel != midi_channels[i].channel) {
+      switch (assigner_mode) {
+
+      case MONO:
+	// Pick out the lowest note in the note list
+	for (uint8_t chn = 0; chn < 5; chn++) {
+	  if (midi_channels[i].listeners & (1 << chn)) {
+
+	    if (midi_channels[i].note_list_length > 0) {
+	      uint8_t note = midi_channels[i].note_list[0];
+	      if (note != assigned_notes[chn]) {
+		stop_note(chn);
+		play_note(chn, note);
+	      }
+	    }
+	    else if (assigned_notes[chn] != 0)
+	      stop_note(chn);
+	  }
+	}
+	break;
+
+      case POLY1:
+
+	break;
+
+      case POLY2:
+	break;
+      }
+    }
+  }
 }

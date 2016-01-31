@@ -38,6 +38,7 @@
 #include "io/input.h"
 #include "ui/ui.h"
 #include "ui/ui_sequencer.h"
+#include "assigner/assigner.h"
 
 struct task {
   void (*const handler)();
@@ -53,6 +54,7 @@ struct task tasks[] = {
   {.handler = &envelope_update_handler, .period = 10, .counter = 3},
   {.handler = &portamento_handler, .period = 10, .counter = 4},
   {.handler = &midi_handler, .period = 10, .counter = 5},
+  {.handler = &assigner_handler, .period = 10, .counter = 5},
   {.handler = &mod_calculate, .period = 10, .counter = 6},
   {.handler = &mod_apply, .period = 10, .counter = 7},
   {.handler = &leds_refresh, .period = 20, .counter = 8},
