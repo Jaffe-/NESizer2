@@ -28,6 +28,7 @@
 #pragma once
 
 extern int8_t mod_lfo_modmatrix[4][3];
+extern int8_t mod_lfo_vol[3];
 extern int8_t mod_detune[3];
 extern int8_t mod_envmod[4];
 extern uint16_t mod_pitchbend_input[4];

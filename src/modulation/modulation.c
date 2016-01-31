@@ -38,6 +38,7 @@
 
 /* Patch programmable parameters */
 int8_t mod_lfo_modmatrix[4][3];
+int8_t mod_lfo_vol[3];
 int8_t mod_detune[3] = {9, 9, 9};   // detune values default to 9 (translates to 0)
 int8_t mod_envmod[4] = {9, 9, 9, 7};
 int8_t mod_pitchbend[3];
@@ -118,18 +119,26 @@ static inline void calc_freqmod(uint8_t chn)
     
     // Add detune frequency delta
     dc += mod_detune[chn];
-    
+
+    // Add envelope modulation, if set
+    dc += (int16_t)4 * mod_envmod[chn] * env[chn].value;
+
     // Store total dc value, which will be applied by apply_freqmod
     dc_temp[chn] = dc;
-    
+  }
+  else if (chn == CHN_NOISE) {
+    noise_period = (env[2].value * (-mod_envmod[chn])) / 8;
   }
 }
 
-static inline void apply_envelopes(void)
+static inline void apply_volmod(void)
 {
-  sq1.volume = env1.value;
-  sq2.volume = env2.value;
-  noise.volume = env3.value;    
+  sq1.volume = !mod_lfo_vol[0] ? env[0].value
+    : (env[0].value * (8 + ((int16_t)lfo[0].value * mod_lfo_vol[0])/256))/16;
+  sq2.volume = !mod_lfo_vol[1] ? env[1].value
+    : env[1].value * (8 + ((int16_t)lfo[1].value * mod_lfo_vol[1])/256)/16;
+  noise.volume = !mod_lfo_vol[2] ? env[2].value
+    : env[2].value * (8 + ((int16_t)lfo[2].value * mod_lfo_vol[2])/256)/16;
 }
 
 void mod_calculate(void)
@@ -145,5 +154,5 @@ void mod_apply(void)
   apply_freqmod(chn); 
   if (++chn == 4) chn = 0;
 
-  apply_envelopes();
+  apply_volmod();
 }

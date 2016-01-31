@@ -44,7 +44,9 @@ const struct parameter parameters[] PROGMEM = {
   [SQ1_LFO3] = {&mod_lfo_modmatrix[0][2], RANGE, 0, 99, 0},
   [SQ1_PITCHBEND] = {&mod_pitchbend[0], RANGE, 0, 24, 1},
   [SQ1_COARSE] = {&mod_coarse[0], RANGE, -36, 36, 0},
-  
+  [SQ1_VOLMOD] = {&mod_lfo_vol[0], RANGE, 0, 16, 0},
+  [SQ1_ENVMOD] = {&mod_envmod[0], RANGE, -9, 9, 0},
+
   [SQ2_ENABLED] = {&sq2.enabled, BOOL, 0, 0, 0},
   [SQ2_DUTY] = {&sq2.duty, RANGE, 0, 3, 2},
   [SQ2_GLIDE] = {&portamento_values[1], RANGE, 0, 99, 0},
@@ -54,7 +56,9 @@ const struct parameter parameters[] PROGMEM = {
   [SQ2_LFO3] = {&mod_lfo_modmatrix[1][2], RANGE, 0, 99, 0},
   [SQ2_PITCHBEND] = {&mod_pitchbend[1], RANGE, 0, 24, 1},
   [SQ2_COARSE] = {&mod_coarse[1], RANGE, -36, 36, 0},
-  
+  [SQ2_VOLMOD] = {&mod_lfo_vol[1], RANGE, 0, 16, 0},
+  [SQ2_ENVMOD] = {&mod_envmod[1], RANGE, -9, 9, 0},
+
   [TRI_ENABLED] = {&tri.enabled, BOOL, 0, 0, 0},
   [TRI_GLIDE] = {&portamento_values[2], RANGE, 0, 99, 0},
   [TRI_DETUNE] = {&mod_detune[2], RANGE, -9, 9, 0},
@@ -70,6 +74,8 @@ const struct parameter parameters[] PROGMEM = {
   [NOISE_LFO1] = {&mod_lfo_modmatrix[3][0], RANGE, 0, 99, 0},
   [NOISE_LFO2] = {&mod_lfo_modmatrix[3][1], RANGE, 0, 99, 0},
   [NOISE_LFO3] = {&mod_lfo_modmatrix[3][2], RANGE, 0, 99, 0},
+  [NOISE_VOLMOD] = {&mod_lfo_vol[2], RANGE, 0, 16, 0},
+  [NOISE_ENVMOD] = {&mod_envmod[3], RANGE, -9, 9, 0},
 
   [DMC_ENABLED] = {&dmc.enabled, BOOL, 0, 1, 0},
   [DMC_SAMPLE_LOOP] = {&dmc.sample_loop, RANGE, 0, 1, 0},
