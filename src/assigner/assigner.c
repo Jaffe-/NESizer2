@@ -55,7 +55,8 @@ void play_note(uint8_t channel, uint8_t midi_note)
   //   notes[channel] = note;
 
   uint8_t note = midi_note_to_note(midi_note);
-  
+  assigned_notes[channel] = midi_note;
+
   switch (channel) {
   case CHN_SQ1:
     env1.gate = 1;
@@ -109,6 +110,8 @@ void stop_note(uint8_t channel)
   case CHN_DMC:
     dmc.sample_enabled = 0;
   }
+
+  assigned_notes[channel] = 0;
 }
 
 void assigner_handler(void)
