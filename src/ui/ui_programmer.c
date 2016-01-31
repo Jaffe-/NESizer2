@@ -297,11 +297,11 @@ void programmer(void)
   dmc.enabled ? button_led_on(BTN_DMC) : button_led_off(BTN_DMC);
 
   // In page 2 we also want to indicate the assigner mode
-  mode == MODE_PAGE2 && assigner_mode == 1 ?
+  mode == MODE_PAGE2 && assigner_mode == MONO ?
     button_led_on(BTN_MONO) : button_led_off(BTN_MONO);
-  mode == MODE_PAGE2 && assigner_mode == 2 ?
+  mode == MODE_PAGE2 && assigner_mode == POLY1 ?
     button_led_on(BTN_POLY1) : button_led_off(BTN_POLY1);
-  mode == MODE_PAGE2 && assigner_mode == 3 ?
+  mode == MODE_PAGE2 && assigner_mode == POLY2 ?
     button_led_on(BTN_POLY2) : button_led_off(BTN_POLY2);
   mode == MODE_PAGE2 && assigner_arp_sync ?
     button_led_on(BTN_ARP_SYNC) : button_led_off(BTN_ARP_SYNC);
@@ -384,7 +384,7 @@ static inline void toplevel_handler(void)
   if (mode == MODE_PAGE2) {
     for (int i = 13; i <= 15; i++) {
       if (button_pressed(i)) {
-	assigner_mode = i - 12;
+	assigner_mode = i - 13;
       }
     }
   }

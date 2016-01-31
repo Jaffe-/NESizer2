@@ -41,7 +41,7 @@ int8_t assigner_arp_channel;
 int8_t assigner_arp_rate;
 int8_t assigner_arp_sync;
 
-enum assigner_mode assigner_mode = 1;
+enum assigner_mode assigner_mode = MONO;
 
 uint8_t assigned_notes[5];
 
