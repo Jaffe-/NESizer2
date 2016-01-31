@@ -74,9 +74,9 @@ void settings(void)
     // by the user. We now need to subscribe the channel to the new MIDI channel and
     // unsubscribe from the previous one, if any.
 
-    if (assigned_midi_chn[assign_chn] != 0)
-      midi_channel_unsubscribe(assigned_midi_chn[assign_chn], assign_chn);
-    midi_channel_subscribe(assign_midi_chn, assign_chn);
+    if (assigned_midi_chn[assign_chn] > 0)
+      midi_channel_unsubscribe(assigned_midi_chn[assign_chn] - 1, assign_chn);
+    midi_channel_subscribe(assign_midi_chn - 1, assign_chn);
     assigned_midi_chn[assign_chn] = assign_midi_chn;
     state = STATE_TOPLEVEL;
   }
