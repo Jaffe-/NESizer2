@@ -57,12 +57,12 @@ void play_note(uint8_t channel, uint8_t midi_note)
 
   switch (channel) {
   case CHN_SQ1:
-    env1.gate = 1;
+    env[0].gate = 1;
     portamento_target_notes[0] = note;
     break;
 	
   case CHN_SQ2:
-    env2.gate = 1;
+    env[1].gate = 1;
     portamento_target_notes[1] = note;
     break;
 	
@@ -72,7 +72,7 @@ void play_note(uint8_t channel, uint8_t midi_note)
     break;
 
   case CHN_NOISE:
-    env3.gate = 1;
+    env[2].gate = 1;
     noise_period = note - 24;
     break;
 
@@ -90,11 +90,11 @@ void stop_note(uint8_t channel)
 {
   switch (channel) {
   case CHN_SQ1:
-    env1.gate = 0;
+    env[0].gate = 0;
     break;
 	
   case CHN_SQ2:
-    env2.gate = 0;
+    env[1].gate = 0;
     break;
 	
   case CHN_TRI:
@@ -102,7 +102,7 @@ void stop_note(uint8_t channel)
     break;
 
   case CHN_NOISE:
-    env3.gate = 0;
+    env[2].gate = 0;
     break;
 
   case CHN_DMC:

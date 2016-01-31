@@ -26,9 +26,7 @@
 
 #include "envelope/envelope.h"
 
-struct envelope env1;
-struct envelope env2;
-struct envelope env3;
+struct envelope env[3];
 
 void envelope_update(struct envelope* env)
 /*
@@ -121,7 +119,7 @@ void envelope_update(struct envelope* env)
 
 void envelope_update_handler()
 {
-  envelope_update(&env1);
-  envelope_update(&env2);
-  envelope_update(&env3);
+  envelope_update(&env[0]);
+  envelope_update(&env[1]);
+  envelope_update(&env[2]);
 }

@@ -57,6 +57,4 @@ struct envelope {
 void envelope_update(struct envelope *env);
 void envelope_update_handler(void);
 
-extern struct envelope env1;
-extern struct envelope env2;
-extern struct envelope env3;
+extern struct envelope env[3];
