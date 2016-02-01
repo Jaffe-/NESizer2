@@ -79,8 +79,8 @@ const enum parameter_id sq1_parameters[] PROGMEM = {
 
   SQ1_DUTY,
   SQ1_DETUNE,
+  SQ1_COARSE,
   SQ1_GLIDE,
-  SQ1_ENVMOD,
   ENV1_ATTACK,
   ENV1_DECAY,
   ENV1_SUSTAIN,
@@ -88,8 +88,8 @@ const enum parameter_id sq1_parameters[] PROGMEM = {
 };
 
 const enum parameter_id p2_sq1_parameters[] PROGMEM = {
-  SQ1_COARSE,
   SQ1_PITCHBEND,
+  SQ1_ENVMOD,
   SQ1_VOLMOD
 };
 
@@ -100,8 +100,8 @@ const enum parameter_id sq2_parameters[] PROGMEM = {
 
   SQ2_DUTY,
   SQ2_DETUNE,
+  SQ2_COARSE,
   SQ2_GLIDE,
-  SQ2_ENVMOD,
   ENV2_ATTACK,
   ENV2_DECAY,
   ENV2_SUSTAIN,
@@ -109,8 +109,8 @@ const enum parameter_id sq2_parameters[] PROGMEM = {
 };
 
 const enum parameter_id p2_sq2_parameters[] PROGMEM = {
-  SQ2_COARSE,
   SQ2_PITCHBEND,
+  SQ2_ENVMOD,
   SQ2_VOLMOD
 };
 
@@ -121,8 +121,8 @@ const enum parameter_id tri_parameters[] PROGMEM = {
 
   0xFF,
   TRI_DETUNE,
+  TRI_COARSE,
   TRI_GLIDE,
-  TRI_ENVMOD,
   0xFF,
   0xFF,
   0xFF,
@@ -130,8 +130,8 @@ const enum parameter_id tri_parameters[] PROGMEM = {
 };
 
 const enum parameter_id p2_tri_parameters[] PROGMEM = {
-  TRI_COARSE,
   TRI_PITCHBEND,
+  TRI_ENVMOD,
   0xFF
 };
 
@@ -143,7 +143,7 @@ const enum parameter_id noise_parameters[] PROGMEM = {
   NOISE_LOOP,
   0xFF,
   0xFF,
-  NOISE_ENVMOD,
+  0xFF,
   ENV3_ATTACK,
   ENV3_DECAY,
   ENV3_SUSTAIN,
@@ -151,8 +151,8 @@ const enum parameter_id noise_parameters[] PROGMEM = {
 };
 
 const enum parameter_id p2_noise_parameters[] PROGMEM = {
-  0xFF,
   NOISE_PITCHBEND,
+  NOISE_ENVMOD,
   NOISE_VOLMOD
 };
 
