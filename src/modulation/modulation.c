@@ -39,8 +39,8 @@
 /* Patch programmable parameters */
 int8_t mod_lfo_modmatrix[4][3];
 int8_t mod_lfo_vol[3];
-int8_t mod_detune[3] = {9, 9, 9};   // detune values default to 9 (translates to 0)
-int8_t mod_envmod[4] = {9, 9, 9, 7};
+int8_t mod_detune[3];
+int8_t mod_envmod[4];
 int8_t mod_pitchbend[3];
 int8_t mod_coarse[3];
 
