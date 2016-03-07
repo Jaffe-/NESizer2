@@ -47,7 +47,6 @@
 #define BTN_SAMPLEFREQ 11
 
 #define BTN_A 12
-#define BTN_ARP_SYNC 12
 
 #define BTN_D 13
 #define BTN_MONO 13
@@ -241,11 +240,14 @@ struct main_button p2_main_buttons[] = {
   {0, 0xFF},
   {0, 0xFF},
   {0, 0xFF},
-  {0, ARP_RANGE},
-  {0, ARP_MODE},
-  {0, ARP_CHANNEL},
-  {0, ARP_RATE},
-  {0, ARP_SYNC}
+  {0, 0xFF},
+  {0, 0xFF},
+  {0, 0xFF},
+  {0, 0xFF},
+  {0, 0xFF},
+  {0, 0xFF},
+  {0, 0xFF},
+  {0, 0xFF}
 };
 
 static struct main_button* main_buttons;
@@ -303,8 +305,6 @@ void programmer(void)
     button_led_on(BTN_POLY1) : button_led_off(BTN_POLY1);
   mode == MODE_PAGE2 && assigner_mode == POLY2 ?
     button_led_on(BTN_POLY2) : button_led_off(BTN_POLY2);
-  mode == MODE_PAGE2 && assigner_arp_sync ?
-    button_led_on(BTN_ARP_SYNC) : button_led_off(BTN_ARP_SYNC);
 
   if (mode == MODE_PAGE1) {
     main_buttons = p1_main_buttons;

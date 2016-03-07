@@ -102,13 +102,7 @@ const struct parameter parameters[] PROGMEM = {
   [LFO2_WAVEFORM] = {(int8_t*)&lfo[1].waveform, RANGE, 1, 5, 1},
 
   [LFO3_PERIOD] = {&lfo[2].period, INVRANGE, 0, 99, 01},
-  [LFO3_WAVEFORM] = {(int8_t*)&lfo[2].waveform, RANGE, 1, 5, 1},
-
-  [ARP_RANGE] = {&assigner_arp_range, RANGE, 0, 3, 0},
-  [ARP_MODE] = {(int8_t*)&assigner_arp_mode, RANGE, 1, 4, 1},
-  [ARP_CHANNEL] = {&assigner_arp_channel, RANGE, 1, 16, 1},
-  [ARP_RATE] = {&assigner_arp_rate, RANGE, 1, 99, 1},
-  [ARP_SYNC] = {&assigner_arp_sync, BOOL, 0, 0, 0}
+  [LFO3_WAVEFORM] = {(int8_t*)&lfo[2].waveform, RANGE, 1, 5, 1}
 };
 
 struct parameter parameter_get(enum parameter_id parameter)

@@ -49,117 +49,30 @@ static inline void transfer();
 static inline void sysex();
 
 static inline void initiate_transfer();
-static inline uint8_t get_midi_channel(uint8_t channel);
-
-struct midi_channel midi_channels[5];
-
-struct midi_channel* midi_channel_get(uint8_t midi_chn)
+static inline uint8_t get_midi_channel(uint8_t channel)
 {
-  for (uint8_t i = 0; i < 5; i++) {
-    if (midi_channels[i].channel == midi_chn)
-      return &midi_channels[i];
-  }
-  return 0;
-}
-
-struct midi_channel* midi_channel_allocate(uint8_t midi_chn)
-{
-  for (uint8_t i = 0; i < 5; i++) {
-    if (midi_channels[i].listeners_count == 0) {
-      midi_channels[i].channel = midi_chn;
-      midi_channels[i].note_list_length = 0;
-      for (uint8_t j = 0; j < MIDI_NOTE_LIST_MAX; j++)
-	midi_channels[i].note_list[j] = 0;
-      return &midi_channels[i];
-    }
-  }
-}
-
-/* Make an APU channel listen to the given MIDI channel */
-void midi_channel_subscribe(uint8_t midi_chn, uint8_t chn)
-{
-  struct midi_channel* midi_channel;
-
-  if (!(midi_channel = midi_channel_get(midi_chn))) {
-    midi_channel = midi_channel_allocate(midi_chn);
-  }
-
-  midi_channel->listeners |= (1 << chn);
-  midi_channel->listeners_count++;
-}
-
-/* Remove the given APU channel from listening to the given MIDI channel */
-void midi_channel_unsubscribe(uint8_t midi_chn, uint8_t chn)
-{
-  struct midi_channel* midi_channel = midi_channel_get(midi_chn);
-
-  midi_channel->listeners &= ~(1 << chn);
-  midi_channel->listeners_count--;
-}
-
-/* Put a new note into the given MIDI channel's note list */
-void midi_channel_note_on(struct midi_channel* midi_channel, uint8_t note)
-{
-  if (midi_channel->note_list_length == MIDI_NOTE_LIST_MAX)
-    return;
-
-  if (midi_channel->note_list_length == 0) {
-    midi_channel->note_list[0] = note;
-  }
-  else {
-    uint8_t next, set = 0;
-    for (uint8_t i = 0; i < midi_channel->note_list_length + 1; i++) {
-      if (!set && note < midi_channel->note_list[i]) {
-	set = 1;
-	next = midi_channel->note_list[i];
-	midi_channel->note_list[i++] = note;
-      }
-      if (set) {
-	uint8_t temp = midi_channel->note_list[i];
-	midi_channel->note_list[i] = next;
-	next = temp;
-      }
-    }
-    if (!set)
-      midi_channel->note_list[midi_channel->note_list_length] = note;
-  }
-  midi_channel->note_list_length++;
-}
-
-/* Remove a note from the given MIDI channel's note list */
-void midi_channel_note_off(struct midi_channel* midi_channel, uint8_t note)
-{
-  uint8_t* p = midi_channel->note_list;
-  for (uint8_t i = 0; i < midi_channel->note_list_length; i++) {
-    if (midi_channel->note_list[i] == note)
-      i += 1;
-    *(p++) = midi_channel->note_list[i];
-  }
-  midi_channel->note_list_length--;
+  return channel + 1;
 }
 
 /* Apply a new message */
 void midi_channel_apply(struct midi_message* msg)
 {
-  struct midi_channel* midi_chn;
-  if (!(midi_chn = midi_channel_get(msg->channel)))
-    return;
-
+  uint8_t midi_channel = get_midi_channel(msg->channel);
   switch (msg->command) {
   case MIDI_CMD_NOTE_ON:
-    midi_channel_note_on(midi_chn, msg->data1);
+    assigner_notify_note_on(midi_channel, msg->data1);
     break;
 
   case MIDI_CMD_NOTE_OFF:
-    midi_channel_note_off(midi_chn, msg->data1);
+    assigner_notify_note_off(midi_channel, msg->data1);
     break;
 
   case MIDI_CMD_PITCH_BEND:
     for (uint8_t i = 0; i < 5; i++) {
-      if (midi_chn->listeners & (1 << i)) {
+      if (assigner_midi_channels[i] == midi_channel) {
 	if (i < 3)
 	  mod_pitchbend_input[i] = ((uint16_t)msg->data1) | ((uint16_t)msg->data2) << 7;
-	else if (i == 4)
+	else if (i == 3)
 	  mod_pitchbend_input[i] = msg->data2 >> 3;
       }
     }

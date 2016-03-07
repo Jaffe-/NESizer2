@@ -30,14 +30,14 @@
 #include "ui_settings.h"
 #include "midi/midi.h"
 #include "ui.h"
-#include "midi/midi.h"
+//#include "midi/midi.h"
 #include "patch/patch.h"
 #include "sample/sample.h"
 #include "io/leds.h"
 #include "io/input.h"
 #include "io/memory.h"
 #include "io/2a03.h"
-
+#include "assigner/assigner.h"
 
 #define BTN_MIDI_CHN 5
 #define BTN_BLOCKSTATS 6
@@ -60,9 +60,6 @@ static enum state state = STATE_TOPLEVEL;
 static inline void toplevel(void);
 
 uint8_t settings_leds[6];
-uint8_t assigned_midi_chn[5];
-
-int8_t assign_midi_chn;
 uint8_t assign_chn;
 
 void settings(void)
@@ -74,10 +71,7 @@ void settings(void)
     // by the user. We now need to subscribe the channel to the new MIDI channel and
     // unsubscribe from the previous one, if any.
 
-    if (assigned_midi_chn[assign_chn] > 0)
-      midi_channel_unsubscribe(assigned_midi_chn[assign_chn] - 1, assign_chn);
-    midi_channel_subscribe(assign_midi_chn - 1, assign_chn);
-    assigned_midi_chn[assign_chn] = assign_midi_chn;
+    assigner_set_midi_channel(assigner_midi_channels[assign_chn], assign_chn);
     state = STATE_TOPLEVEL;
   }
 }
@@ -129,8 +123,7 @@ static inline void toplevel(void)
 
     if (chn != 0xFF) {
       assign_chn = chn;
-      assign_midi_chn = assigned_midi_chn[chn];
-      struct parameter parameter = {.target = &assign_midi_chn,
+      struct parameter parameter = {.target = &assigner_midi_channels[chn],
 				    .type = RANGE,
 				    .min = 0,
 				    .max = 16};

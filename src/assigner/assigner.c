@@ -28,22 +28,172 @@
 #include "modulation/modulation.h"
 #include "portamento/portamento.h"
 #include "apu/apu.h"
-//#include "lfo/lfo.h"
 #include "envelope/envelope.h"
 #include "assigner/assigner.h"
 #include "sample/sample.h"
 #include "modulation/periods.h"
 #include "midi/midi.h"
-
-enum arp_mode assigner_arp_mode;
-int8_t assigner_arp_range;
-int8_t assigner_arp_channel;
-int8_t assigner_arp_rate;
-int8_t assigner_arp_sync;
+#include <stdbool.h>
 
 enum assigner_mode assigner_mode = MONO;
 
 uint8_t assigned_notes[5];
+
+struct group {
+  uint8_t midi_channel;
+  uint8_t last_note;
+  uint8_t members;
+};
+
+static struct group groups[5];
+
+/* Internal group functions */
+static inline void add_member(uint8_t group, uint8_t chn);
+static inline void remove_member(uint8_t group, uint8_t chn);
+static inline bool has_member(uint8_t group, uint8_t channel);
+static inline bool empty(uint8_t group);
+static inline int8_t find_group(uint8_t midi_channel);
+static inline uint8_t new_group(uint8_t midi_channel);
+static inline void group_notify_note_on(uint8_t group, uint8_t note);
+static inline void group_notify_note_off(uint8_t group, uint8_t note);
+
+int8_t assigner_midi_channels[5];
+
+/* This is called by the SETTINGS UI when the user assigns
+   the given channel to a given midi channel */
+void assigner_set_midi_channel(uint8_t midi_channel, uint8_t chn)
+{
+  if (assigner_midi_channels[chn] == midi_channel)
+    assigner_unset_midi_channel(midi_channel, chn);
+
+  // See if there is a group already listening to the given channel
+  uint8_t group;
+  if ((group = find_group(midi_channel)) == -1) {
+    group = new_group(midi_channel);
+  }
+  add_member(group, chn);
+}
+
+void assigner_unset_midi_channel(uint8_t midi_channel, uint8_t chn)
+{
+  uint8_t group = find_group(midi_channel);
+  if (group != -1) {
+    remove_member(group, chn);
+  }
+  else {
+    // Should never happen!
+    while (1);
+  }
+}
+
+bool assigner_has_channel(uint8_t midi_channel, uint8_t chn)
+{
+  uint8_t group = find_group(midi_channel);
+  return group != -1 && has_member(group, chn);
+}
+
+void assigner_notify_note_on(uint8_t midi_channel, uint8_t note)
+{
+  /* find the group listening on the channel */
+  uint8_t group;
+  if ((group = find_group(midi_channel)))
+    group_notify_note_on(group, note);
+}
+
+void assigner_notify_note_off(uint8_t midi_channel, uint8_t note)
+{
+  /* find the group listening on the channel */
+  uint8_t group;
+  if ((group = find_group(midi_channel)))
+    group_notify_note_off(group, note);  
+}
+
+
+static inline uint8_t new_group(uint8_t midi_channel)
+{
+  for (uint8_t group = 0; group < 5; group++) {
+    if (empty(group)) {
+      groups[group].midi_channel = midi_channel;
+      groups[group].last_note = 0;
+      return group;
+    }
+  }
+
+  // We should never arrive here!
+  while (1);
+}
+
+static inline void add_member(uint8_t group, uint8_t chn)
+{
+  groups[group].members |= (1 << chn);
+}
+
+static inline void remove_member(uint8_t group, uint8_t chn)
+{
+  groups[group].members &= ~(1 << chn);
+}
+
+static inline bool has_member(uint8_t group, uint8_t channel)
+{
+  return groups[group].members & (1 << channel);
+}
+
+static inline bool empty(uint8_t group)
+{
+  return groups[group].members & 0x1F;
+}
+
+static inline int8_t find_group(uint8_t midi_channel)
+{
+  for (int8_t i = 0; i < 5; i++) {
+    if (groups[i].midi_channel == midi_channel) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+static inline void group_notify_note_on(uint8_t group, uint8_t note)
+{
+  if (assigner_mode == MONO) {
+    for (uint8_t chn = 0; chn < 5; chn++) {
+      if (has_member(group, chn)) {
+	stop_note(chn);
+	play_note(chn, note);
+      }
+    }
+  }
+
+  else {
+    for (uint8_t i = 0; i < 5; i++) {
+      // Swap TRI and SQ1 when in POLY1
+      uint8_t chn;
+      if (assigner_mode == POLY2)
+	chn = (i == 0) ? 2 : ((i == 2) ? 0 : i);
+      else
+	chn = i;
+      if (has_member(group, chn)) {
+	if (!assigned_notes[chn]) {
+	  play_note(chn, note);
+	  return;
+	}
+      }
+    }
+    if (assigner_mode == POLY2) {
+      // Todo: note stealing logic?
+    }
+  }
+}
+
+static inline void group_notify_note_off(uint8_t group, uint8_t note)
+{
+  for (uint8_t chn = 0; chn < 5; chn++) {
+    if (has_member(group, chn)) {
+      if (assigned_notes[chn] == note)
+	stop_note(chn);
+    }
+  }
+}
 
 int8_t midi_note_to_note(uint8_t midi_note)
 {
@@ -110,53 +260,4 @@ void stop_note(uint8_t channel)
   }
 
   assigned_notes[channel] = 0;
-}
-
-void assigner_handler(void)
-{
-  for (uint8_t i = 0; i < 5; i++) {
-    if (midi_channels[i].listeners_count > 0) {
-      for (uint8_t chn = 0; chn < 5; chn++) {
-	if (midi_channels[i].listeners & (1 << chn)) {
-      //&& assigner_arp_channel != midi_channels[i].channel) {
-
-	  switch (assigner_mode) {
-
-	  case MONO:
-
-	    // Get the lowest note and assign it. Stop previous note if any.
-	    if (midi_channels[i].note_list_length > 0) {
-	      uint8_t note = midi_channels[i].note_list[0];
-	      if (note != assigned_notes[chn]) {
-		stop_note(chn);
-		play_note(chn, note);
-	      }
-	    }
-
-	    // If the note list is empty, we know that whatever note is playing
-	    // should stop.
-	    else if (assigned_notes[chn] != 0)
-	      stop_note(chn);
-	    break;
-
-	  case POLY1:
-	    if (midi_channels[i].note_list_length > chn) {
-	      uint8_t note = midi_channels[i].note_list[chn];
-	      if (note != assigned_notes[chn]) {
-		stop_note(chn);
-		play_note(chn, note);
-	      }
-	    }
-
-	    else if (assigned_notes[chn] != 0)
-	      stop_note(chn);
-	    break;
-
-	  case POLY2:
-	    break;
-	  }
-	}
-      }
-    }
-  }
 }

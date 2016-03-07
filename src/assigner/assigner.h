@@ -26,18 +26,17 @@
 
 #pragma once
 #include <stdint.h>
+#include <stdbool.h>
 
 uint16_t note_to_period(uint8_t channel, uint8_t note);
 void play_note(uint8_t channel, uint8_t note);
 void stop_note(uint8_t channel);
-void assigner_handler(void);
 
-enum arp_mode {
-  ARP_UP,
-  ARP_DOWN,
-  ARP_UPDOWN,
-  ARP_RANDOM
-};
+void assigner_notify_note_on(uint8_t midi_channel, uint8_t note);
+void assigner_notify_note_off(uint8_t midi_channel, uint8_t note);
+bool assigner_has_channel(uint8_t midi_channel, uint8_t chn);
+void assigner_unset_midi_channel(uint8_t midi_channel, uint8_t chn);
+void assigner_set_midi_channel(uint8_t midi_channel, uint8_t chn);
 
 enum assigner_mode {
   MONO,
@@ -45,10 +44,5 @@ enum assigner_mode {
   POLY2
 };
 
-extern enum arp_mode assigner_arp_mode;
-extern int8_t assigner_arp_range;
-extern int8_t assigner_arp_channel;
-extern int8_t assigner_arp_rate;
-extern int8_t assigner_arp_sync;
-
 extern enum assigner_mode assigner_mode;
+extern int8_t assigner_midi_channels[5];
