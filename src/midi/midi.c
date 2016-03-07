@@ -69,7 +69,7 @@ void midi_channel_apply(struct midi_message* msg)
 
   case MIDI_CMD_PITCH_BEND:
     for (uint8_t i = 0; i < 5; i++) {
-      if (assigner_midi_channels[i] == midi_channel) {
+      if (assigner_midi_channel_get(i) == midi_channel) {
 	if (i < 3)
 	  mod_pitchbend_input[i] = ((uint16_t)msg->data1) | ((uint16_t)msg->data2) << 7;
 	else if (i == 3)

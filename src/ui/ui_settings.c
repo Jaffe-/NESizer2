@@ -61,6 +61,7 @@ static inline void toplevel(void);
 
 uint8_t settings_leds[6];
 uint8_t assign_chn;
+uint8_t assign_midi_chn;
 
 void settings(void)
 {
@@ -71,7 +72,7 @@ void settings(void)
     // by the user. We now need to subscribe the channel to the new MIDI channel and
     // unsubscribe from the previous one, if any.
 
-    assigner_set_midi_channel(assigner_midi_channels[assign_chn], assign_chn);
+    assigner_midi_channel_change(assign_midi_chn, assign_chn);
     state = STATE_TOPLEVEL;
   }
 }
@@ -123,7 +124,8 @@ static inline void toplevel(void)
 
     if (chn != 0xFF) {
       assign_chn = chn;
-      struct parameter parameter = {.target = &assigner_midi_channels[chn],
+      assign_midi_chn = assigner_midi_channel_get(chn);
+      struct parameter parameter = {.target = &assign_midi_chn,
 				    .type = RANGE,
 				    .min = 0,
 				    .max = 16};

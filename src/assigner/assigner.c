@@ -48,55 +48,56 @@ struct group {
 static struct group groups[5];
 
 /* Internal group functions */
-static inline void add_member(uint8_t group, uint8_t chn);
-static inline void remove_member(uint8_t group, uint8_t chn);
-static inline bool has_member(uint8_t group, uint8_t channel);
-static inline bool empty(uint8_t group);
+static inline void add_member(int8_t group, uint8_t chn);
+static inline void remove_member(int8_t group, uint8_t chn);
+static inline bool has_member(int8_t group, uint8_t channel);
+static inline bool empty(int8_t group);
 static inline int8_t find_group(uint8_t midi_channel);
-static inline uint8_t new_group(uint8_t midi_channel);
-static inline void group_notify_note_on(uint8_t group, uint8_t note);
-static inline void group_notify_note_off(uint8_t group, uint8_t note);
+static inline int8_t new_group(uint8_t midi_channel);
+static inline void group_notify_note_on(int8_t group, uint8_t note);
+static inline void group_notify_note_off(int8_t group, uint8_t note);
 
-int8_t assigner_midi_channels[5];
+uint8_t midi_channels[5];
 
 /* This is called by the SETTINGS UI when the user assigns
    the given channel to a given midi channel */
-void assigner_set_midi_channel(uint8_t midi_channel, uint8_t chn)
+void assigner_midi_channel_change(uint8_t midi_channel, uint8_t chn)
 {
-  if (assigner_midi_channels[chn] == midi_channel)
-    assigner_unset_midi_channel(midi_channel, chn);
+  // If new channel is different from old, remove chn as a member of its group
+  if (midi_channels[chn] != midi_channel && midi_channels[chn] != 0) {
+    // Avoid stuck notes
+    stop_note(chn);
+
+    int8_t old_group = find_group(midi_channels[chn]);
+    if (old_group != -1)
+      remove_member(old_group, chn);
+    else while(1); // should never happen!
+  }
+
+  midi_channels[chn] = midi_channel;
+  
+  // 0 means no midi channel, so there is nothing more to do
+  if (midi_channel == 0)
+    return;
 
   // See if there is a group already listening to the given channel
-  uint8_t group;
-  if ((group = find_group(midi_channel)) == -1) {
+  int8_t group = find_group(midi_channel);
+  if (group == -1) {
     group = new_group(midi_channel);
   }
   add_member(group, chn);
 }
 
-void assigner_unset_midi_channel(uint8_t midi_channel, uint8_t chn)
+uint8_t assigner_midi_channel_get(uint8_t chn)
 {
-  uint8_t group = find_group(midi_channel);
-  if (group != -1) {
-    remove_member(group, chn);
-  }
-  else {
-    // Should never happen!
-    while (1);
-  }
-}
-
-bool assigner_has_channel(uint8_t midi_channel, uint8_t chn)
-{
-  uint8_t group = find_group(midi_channel);
-  return group != -1 && has_member(group, chn);
+  return midi_channels[chn];
 }
 
 void assigner_notify_note_on(uint8_t midi_channel, uint8_t note)
 {
   /* find the group listening on the channel */
-  uint8_t group;
-  if ((group = find_group(midi_channel)))
+  int8_t group;
+  if ((group = find_group(midi_channel)) != -1)
     group_notify_note_on(group, note);
 }
 
@@ -104,17 +105,18 @@ void assigner_notify_note_off(uint8_t midi_channel, uint8_t note)
 {
   /* find the group listening on the channel */
   uint8_t group;
-  if ((group = find_group(midi_channel)))
+  if ((group = find_group(midi_channel)) != -1)
     group_notify_note_off(group, note);  
 }
 
 
-static inline uint8_t new_group(uint8_t midi_channel)
+static inline int8_t new_group(uint8_t midi_channel)
 {
   for (uint8_t group = 0; group < 5; group++) {
     if (empty(group)) {
       groups[group].midi_channel = midi_channel;
       groups[group].last_note = 0;
+      groups[group].members = 0;
       return group;
     }
   }
@@ -123,24 +125,24 @@ static inline uint8_t new_group(uint8_t midi_channel)
   while (1);
 }
 
-static inline void add_member(uint8_t group, uint8_t chn)
+static inline void add_member(int8_t group, uint8_t chn)
 {
   groups[group].members |= (1 << chn);
 }
 
-static inline void remove_member(uint8_t group, uint8_t chn)
+static inline void remove_member(int8_t group, uint8_t chn)
 {
   groups[group].members &= ~(1 << chn);
 }
 
-static inline bool has_member(uint8_t group, uint8_t channel)
+static inline bool has_member(int8_t group, uint8_t channel)
 {
   return groups[group].members & (1 << channel);
 }
 
-static inline bool empty(uint8_t group)
+static inline bool empty(int8_t group)
 {
-  return groups[group].members & 0x1F;
+  return groups[group].members == 0;
 }
 
 static inline int8_t find_group(uint8_t midi_channel)
@@ -153,7 +155,7 @@ static inline int8_t find_group(uint8_t midi_channel)
   return -1;
 }
 
-static inline void group_notify_note_on(uint8_t group, uint8_t note)
+static inline void group_notify_note_on(int8_t group, uint8_t note)
 {
   if (assigner_mode == MONO) {
     for (uint8_t chn = 0; chn < 5; chn++) {
@@ -185,7 +187,7 @@ static inline void group_notify_note_on(uint8_t group, uint8_t note)
   }
 }
 
-static inline void group_notify_note_off(uint8_t group, uint8_t note)
+static inline void group_notify_note_off(int8_t group, uint8_t note)
 {
   for (uint8_t chn = 0; chn < 5; chn++) {
     if (has_member(group, chn)) {

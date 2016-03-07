@@ -53,7 +53,7 @@ struct task tasks[] = {
   {.handler = &lfo_update_handler, .period = 10, .counter = 2},
   {.handler = &envelope_update_handler, .period = 10, .counter = 3},
   {.handler = &portamento_handler, .period = 10, .counter = 4},
-  {.handler = &midi_handler, .period = 10, .counter = 5},
+  {.handler = &midi_handler, .period = 20, .counter = 5},
   {.handler = &mod_calculate, .period = 10, .counter = 6},
   {.handler = &mod_apply, .period = 10, .counter = 7},
   {.handler = &leds_refresh, .period = 20, .counter = 8},
