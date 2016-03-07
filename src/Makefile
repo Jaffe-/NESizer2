@@ -37,8 +37,10 @@ clean:
 %.elf: $(OBJ)
 	avr-gcc $^ $(LDFLAGS) -o $@
 
-%.o : %.c $(HEADERS)
+%.o : %.c
 	avr-gcc $(CFLAGS) -c $< -o $@ 
+
+-include $(CSRC:%.c=%.d)
 
 2a03_s.o : io/2a03.s
 	avr-as -mmcu=$(MCU) -c $< -o $@
