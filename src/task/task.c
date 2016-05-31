@@ -123,12 +123,12 @@ void task_manager(void)
     for (uint8_t i = 0; i < num_tasks; i++) {
       // If number of ticks changed after previous task, stop going further
       if (ticks != last_tick)
-	break;
+        break;
 
       // Call the task/task.handler when the count reaches the period
       if (tasks[i].counter >= tasks[i].period) {
-	tasks[i].counter = 0;
-	tasks[i].handler();
+        tasks[i].counter = 0;
+        tasks[i].handler();
       }
     }
   }
