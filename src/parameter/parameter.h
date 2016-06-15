@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#define NUM_PARAMETERS (ARP_SYNC - SQ1_ENABLED + 1)
+#define NUM_PARAMETERS (LFO3_WAVEFORM - SQ1_ENABLED + 1)
 
 struct parameter {
   int8_t* target;
