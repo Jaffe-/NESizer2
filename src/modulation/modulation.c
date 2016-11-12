@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -42,7 +42,7 @@ int8_t mod_lfo_vol[3];
 int8_t mod_detune[3];
 int8_t mod_envmod[4];
 int8_t mod_pitchbend[3];
-int8_t mod_coarse[3];
+int8_t mod_octave[3];
 
 /* Input from MIDI  */
 uint16_t mod_pitchbend_input[4] = {0x2000, 0x2000, 0x2000, 0x2000};
@@ -52,107 +52,107 @@ static int16_t dc_temp[3];
 
 static inline int16_t get_pitchbend(uint8_t chn)
 {
-  return (int16_t)((mod_pitchbend_input[chn] >> 7) - 0x40) * mod_pitchbend[chn];
+    return (int16_t)((mod_pitchbend_input[chn] >> 7) - 0x40) * mod_pitchbend[chn];
 }
 
 static inline int16_t get_coarse_tune(uint8_t chn)
 {
-  return (uint16_t)mod_coarse[chn] << 6; 
+    return (uint16_t)(12 * mod_octave[chn]) << 6;
 }
 
 static inline uint16_t apply_dc(uint16_t c, int16_t dc)
 {
-  int16_t r = c;
-  if (r + dc < 0)
-    return c;
-  else
-    return r + dc;
+    int16_t r = c;
+    if (r + dc < 0)
+        return c;
+    else
+        return r + dc;
 }
 
 static inline void apply_freqmod(uint8_t chn)
 /*
-  SQ1/2/TRI: Applies calculated frequency modulations by converting them to 
-  period compensated period modulations. 
+  SQ1/2/TRI: Applies calculated frequency modulations by converting them to
+  period compensated period modulations.
 
   NOISE: Applies envelope modulation and LFOs directly to period
 */
 {
-  // Convert frequency delta to a period delta and add to the base period
-  uint16_t period = 0;
-  if (chn <= CHN_TRI) 
-    period = get_period(chn, apply_dc(portamento_cs[chn], dc_temp[chn]));
-	
-  switch (chn) {
-  case CHN_SQ1:
-    sq1.period = period;
-    break;
-  case CHN_SQ2:
-    sq2.period = period;
-    break;
-  case CHN_TRI:
-    tri.period = period;
-    break;
-  case CHN_NOISE:
-    noise.period = noise_period;
-  }
+    // Convert frequency delta to a period delta and add to the base period
+    uint16_t period = 0;
+    if (chn <= CHN_TRI)
+        period = get_period(chn, apply_dc(portamento_cs[chn], dc_temp[chn]));
+
+    switch (chn) {
+    case CHN_SQ1:
+        sq1.period = period;
+        break;
+    case CHN_SQ2:
+        sq2.period = period;
+        break;
+    case CHN_TRI:
+        tri.period = period;
+        break;
+    case CHN_NOISE:
+        noise.period = noise_period;
+    }
 }
 
 static inline void calc_freqmod(uint8_t chn)
 /*
-  Calculates frequency change for SQ1, SQ2 and TRI based on 
-  detuning, LFOs and envelope modulation. 
+  Calculates frequency change for SQ1, SQ2 and TRI based on
+  detuning, LFOs and envelope modulation.
 */
 {
-  int16_t sum = 0;
+    int16_t sum = 0;
 
-  for (uint8_t j = 0; j < 3; j++) { 
-    if (mod_lfo_modmatrix[chn][j] > 0) 
-      sum += mod_lfo_modmatrix[chn][j] * lfo[j].value;
-  }
-    
-  if (chn <= CHN_TRI) {
-    int16_t dc = get_coarse_tune(chn);
-    
-    dc += get_pitchbend(chn);
+    for (uint8_t j = 0; j < 3; j++) {
+        if (mod_lfo_modmatrix[chn][j] > 0)
+            sum += mod_lfo_modmatrix[chn][j] * lfo[j].value;
+    }
 
-    dc += sum / 128;
-    
-    // Add detune frequency delta
-    dc += mod_detune[chn];
+    if (chn <= CHN_TRI) {
+        int16_t dc = get_coarse_tune(chn);
 
-    // Add envelope modulation, if set
-    dc += (int16_t)4 * mod_envmod[chn] * env[chn].value;
+        dc += get_pitchbend(chn);
 
-    // Store total dc value, which will be applied by apply_freqmod
-    dc_temp[chn] = dc;
-  }
-  else if (chn == CHN_NOISE) {
-    noise_period = (env[2].value * (-mod_envmod[chn])) / 8;
-  }
+        dc += sum / 128;
+
+        // Add detune frequency delta
+        dc += mod_detune[chn];
+
+        // Add envelope modulation, if set
+        dc += (int16_t)4 * mod_envmod[chn] * env[chn].value;
+
+        // Store total dc value, which will be applied by apply_freqmod
+        dc_temp[chn] = dc;
+    }
+    else if (chn == CHN_NOISE) {
+        noise_period = (env[2].value * (-mod_envmod[chn])) / 8;
+    }
 }
 
 static inline void apply_volmod(void)
 {
-  sq1.volume = !mod_lfo_vol[0] ? env[0].value
-    : (env[0].value * (8 + ((int16_t)lfo[0].value * mod_lfo_vol[0])/256))/16;
-  sq2.volume = !mod_lfo_vol[1] ? env[1].value
-    : env[1].value * (8 + ((int16_t)lfo[1].value * mod_lfo_vol[1])/256)/16;
-  noise.volume = !mod_lfo_vol[2] ? env[2].value
-    : env[2].value * (8 + ((int16_t)lfo[2].value * mod_lfo_vol[2])/256)/16;
+    sq1.volume = !mod_lfo_vol[0] ? env[0].value
+        : (env[0].value * (8 + ((int16_t)lfo[0].value * mod_lfo_vol[0])/256))/16;
+    sq2.volume = !mod_lfo_vol[1] ? env[1].value
+        : env[1].value * (8 + ((int16_t)lfo[1].value * mod_lfo_vol[1])/256)/16;
+    noise.volume = !mod_lfo_vol[2] ? env[2].value
+        : env[2].value * (8 + ((int16_t)lfo[2].value * mod_lfo_vol[2])/256)/16;
 }
 
 void mod_calculate(void)
 {
-  static uint8_t chn = 0;
-  calc_freqmod(chn); 
-  if (++chn == 4) chn = 0;
+    static uint8_t chn = 0;
+    calc_freqmod(chn);
+    if (++chn == 4) chn = 0;
 }
 
 void mod_apply(void)
 {
-  static uint8_t chn = 0;
-  apply_freqmod(chn); 
-  if (++chn == 4) chn = 0;
+    static uint8_t chn = 0;
+    apply_freqmod(chn);
+    if (++chn == 4) chn = 0;
 
-  apply_volmod();
+    apply_volmod();
 }

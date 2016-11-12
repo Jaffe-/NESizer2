@@ -34,7 +34,7 @@ extern int8_t mod_envmod[4];
 extern uint16_t mod_pitchbend_input[4];
 extern int8_t mod_pitchbend[3];
 extern uint8_t noise_period;
-extern int8_t mod_coarse[3];
+extern int8_t mod_octave[3];
 extern int8_t mod_pwm;
 
 void mod_calculate(void);
