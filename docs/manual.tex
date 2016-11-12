@@ -42,14 +42,14 @@
 
 
 \begin{titlepage}
-\begin{center}
-\vfil
-\includegraphics[width=12cm]{../nesizer_black.png}\\[3cm]
+  \begin{center}
+    \vfil
+    \includegraphics[width=12cm]{../nesizer_black.png}\\[3cm]
 
-\textsc{\LARGE{8-bit synthesizer}}\\[8cm]
+    \textsc{\LARGE{8-bit synthesizer}}\\[8cm]
 
-\textsc{\Large{Operating manual}}
-\end{center}
+    \textsc{\Large{Operating manual}}
+  \end{center}
 \end{titlepage}
 
 \tableofcontents
@@ -67,15 +67,15 @@
 At the heart of the \name is the NES APU chip, usually called 2A03 (or 2A07 if you use a chip from the PAL NES). The APU has five separate sound channels:
 
 \begin{itemize}
-\item \textbf{SQ1} and \textbf{SQ2}: These produce square waves with three selectable \emph{duty cycles} (pulse widths). 
+\item \textbf{SQ1} and \textbf{SQ2}: These produce square waves with three selectable \emph{duty cycles} (pulse widths).
 \item \textbf{TRI}: This channel produces triangular waves, but with a low 4 bit amplitude resolution. This results in the characteristic aliased NES bass and flute tones.
 \item \textbf{NOISE}: This channel produces various forms of noise. The noise can be white noise, or pitched noise if the \lbl{LOOP} mode is engaged.
-\item \textbf{DMC}: This channel can output 7-bit samples at a quick rate. The sampling rate is 16 kHz in the \name. 
+\item \textbf{DMC}: This channel can output 7-bit samples at a quick rate. The sampling rate is 16 kHz in the \name.
 \end{itemize}
 
 \subsection{Modulation}
 
-Because the 2A03 is put under much tighter control in the \name than in a NES or Famicom console, the \name features extensive modulation capabilities. 
+Because the 2A03 is put under much tighter control in the \name than in a NES or Famicom console, the \name features extensive modulation capabilities.
 
 \begin{itemize}
 \item Three separate low frequency oscillators \textbf{LFO1}, \textbf{LFO2}, \textbf{LFO3} with selectable waveforms (ramp up, ramp down, sine wave, triangle wave or square wave)
@@ -83,11 +83,11 @@ Because the 2A03 is put under much tighter control in the \name than in a NES or
 \item Portamento / glide for the square and triangle channels
 \end{itemize}
 
-\section{PROGRAM mode}
+\section{PROGRAM and PAGE 2 modes}
 
-This is the active mode when the \name starts up. When in other modes, press the \btn{PROGRAM} button to switch to this mode. 
+This is the active mode when the \name starts up. When in other modes, press the \btn{PROGRAM} button to switch to this mode.
 
-In the programming mode, the various parameters of the sound channels and LFOs can be changed. A set of channel and LFO settings are collectively known as a \emph{patch}, to adhere to the long tradition of synthesizer nomenclature. The \name can save patches to memory, and has room for 100 patches. 
+In the programming mode, the various parameters of the sound channels and LFOs can be changed. A set of channel and LFO settings are collectively known as a \emph{patch}. The \name can save patches to memory, and has room for 100 patches.
 
 \begin{tikzpicture}[align=center, node distance=1.5cm, auto]
   \node [mhbutton] (1) {SQ1};
@@ -113,7 +113,7 @@ In the programming mode, the various parameters of the sound channels and LFOs c
   \node [dummybutton] (1) {};
   \node [dummybutton, right of=1] (2) {};
   \node [hcircbutton, right of=2] (3) {PROGRAM};
-  \node [circbutton, right of=3] (4) {PATTERN};
+  \node [circbutton, right of=3] (4) {PAGE 2};
   \node [circbutton, right of=4] (5) {ASSIGNER};
   \node [circbutton, right of=5] (6) {SETTINGS};
   \node [dummybutton, right of=6] (7) {};
@@ -133,15 +133,19 @@ In the programming mode, the various parameters of the sound channels and LFOs c
 To load a patch, press either \btn{UP} or \btn{DOWN}. To go quickly up or down, press and hold the respective button. The current patch number is shown on the numeric display.
 
 \subsection{Saving patches}
-To save a patch, press \btn{SAVE}. The button will start to blink to indicate that you can select where to store the new patch. Use the \lbl{DATA} knob or \btn{UP} and \btn{DOWN} to select where to store the patch. Press \btn{SAVE} again to store the patch at the selected location. 
+To save a patch, press \btn{SAVE}. The button will start to blink to indicate that you can select where to store the new patch. Use \btn{UP} and \btn{DOWN} to select where to store the patch. Press \btn{SAVE} again to store the patch at the selected location.
 
 \emph{Note: When channel and LFO settings are changed, these are not saved until you press \btn{SAVE}.}
 
 \subsection{Enabling and disabling channels}
-To enable or disable a channel, press the corresponding channel button. When a channel is disabled, it does not produce sound when being triggered by the sequencer or incoming MIDI data. 
+To enable or disable a channel, press the corresponding channel button. When a channel is disabled, it does not produce sound when being triggered by the sequencer or incoming MIDI data.
+
+\subsection{PAGE 2}
+
+By pressing \btn{PAGE 2}, a second ``page'' og parameters become available. Some of them are channel parameters, and others are related to note assignment. When Page 2 is selected, the \name is still in programmer mode. The parameters that are avilable in page 2 are shown in yellow color in the figures below.
 
 \subsection{Changing channel parameters}
-To change a channel's parameter, press and hold the desired channel's button, and the desired parameter button. For example, to change the attack of the square 1 channel, press \btn{SQ1} and \btn{A}. The button LEDs will start to blink to indicate which channel parameter is being changed. Use the \btn{UP} and \btn{DOWN} buttons to change the parameter value. When you have the desired value, press \btn{SET}. 
+To change a channel's parameter, press and hold the desired channel's button, and the desired parameter button. For example, to change the attack of the square 1 channel, press \btn{SQ1} and \btn{A}. The button LEDs will start to blink to indicate which channel parameter is being changed. Use the \btn{UP} and \btn{DOWN} buttons to change the parameter value. When you have the desired value, press \btn{SAVE}.
 
 \subsubsection{Square channels}
 
@@ -166,21 +170,21 @@ To change a channel's parameter, press and hold the desired channel's button, an
 \end{tikzpicture}
 
 \begin{tabular}{l | l | l}
-Parameter & Description & Range\\ \hline
-\textbf{LFO1} & Intensity of modulation by LFO1 & 0 - 99\\
-\textbf{LFO2} & Intensity of modulation by LFO2 & 0 - 99\\
-\textbf{LFO3} & Intensity of modulation by LFO3 & 0 - 99\\
-\textbf{DUTY} & Duty cycle & 0 - 3\\
-\textbf{DETUNE} & Detuning & -9 - 9\\
-\textbf{OCTAVE} & Octave & -4 - 4\\
-\textbf{GLIDE} & Portamento glide time & 0 - 99\\
-\textbf{A} & Volume envelope attack & 0 - 99\\
-\textbf{D} & Volume envelope decay & 0 - 99\\
-\textbf{S} & Volume envelope sustain & 0 - 15\\
-\textbf{R} & Volume envelope release & 0 - 99\\
-\textbf{BEND} (page 2) & Bend wheel intensity in semitones & 0 - 24\\
-\textbf{ENV MOD} (page 2) & Pitch envelope modulation amount & -9 - 9\\
-\textbf{VOL MOD} (page 2) & Volume modulation by LFO3 & 0 - 16\\
+  Parameter & Description & Range\\ \hline
+  \textbf{LFO1} & Intensity of modulation by LFO1 & 0 - 99\\
+  \textbf{LFO2} & Intensity of modulation by LFO2 & 0 - 99\\
+  \textbf{LFO3} & Intensity of modulation by LFO3 & 0 - 99\\
+  \textbf{DUTY} & Duty cycle & 0 - 3\\
+  \textbf{DETUNE} & Detuning & -9 - 9\\
+  \textbf{OCTAVE} & Octave & -4 - 4\\
+  \textbf{GLIDE} & Portamento glide time & 0 - 99\\
+  \textbf{A} & Volume envelope attack & 0 - 99\\
+  \textbf{D} & Volume envelope decay & 0 - 99\\
+  \textbf{S} & Volume envelope sustain & 0 - 15\\
+  \textbf{R} & Volume envelope release & 0 - 99\\
+  \textbf{BEND} (page 2) & Bend wheel intensity in semitones & 0 - 24\\
+  \textbf{ENV MOD} (page 2) & Pitch envelope modulation amount & -9 - 9\\
+  \textbf{VOL MOD} (page 2) & Volume modulation by LFO3 & 0 - 16\\
 \end{tabular}
 
 \subsubsection{Triangle channel}
@@ -206,15 +210,15 @@ Parameter & Description & Range\\ \hline
 \end{tikzpicture}
 
 \begin{tabular}{l | l | l}
-Parameter & Description & Range\\ \hline
-\textbf{LFO1} & Intensity of modulation by LFO1 & 0 - 99\\
-\textbf{LFO2} & Intensity of modulation by LFO2 & 0 - 99\\
-\textbf{LFO3} & Intensity of modulation by LFO3 & 0 - 99\\
-\textbf{DETUNE} & Detuning & -9 - 9\\
-\textbf{OCTAVE} & Octave & -4 - 4\\
-\textbf{GLIDE} & Portamento glide time & 0 - 99\\
-\textbf{BEND} (page 2) & Bend wheel intensity in semitones & 0 - 24\\
-\textbf{ENV MOD} (page 2) & Pitch envelope modulation (noise envelope) & -9 - 9\\
+  Parameter & Description & Range\\ \hline
+  \textbf{LFO1} & Intensity of modulation by LFO1 & 0 - 99\\
+  \textbf{LFO2} & Intensity of modulation by LFO2 & 0 - 99\\
+  \textbf{LFO3} & Intensity of modulation by LFO3 & 0 - 99\\
+  \textbf{DETUNE} & Detuning & -9 - 9\\
+  \textbf{OCTAVE} & Octave & -4 - 4\\
+  \textbf{GLIDE} & Portamento glide time & 0 - 99\\
+  \textbf{BEND} (page 2) & Bend wheel intensity in semitones & 0 - 24\\
+  \textbf{ENV MOD} (page 2) & Pitch envelope modulation (noise envelope) & -9 - 9\\
 \end{tabular}
 
 \subsubsection{Noise channel}
@@ -240,18 +244,18 @@ Parameter & Description & Range\\ \hline
 \end{tikzpicture}
 
 \begin{tabular}{l | l | l}
-Parameter & Description & Range\\ \hline
-\textbf{LFO1} & Intensity of modulation by LFO1 & 0 - 99\\
-\textbf{LFO2} & Intensity of modulation by LFO2 & 0 - 99\\
-\textbf{LFO3} & Intensity of modulation by LFO3 & 0 - 99\\
-\textbf{LOOP} & Looped noise & on/off\\
-\textbf{A} & Volume envelope attack & 0 - 99\\
-\textbf{D} & Volume envelope decay & 0 - 99\\
-\textbf{S} & Volume envelope sustain & 0 - 15\\
-\textbf{R} & Volume envelope release & 0 - 99\\
-\textbf{BEND} (page 2) & Bend wheel intensity (in steps) & 0 - 15\\
-\textbf{ENV MOD} (page 2) & Pitch envelope modulation amount & -9 - 9\\
-\textbf{VOL MOD} (page 2) & Volume modulation by LFO3 & 0 - 16\\
+  Parameter & Description & Range\\ \hline
+  \textbf{LFO1} & Intensity of modulation by LFO1 & 0 - 99\\
+  \textbf{LFO2} & Intensity of modulation by LFO2 & 0 - 99\\
+  \textbf{LFO3} & Intensity of modulation by LFO3 & 0 - 99\\
+  \textbf{LOOP} & Looped noise & on/off\\
+  \textbf{A} & Volume envelope attack & 0 - 99\\
+  \textbf{D} & Volume envelope decay & 0 - 99\\
+  \textbf{S} & Volume envelope sustain & 0 - 15\\
+  \textbf{R} & Volume envelope release & 0 - 99\\
+  \textbf{BEND} (page 2) & Bend wheel intensity (in steps) & 0 - 15\\
+  \textbf{ENV MOD} (page 2) & Pitch envelope modulation amount & -9 - 9\\
+  \textbf{VOL MOD} (page 2) & Volume modulation by LFO3 & 0 - 16\\
 \end{tabular}
 
 \subsubsection{DMC channel}
@@ -277,9 +281,9 @@ Parameter & Description & Range\\ \hline
 \end{tikzpicture}
 
 \begin{tabular}{l | l | l}
-Parameter & Description & Range\\ \hline
-\textbf{LOOP} & Play samples in loop & on/off\\
-\textbf{DIVIDER} & Divider for sample rate & 1 - 4\\
+  Parameter & Description & Range\\ \hline
+  \textbf{LOOP} & Play samples in loop & on/off\\
+  %\textbf{DIVIDER} & Divider for sample rate & 1 - 4\\
 \end{tabular}
 
 \subsubsection{LFOs}
@@ -305,171 +309,14 @@ Parameter & Description & Range\\ \hline
 \end{tikzpicture}
 
 \begin{tabular}{l | l | l}
-Parameter & Description & Range\\ \hline
-\textbf{WAVE} & LFO waveform & 1 - sine\\
-& & 2 - ramp up\\
-& & 3 - ramp down\\
-& & 4 - square\\
-& & 5 - triangle
+  Parameter & Description & Range\\ \hline
+  \textbf{WAVE} & LFO waveform & 1 - sine\\
+  & & 2 - ramp up\\
+  & & 3 - ramp down\\
+  & & 4 - square\\
+  & & 5 - triangle
 \end{tabular}
 
-\subsection{Note assignment and arpeggiator}
-
-\begin{tikzpicture}[align=center, node distance=1.5cm and 0.5cm]
-  \node [mbutton] (1) {SQ1};
-  \node [mbutton, right of=1] (2) {SQ2};
-  \node [mbutton, right of=2] (3) {TRI};
-  \node [mbutton, right of=3] (4) {NOISE};
-  \node [mbutton, right of=4] (5) {DMC};
-  \node [button, right of=5] (6) {};
-  \node [button, right of=6] (7) {};
-  \node [button, right of=7] (8) {};
-
-  \node [hbutton, below=1] (9) {\textcolor{yellow}{ARP RNG}};
-  \node [hbutton, right of=9] (10) {\textcolor{yellow}{ARP MODE}};
-  \node [hbutton, right of=10] (11) {\textcolor{yellow}{ARP CHAN}};
-  \node [hbutton, right of=11] (12) {\textcolor{yellow}{ARP RATE}};
-  \node [hbutton, right of=12] (13) {\textcolor{yellow}{ARP SYNC}};
-  \node [hbutton, right of=13] (14) {\textcolor{yellow}{MONO}};
-  \node [hbutton, right of=14] (15) {\textcolor{yellow}{POLY 1}};
-  \node [hbutton, right of=15] (16) {\textcolor{yellow}{POLY 2}};
-\end{tikzpicture}
-
-
-
-
-\section{SEQUENCER}
-
-<WORK IN PROGRESS>
-
-In the sequencer mode, 16-note sequence patterns can be created and played back. The sequencer is somewhat more complicated to use than the programmer. The user interface employs several \emph{levels}.
-
-\subsection{Selection mode}
-
-When first entering the sequencer, it is at the \emph{selection layer}. This is where you select a pattern for playback or editing, as well as adjusting tempo.
-
-\begin{tikzpicture}[align=center, node distance=1.5cm]
-  \node [mhbutton] (1) {SQ1};
-  \node [mhbutton, right of=1] (2) {SQ2};
-  \node [mhbutton, right of=2] (3) {TRI};
-  \node [mhbutton, right of=3] (4) {NOISE};
-  \node [mhbutton, right of=4] (5) {DMC};
-  \node [button, right of=5] (6) {TEMPO};
-  \node [button, right of=6] (7) {EXT SYNC};
-  \node [button, right of=7] (8) {};
-
-  \node [button, below=1] (9) {};
-  \node [button, right of=9] (10) {};
-  \node [button, right of=10] (11) {};
-  \node [button, right of=11] (12) {};
-  \node [button, right of=12] (13) {};
-  \node [button, right of=13] (14) {};
-  \node [button, right of=14] (15) {};
-  \node [button, right of=15] (16) {};
-
-  \node [hcircbutton, below= of 9] (17) {PLAY};
-  \node [hcircbutton, right of=17] (18) {SAVE};
-  \node [dummybutton, right of=18] (19) {};
-  \node [dummybutton, right of=19] (20) {};
-  \node [dummybutton, right of=20] (21) {};
-  \node [dummybutton, right of=21] (22) {};
-  \node [hcircbutton, right of=22] (23) {UP};
-  \node [hcircbutton, right of=23] (24) {DOWN};
-\end{tikzpicture}
-
-\subsubsection{Selecting a sequence}
-
-To select a new pattern, first make sure you are at the top level and not already editing a pattern. If you are, close the current pattern by pressing \btn{BACK}. Use \btn{UP} and \btn{DOWN} to select the pattern you want to edit. To edit the selected pattern, press the button for the channel you want to edit. The sequencer will then enter editing mode.
-
-\subsubsection{Playing back a sequence}
-
-To play back a selected sequence, press \btn{PLAY}. The sequence will loop indefinitely. Press \btn{PLAY} again to stop it.
-
-\subsubsection{Editing a sequence}
-
-To edit a pattern in the selected sequence, press the channel button corresponding to the one you want to edit. The sequencer will then enter pattern editing mode.
-
-\subsubsection{Saving a sequence}
-
-Any changes you have done to a sequence will not be saved until you press \btn{SAVE}. Saving sequences is done exactly the same way as saving programs.
-
-\subsection{Pattern editing mode}
-
-When in pattern editing mode, the buttons take on the following functions:
-
-\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [mhbutton] (1) {1};
-  \node [mhbutton, right of=1] (2) {2};
-  \node [mhbutton, right of=2] (3) {3};
-  \node [mhbutton, right of=3] (4) {4};
-  \node [mhbutton, right of=4] (5) {5};
-  \node [hbutton, right of=5] (6) {6};
-  \node [hbutton, right of=6] (7) {7};
-  \node [hbutton, right of=7] (8) {8};
-
-  \node [hbutton, below=1] (9) {9};
-  \node [hbutton, right of=9] (10) {10};
-  \node [hbutton, right of=10] (11) {11};
-  \node [hbutton, right of=11] (12) {12};
-  \node [hbutton, right of=12] (13) {13};
-  \node [hbutton, right of=13] (14) {14};
-  \node [hbutton, right of=14] (15) {15};
-  \node [hbutton, right of=15] (16) {16};
-
-  \node [hcircbutton, below= of 9] (17) {PLAY};
-  \node [hcircbutton, right of=17] (18) {BACK};
-  \node [dummybutton, right of=18] (19) {};
-  \node [dummybutton, right of=19] (20) {};
-  \node [dummybutton, right of=20] (21) {};
-  \node [dummybutton, right of=21] (22) {};
-  \node [circbutton, right of=22] (23) {UP};
-  \node [circbutton, right of=23] (24) {DOWN};
-\end{tikzpicture}
-
-To help you remember which channel's pattern you're currently editing, the display will indicate a number ranging from 1 to 5, corresponding to SQ1, SQ2, TRI, NOISE and DMC, respectively. 
-
-Each of the 16 top buttons represent a position in the pattern. To place a note at a particular position in the pattern, press the corresponding button. The sequencer will then enter note entering mode. The next section details how you enter a note.
-
-After a note has been entered, the button's LED will light up to indicate that a note is present at that position in the pattern.
-
-When you're done working on the channel's pattern, press \btn{BACK} to go back to selection mode.
-
-\subsection{Note entering mode}
-
-When a note has been selected in a pattern, the buttons now take on the following functions:
-
-\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [mhbutton] (1) {C\#};
-  \node [mhbutton, right of=1] (2) {D\#};
-  \node [mhbutton, right of=2] (3) {};
-  \node [mhbutton, right of=3] (4) {F\#};
-  \node [mhbutton, right of=4] (5) {G\#};
-  \node [hbutton, right of=5] (6) {A\#};
-  \node [hbutton, right of=6] (7) {LENGTH};
-  \node [hbutton, right of=7] (8) {OCTAVE};
-
-  \node [hbutton, below=1] (9) {C};
-  \node [hbutton, right of=9] (10) {D};
-  \node [hbutton, right of=10] (11) {E};
-  \node [hbutton, right of=11] (12) {F};
-  \node [hbutton, right of=12] (13) {G};
-  \node [hbutton, right of=13] (14) {A};
-  \node [hbutton, right of=14] (15) {B};
-  \node [hbutton, right of=15] (16) {C};
-
-  \node [hcircbutton, below= of 9] (17) {CLEAR};
-  \node [hcircbutton, right of=17] (18) {SET};
-  \node [dummybutton, right of=18] (19) {};
-  \node [dummybutton, right of=19] (20) {};
-  \node [dummybutton, right of=20] (21) {};
-  \node [dummybutton, right of=21] (22) {};
-  \node [circbutton, right of=22] (23) {UP};
-  \node [circbutton, right of=23] (24) {DOWN};
-\end{tikzpicture}
-
-To select a note, either use the front panel buttons as a rudimentary keyboard or play one via MIDI on of the assigned channels. After the note has been entered, you can manipulate its length (1, 1/2 or 1/4) by pressing \btn{LENGTH} and while holding it pressing \btn{UP} or \btn{DOWN}. Use \btn{OCTAVE} to transpose the note up and down in a similar way.
-
-When you're done, press \btn{SET} to store the note. If you want to delete the note, press \btn{CLEAR}. In either case, the sequencer will return to the pattern editing mode. 
 
 \section{SETTINGS}
 
@@ -482,7 +329,7 @@ When in the settings mode, various aspects of how the \name operates can be chan
   \node [mhbutton, right of=3] (4) {NOISE};
   \node [mhbutton, right of=4] (5) {DMC};
   \node [hbutton, right of=5] (6) {MIDI CHN};
-  \node [hbutton, right of=6] (7) {BATTERY\\VOLTAGE};
+  \node [hbutton, right of=6] (7) {};
   \node [hbutton, right of=7] (8) {CHIP TYPE};
 
   \node [hbutton, below=1] (9) {PATCH\\RESET};
@@ -508,22 +355,19 @@ When in the settings mode, various aspects of how the \name operates can be chan
 
 \subsection{MIDI}
 
-The \name can be controlled externally using MIDI. 
+The \name can be controlled externally using MIDI.
 
 \subsubsection{Assigning MIDI channels}
 
-Each of the five sound channels can be assigned to any of the 16 MIDI channels, and will then only respond to incoming messages on the selected channel. 
+Each of the five sound channels can be assigned to any of the 16 MIDI channels, and will then only respond to incoming messages on the selected channel.
 
 To select a MIDI channel, enter the \lbl{SETTINGS} mode by pressing \btn{SETTINGS}. Hold down \btn{MIDI CHANNEL} and then press the desired channel's button. The LEDs will flash and you can select one of the 16 MIDI channels using the \btn{UP} and \btn{DOWN} buttons. If you select the value 0, the sound channel will not listen to any MIDI channel.
-
-\subsection{Checking the battery voltage}
-The NESIZER uses a battery for keeping the RAM storing the patches and samples alive when main power is disconnected. To check the battery's voltage, press and hold \btn{BATTERY VOLTAGE}. As long as the button is pressed, the battery's voltage will be shown in the display. If the battery voltage is below 2.6 V, it should be replaced.
 
 \subsection{Checking the 2A03 type}
 To see which 2A03 chip is being used, press the LFO3 button. One of the following numbers will show up:
 \begin{itemize}
 \item 12: Genuine RP2A03
-\item 15: 2A03 clone, i.e. 6527P
+\item 15: 2A03 clone, e.g. 6527P
 \item 16: 2A07 (PAL version of 2A03)
 \end{itemize}
 
