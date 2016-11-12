@@ -37,8 +37,8 @@
 #define BTN_NOISE 3 // 19
 #define BTN_DMC 4 // 20
 
-#define BTN_SAVE 16 // 0
-#define BTN_SET 17 // 1
+#define BTN_CLEAR 16 // 0
+#define BTN_SAVE 17 // 1
 #define BTN_PAGE1 18 // 2
 #define BTN_PAGE2 19 // 3
 #define BTN_SEQUENCER 20 // 4
