@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -30,7 +30,6 @@
 #include "ui_settings.h"
 #include "midi/midi.h"
 #include "ui.h"
-//#include "midi/midi.h"
 #include "patch/patch.h"
 #include "sample/sample.h"
 #include "io/leds.h"
@@ -40,19 +39,16 @@
 #include "assigner/assigner.h"
 
 #define BTN_MIDI_CHN 5
-#define BTN_BLOCKSTATS 6
-#define BTN_PATCH_CLEAR 8
-#define BTN_PATCH_FORMAT 9
-#define BTN_SAMPLE_DELETE 10
-#define BTN_SAMPLE_FORMAT 11
-#define BTN_MEMCLEAN 13
+#define BTN_PATCH_FORMAT 8
+#define BTN_SAMPLE_FORMAT 14
+#define BTN_SAMPLE_DELETE 15
 #define BTN_CLOCKDIV 7
 
 #define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
 enum state {
-  STATE_TOPLEVEL,
-  STATE_MIDI_CHANNEL
+    STATE_TOPLEVEL,
+    STATE_MIDI_CHANNEL
 };
 
 static enum state state = STATE_TOPLEVEL;
@@ -65,77 +61,77 @@ uint8_t assign_midi_chn;
 
 void settings(void)
 {
-  if (state == STATE_TOPLEVEL)
-    toplevel();
-  else if (state == STATE_MIDI_CHANNEL) {
-    // If we're in this state, it means that a MIDI channel has been entered
-    // by the user. We now need to subscribe the channel to the new MIDI channel and
-    // unsubscribe from the previous one, if any.
+    if (state == STATE_TOPLEVEL)
+        toplevel();
+    else if (state == STATE_MIDI_CHANNEL) {
+        // If we're in this state, it means that a MIDI channel has been entered
+        // by the user. We now need to subscribe the channel to the new MIDI channel and
+        // unsubscribe from the previous one, if any.
 
-    assigner_midi_channel_change(assign_midi_chn, assign_chn);
-    state = STATE_TOPLEVEL;
-  }
+        assigner_midi_channel_change(assign_midi_chn, assign_chn);
+        state = STATE_TOPLEVEL;
+    }
 }
 
 static inline void toplevel(void)
-{    
-  static uint8_t cur_index = 0;
-  static uint8_t index_state;
+{
+    static uint8_t cur_index = 0;
+    static uint8_t index_state;
 
-  leds_7seg_two_digit_set(3, 4, cur_index);
-  if (index_state)
-    leds_7seg_dot_on(3);
-  else
-    leds_7seg_dot_off(3);
+    leds_7seg_two_digit_set(3, 4, cur_index);
+    if (index_state)
+        leds_7seg_dot_on(3);
+    else
+        leds_7seg_dot_off(3);
 
-  int8_t last_index = cur_index;
-  ui_updown(&cur_index, 0, 99);
-  if (cur_index != last_index) {
-    index_state = sample_occupied(cur_index);
-  }
-    
-  if (button_pressed(BTN_MEMCLEAN))
-    memory_clean();
-
-  if (button_pressed(BTN_PATCH_FORMAT)) {
-    for (uint8_t i = 0; i < 100; i++)
-      patch_initialize(i);
-  }
-
-  if (button_pressed(BTN_PATCH_CLEAR)) {
-//	patch_initialize();
-  }
-
-  if (button_pressed(BTN_SAMPLE_DELETE)) {
-    sample_delete(cur_index);
-  }
-
-  if (button_on(BTN_CLOCKDIV))
-    leds_7seg_two_digit_set(3, 4, io_clockdiv);
-    
-  if (button_on(BTN_MIDI_CHN)) {
-    uint8_t chn = 0xFF;
-    for (uint8_t i = 0; i < 5; i++) {
-      if (button_pressed(i)) {
-	chn = i;
-	break;
-      }
+    int8_t last_index = cur_index;
+    ui_updown(&cur_index, 0, 99);
+    if (cur_index != last_index) {
+        index_state = sample_occupied(cur_index);
     }
 
-    if (chn != 0xFF) {
-      assign_chn = chn;
-      assign_midi_chn = assigner_midi_channel_get(chn);
-      struct parameter parameter = {.target = &assign_midi_chn,
-				    .type = RANGE,
-				    .min = 0,
-				    .max = 16};
-      getvalue.parameter = parameter;
-      getvalue.button1 = BTN_MIDI_CHN;
-      getvalue.button2 = chn;
-      getvalue.previous_mode = mode;
-      mode = MODE_GETVALUE;
-
-      state = STATE_MIDI_CHANNEL;
+    if (button_pressed(BTN_PATCH_FORMAT)) {
+        for (uint8_t i = 0; i < 100; i++)
+            patch_initialize(i);
     }
-  }
+
+    if (button_pressed(BTN_SAMPLE_DELETE)) {
+        sample_delete(cur_index);
+    }
+
+    if (button_pressed(BTN_SAMPLE_FORMAT)) {
+        for (uint8_t i = 0; i < 99; i++) {
+            if (sample_occupied(i))
+                sample_delete(i);
+        }
+    }
+
+    if (button_on(BTN_CLOCKDIV))
+        leds_7seg_two_digit_set(3, 4, io_clockdiv);
+
+    if (button_on(BTN_MIDI_CHN)) {
+        uint8_t chn = 0xFF;
+        for (uint8_t i = 0; i < 5; i++) {
+            if (button_pressed(i)) {
+                chn = i;
+                break;
+            }
+        }
+
+        if (chn != 0xFF) {
+            assign_chn = chn;
+            assign_midi_chn = assigner_midi_channel_get(chn);
+            struct parameter parameter = {.target = &assign_midi_chn,
+                                          .type = RANGE,
+                                          .min = 0,
+                                          .max = 16};
+            getvalue.parameter = parameter;
+            getvalue.button1 = BTN_MIDI_CHN;
+            getvalue.button2 = chn;
+            getvalue.previous_mode = mode;
+            mode = MODE_GETVALUE;
+
+            state = STATE_MIDI_CHANNEL;
+        }
+    }
 }
