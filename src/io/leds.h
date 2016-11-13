@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -37,8 +37,8 @@
 #define leds_off(BTN) (leds[leds_row(BTN)] &= ~(1 << leds_col(BTN)))
 #define leds_toggle(BTN) (leds[leds_row(BTN)] ^= 1 << leds_col(BTN))
 
-#define LEDS_7SEG_DOT 16
-#define LEDS_7SEG_MINUS 17
+#define LEDS_7SEG_DOT 17
+#define LEDS_7SEG_MINUS 18
 
 // Global variables
 extern uint8_t leds[5];
@@ -52,4 +52,3 @@ void leds_7seg_two_digit_set_hex(uint8_t rwo1, uint8_t row2, uint8_t value);
 void leds_7seg_dot_on(uint8_t row);
 void leds_7seg_dot_off(uint8_t row);
 void leds_7seg_clear(uint8_t row);
-
