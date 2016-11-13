@@ -37,8 +37,10 @@
 #include "io/memory.h"
 #include "io/2a03.h"
 #include "assigner/assigner.h"
+#include "io/battery.h"
 
 #define BTN_MIDI_CHN 5
+#define BTN_BATTERY 6
 #define BTN_PATCH_FORMAT 8
 #define BTN_SAMPLE_FORMAT 14
 #define BTN_SAMPLE_DELETE 15
@@ -133,5 +135,10 @@ static inline void toplevel(void)
 
             state = STATE_MIDI_CHANNEL;
         }
+    }
+
+    if (button_on(BTN_BATTERY)) {
+        leds_7seg_two_digit_set(3, 4, battery_read());
+        leds_7seg_dot_on(3);
     }
 }

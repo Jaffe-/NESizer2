@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -34,20 +34,21 @@
 #include "io/midi.h"
 #include "modulation/periods.h"
 
-int main() 
+int main()
 {
-  // Set up low level systems:
-  bus_setup();
-  io_setup();
-  periods_setup();
-  memory_setup();
-  task_setup();
-  midi_io_setup();
-  apu_setup();
-  
-  // Load first patch
-  patch_load(0);
-   
-  // The task manager takes over from here
-  task_manager();
+    // Set up low level systems:
+    bus_setup();
+    io_setup();
+    periods_setup();
+    memory_setup();
+    task_setup();
+    midi_io_setup();
+    apu_setup();
+    battery_setup();
+
+    // Load first patch
+    patch_load(0);
+
+    // The task manager takes over from here
+    task_manager();
 }

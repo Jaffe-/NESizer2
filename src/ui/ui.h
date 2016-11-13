@@ -82,7 +82,8 @@ enum mode {
   MODE_SEQUENCER,
   MODE_SETTINGS,
   MODE_GETVALUE,
-  MODE_TRANSFER
+  MODE_TRANSFER,
+  MODE_BATTERY_CHECK
 };
 
 extern enum mode mode;

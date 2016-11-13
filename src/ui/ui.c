@@ -37,7 +37,7 @@
 
 #define BLINK_CNT 30
 
-enum mode mode = MODE_PAGE1;
+enum mode mode = MODE_BATTERY_CHECK;
 
 uint8_t prev_input[3] = {0};
 
@@ -56,6 +56,7 @@ struct mode_data {
 };
 
 void getvalue_handler(void);
+void battery_check(void);
 
 struct mode_data modes[] = {
     [MODE_PAGE1] = {.button = BTN_PAGE1,
@@ -74,8 +75,11 @@ struct mode_data modes[] = {
                        .leds = 0,
                        .handler = getvalue_handler},
     [MODE_TRANSFER] = {.button = 0xFF,
-                       .leds = 0xFF,
-                       .handler = 0}
+                       .leds = 0,
+                       .handler = 0},
+    [MODE_BATTERY_CHECK] = {.button = 0xFF,
+                            .leds = 0,
+                            .handler = battery_check}
 };
 
 void ui_handler(void)
@@ -244,4 +248,31 @@ void getvalue_handler()
     }
     else
         leds_7seg_two_digit_set(3, 4, value);
+}
+
+#define BATT_FLASH_DURATION 64
+
+void battery_check(void)
+{
+    if (battery_read() > 25)
+        mode = MODE_PAGE1;
+
+    static uint8_t flash_count;
+    static uint8_t duration_count;
+    static uint8_t disp_on = 1;
+
+    if (disp_on) {
+        leds[3] = 0b00111110; // b
+        leds[4] = 0b00011100; // L
+    } else {
+        leds[3] = 0;
+        leds[4] = 0;
+    }
+
+    if (++duration_count == BATT_FLASH_DURATION) {
+        duration_count = 0;
+        disp_on ^= 1;
+        if (disp_on && ++flash_count == 6)
+            mode = MODE_PAGE1;
+    }
 }

@@ -329,7 +329,7 @@ When in the settings mode, various aspects of how the \name operates can be chan
   \node [mhbutton, right of=3] (4) {NOISE};
   \node [mhbutton, right of=4] (5) {DMC};
   \node [hbutton, right of=5] (6) {MIDI CHN};
-  \node [hbutton, right of=6] (7) {};
+  \node [hbutton, right of=6] (7) {BATTERY\\VOLTAGE};
   \node [hbutton, right of=7] (8) {CHIP TYPE};
 
   \node [hbutton, below=1] (9) {PATCH\\RESET};
@@ -362,6 +362,9 @@ The \name can be controlled externally using MIDI.
 Each of the five sound channels can be assigned to any of the 16 MIDI channels, and will then only respond to incoming messages on the selected channel.
 
 To select a MIDI channel, enter the \lbl{SETTINGS} mode by pressing \btn{SETTINGS}. Hold down \btn{MIDI CHANNEL} and then press the desired channel's button. The LEDs will flash and you can select one of the 16 MIDI channels using the \btn{UP} and \btn{DOWN} buttons. If you select the value 0, the sound channel will not listen to any MIDI channel.
+
+\subsection{Checking the battery voltage}
+The NESIZER uses a battery for keeping the RAM storing the patches and samples alive when main power is disconnected. To check the battery's voltage, press and hold \btn{BATTERY VOLTAGE}. As long as the button is pressed, the battery's voltage will be shown in the display. If the battery voltage is below 2.6 V, it should be replaced. On startup, the NESIZER will give a warning if the battery is 2.5 V or less. The display will flash \verb+bL+ (Battery Low) for a short duration.
 
 \subsection{Checking the 2A03 type}
 To see which 2A03 chip is being used, press the LFO3 button. One of the following numbers will show up:
