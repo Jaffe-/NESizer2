@@ -164,7 +164,8 @@ static inline int8_t find_group(uint8_t midi_channel)
 static inline void group_notify_note_on(int8_t group, uint8_t note)
 {
     bool is_upper = note >= assigner_split_point;
-    if ((is_upper && assigner_upper_mode == MONO) ||
+    if ((!assigner_split && assigner_upper_mode == MONO) ||
+        (is_upper && assigner_upper_mode == MONO) ||
         (!is_upper && assigner_lower_mode == MONO)) {
         for (uint8_t chn = 0; chn < 5; chn++) {
             if (!has_member(group, chn))
