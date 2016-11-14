@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -18,18 +18,23 @@
 
 
 
-  Sequencer user interface
+  Sequencer
 
-  Handles the user interface when in sequencer mode.
 */
-
 
 #pragma once
 
-#include <stdint.h>
+struct sequencer_note {
+    uint8_t note;
+    uint8_t length;
+};
 
-void sequencer(void);
-void sequence_handler(void);
+extern struct sequencer_note pattern_data[5][16];
+extern uint8_t sequencer_cur_position;
 
-extern uint8_t sequencer_leds[6];
-extern uint8_t sequencer_midi_note;
+void sequencer_handler(void);
+void sequencer_pattern_load(uint8_t pattern);
+void sequencer_pattern_save(uint8_t pattern);
+void sequencer_play(void);
+void sequencer_stop(void);
+
