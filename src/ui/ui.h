@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -20,7 +20,7 @@
 
   General user interface routines
 
-  Contains the UI handler which checks button presses and transfers control to 
+  Contains the UI handler which checks button presses and transfers control to
   the corresponding mode handlers, and the LED refresh handler.
 */
 
@@ -63,8 +63,8 @@
 #define button_getbool(BTN) ((input[button_row(BTN)] >> button_col(BTN)) & 1)
 
 /*
-   Functions for handling LED states that are compressed into 2-bit values.
-   0 means off, 1 means on and 2 means blink.
+  Functions for handling LED states that are compressed into 2-bit values.
+  0 means off, 1 means on and 2 means blink.
 */
 #define button_led_byte(BTN) ((BTN) / 4)
 #define button_led_shift(BTN) (((BTN) % 4) * 2)
@@ -77,25 +77,26 @@
 // The current mode (PROGRAMMER, PATTERN, ASSIGNER or SETTINGS, or GETVALUE, TRANSFER)
 
 enum mode {
-  MODE_PAGE1,
-  MODE_PAGE2,
-  MODE_SEQUENCER,
-  MODE_SETTINGS,
-  MODE_GETVALUE,
-  MODE_TRANSFER,
-  MODE_BATTERY_CHECK
+    MODE_PAGE1,
+    MODE_PAGE2,
+    MODE_SEQUENCER,
+    MODE_SETTINGS,
+    MODE_GETVALUE,
+    MODE_TRANSFER,
+    MODE_BATTERY_CHECK
 };
 
 extern enum mode mode;
 
 struct getvalue_config {
-  struct parameter parameter;
-  uint8_t button1;
-  uint8_t button2;
-  enum {
-    INACTIVE, ACTIVE
-  } state;
-  enum mode previous_mode;
+    struct parameter parameter;
+    uint8_t button1;
+    uint8_t button2;
+    enum {
+        INACTIVE, ACTIVE
+    } state;
+    enum mode previous_mode;
+    uint8_t midi_note;
 };
 
 // Previous inputs
@@ -107,4 +108,3 @@ struct getvalue_config getvalue;
 void ui_handler(void);
 void ui_leds_handler(void);
 uint8_t ui_updown(int8_t* value, int8_t min, int8_t max);
-

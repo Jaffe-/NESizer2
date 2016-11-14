@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -51,100 +51,104 @@ static inline void sysex();
 static inline void initiate_transfer();
 static inline uint8_t get_midi_channel(uint8_t channel)
 {
-  return channel + 1;
+    return channel + 1;
 }
 
 /* Apply a new message */
 void midi_channel_apply(struct midi_message* msg)
 {
-  uint8_t midi_channel = get_midi_channel(msg->channel);
-  switch (msg->command) {
-  case MIDI_CMD_NOTE_ON:
-    assigner_notify_note_on(midi_channel, msg->data1);
-    break;
+    uint8_t midi_channel = get_midi_channel(msg->channel);
+    switch (msg->command) {
+    case MIDI_CMD_NOTE_ON:
+        if (getvalue.state == ACTIVE &&
+            getvalue.parameter.type == NOTE)
+            getvalue.midi_note = msg->data1;
+        else
+            assigner_notify_note_on(midi_channel, msg->data1);
+        break;
 
-  case MIDI_CMD_NOTE_OFF:
-    assigner_notify_note_off(midi_channel, msg->data1);
-    break;
+    case MIDI_CMD_NOTE_OFF:
+        assigner_notify_note_off(midi_channel, msg->data1);
+        break;
 
-  case MIDI_CMD_PITCH_BEND:
-    for (uint8_t i = 0; i < 5; i++) {
-      if (assigner_midi_channel_get(i) == midi_channel) {
-	if (i < 3)
-	  mod_pitchbend_input[i] = ((uint16_t)msg->data1) | ((uint16_t)msg->data2) << 7;
-	else if (i == 3)
-	  mod_pitchbend_input[i] = msg->data2 >> 3;
-      }
+    case MIDI_CMD_PITCH_BEND:
+        for (uint8_t i = 0; i < 5; i++) {
+            if (assigner_midi_channel_get(i) == midi_channel) {
+                if (i < 3)
+                    mod_pitchbend_input[i] = ((uint16_t)msg->data1) | ((uint16_t)msg->data2) << 7;
+                else if (i == 3)
+                    mod_pitchbend_input[i] = msg->data2 >> 3;
+            }
+        }
+        break;
     }
-    break;
-  }
 }
 
 void midi_handler()
 {
-  switch (state) {
-  case STATE_MESSAGE:
-    interpret_message(); break;
-  case STATE_SYSEX:
-    sysex(); break;
-  case STATE_TRANSFER:
-    transfer(); break;
-  default: break;
-  }
+    switch (state) {
+    case STATE_MESSAGE:
+        interpret_message(); break;
+    case STATE_SYSEX:
+        sysex(); break;
+    case STATE_TRANSFER:
+        transfer(); break;
+    default: break;
+    }
 }
 
 static inline void interpret_message()
 {
-  while (midi_io_buffer_nonempty()) {
-    struct midi_message msg = {0};
-    if (midi_io_read_message(&msg)) {
+    while (midi_io_buffer_nonempty()) {
+        struct midi_message msg = {0};
+        if (midi_io_read_message(&msg)) {
 
-      if (midi_is_channel_message(msg.command)) {
-	midi_channel_apply(&msg);
-      }
- 
-      else {
-	switch (msg.command) {
-	case MIDI_CMD_SYSEX:
-	  state = STATE_SYSEX;
-	  break;
-	  
-	case MIDI_CMD_TIMECODE:
-	  break;
-		
-	case MIDI_CMD_SONGPOS:
-	  break;
-	    
-	case MIDI_CMD_SONGSEL:
-	  break;
-		
-	case MIDI_CMD_TUNEREQUEST:
-	  break;
-		
-	case MIDI_CMD_SYSEX_END:
-	  break;
-		
-	case MIDI_CMD_CLOCK:
-	  break;
-		
-	case MIDI_CMD_START:
-	  break;
-		
-	case MIDI_CMD_CONTINUE:
-	  break;
-		
-	case MIDI_CMD_STOP:
-	  break;
-		
-	case MIDI_CMD_ACTIVESENSE:
-	  break;
-		
-	case MIDI_CMD_RESET:
-	  break;
-	}
-      }
+            if (midi_is_channel_message(msg.command)) {
+                midi_channel_apply(&msg);
+            }
+
+            else {
+                switch (msg.command) {
+                case MIDI_CMD_SYSEX:
+                    state = STATE_SYSEX;
+                    break;
+
+                case MIDI_CMD_TIMECODE:
+                    break;
+
+                case MIDI_CMD_SONGPOS:
+                    break;
+
+                case MIDI_CMD_SONGSEL:
+                    break;
+
+                case MIDI_CMD_TUNEREQUEST:
+                    break;
+
+                case MIDI_CMD_SYSEX_END:
+                    break;
+
+                case MIDI_CMD_CLOCK:
+                    break;
+
+                case MIDI_CMD_START:
+                    break;
+
+                case MIDI_CMD_CONTINUE:
+                    break;
+
+                case MIDI_CMD_STOP:
+                    break;
+
+                case MIDI_CMD_ACTIVESENSE:
+                    break;
+
+                case MIDI_CMD_RESET:
+                    break;
+                }
+            }
+        }
     }
-  }
 }
 
 #define SYSEX_STOP 0xF7
@@ -158,29 +162,29 @@ static struct sample sample;
 
 static inline void sysex()
 {
-  // When the state just changed, we need to look at the first few bytes
-  // to determine what sysex message we're dealing with
-  if (midi_io_bytes_remaining() >= 6) {
-    sysex_command = midi_io_read_byte();
+    // When the state just changed, we need to look at the first few bytes
+    // to determine what sysex message we're dealing with
+    if (midi_io_bytes_remaining() >= 6) {
+        sysex_command = midi_io_read_byte();
 
-    if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+        if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
 
-      // Read sample descriptor and store in sample object
-      uint8_t sample_number = midi_io_read_byte();
-      sample.type = midi_io_read_byte();
-      sample.size = midi_io_read_byte();
-      sample.size |= (uint32_t)midi_io_read_byte() << 7;
-      sample.size |= (uint32_t)midi_io_read_byte() << 14;
-      sample_new(&sample, sample_number);
+            // Read sample descriptor and store in sample object
+            uint8_t sample_number = midi_io_read_byte();
+            sample.type = midi_io_read_byte();
+            sample.size = midi_io_read_byte();
+            sample.size |= (uint32_t)midi_io_read_byte() << 7;
+            sample.size |= (uint32_t)midi_io_read_byte() << 14;
+            sample_new(&sample, sample_number);
 
-      initiate_transfer();
+            initiate_transfer();
+        }
+
+        else if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
+            // To do
+            state = STATE_TRANSFER;
+        }
     }
-
-    else if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
-      // To do
-      state = STATE_TRANSFER;
-    }
-  }
 
 }
 
@@ -189,49 +193,49 @@ static inline void transfer()
   Handlers transfering of data via MIDI
 */
 {
-  static uint8_t nibble_flag = 0;
-  static uint8_t temp_val = 0;
-  
-  while (midi_io_bytes_remaining() >= 1) {
-    uint8_t val = midi_io_read_byte();
+    static uint8_t nibble_flag = 0;
+    static uint8_t temp_val = 0;
 
-    if (val == SYSEX_STOP) {
-      mode &= ~MODE_TRANSFER;
-      state = STATE_MESSAGE;
-      dmc.enabled = dmc_state;
-    }
+    while (midi_io_bytes_remaining() >= 1) {
+        uint8_t val = midi_io_read_byte();
 
-    else if ((val & 0x80) == 0) {
-      if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
-	if (nibble_flag == 0) 
-	  temp_val = val << 4;
-	else {
-	  temp_val |= val;
-	  // TODO: Write data to firmware memory
-	}
-	nibble_flag ^= 1;
-      }
-      
-      else if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
-	if (sample.bytes_done < sample.size) {
-	  sample_write_serial(&sample, val);
-	  midi_transfer_progress = (sample.bytes_done << 4) / sample.size;
-	}
-      }
+        if (val == SYSEX_STOP) {
+            mode &= ~MODE_TRANSFER;
+            state = STATE_MESSAGE;
+            dmc.enabled = dmc_state;
+        }
+
+        else if ((val & 0x80) == 0) {
+            if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
+                if (nibble_flag == 0)
+                    temp_val = val << 4;
+                else {
+                    temp_val |= val;
+                    // TODO: Write data to firmware memory
+                }
+                nibble_flag ^= 1;
+            }
+
+            else if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+                if (sample.bytes_done < sample.size) {
+                    sample_write_serial(&sample, val);
+                    midi_transfer_progress = (sample.bytes_done << 4) / sample.size;
+                }
+            }
+        }
     }
-  }
 }
 
 static inline void initiate_transfer()
 {
-  // Set UI mode to transfer (which turns the button LEDs into a status bar
-  // for the duration of the transfer)
-  mode |= MODE_TRANSFER;
+    // Set UI mode to transfer (which turns the button LEDs into a status bar
+    // for the duration of the transfer)
+    mode |= MODE_TRANSFER;
 
-  // Disable DMC
-  dmc_state = dmc.enabled;
-  dmc.enabled = 0;
+    // Disable DMC
+    dmc_state = dmc.enabled;
+    dmc.enabled = 0;
 
-  state = STATE_TRANSFER;
-  midi_transfer_progress = 0;
+    state = STATE_TRANSFER;
+    midi_transfer_progress = 0;
 }

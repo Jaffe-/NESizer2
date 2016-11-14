@@ -212,15 +212,24 @@ void getvalue_handler()
         if (getvalue.button2 != 0xFF)
             button_led_blink(getvalue.button2);
 
+        getvalue.midi_note = 0xFF;
         getvalue.state = ACTIVE;
     }
 
     // Handle up and down buttons
     ui_updown(&value, getvalue.parameter.min, getvalue.parameter.max);
 
+    if (getvalue.parameter.type == NOTE && getvalue.midi_note != 0xFF) {
+        button_led_off(getvalue.button1);
+        if (getvalue.button2 != 0xFF)
+            button_led_off(getvalue.button2);
+        getvalue.state = INACTIVE;
+        mode = getvalue.previous_mode;
+        *getvalue.parameter.target = getvalue.midi_note;
+    }
+
     // When SET is pressed, store the new value in the parameter and disable LED blinking.
     // If type is VALTYPE_INVRANGE, the value is inverted.
-
     if (button_pressed(BTN_SAVE)) {
         if (getvalue.parameter.type == INVRANGE)
             *getvalue.parameter.target = getvalue.parameter.max - value;
