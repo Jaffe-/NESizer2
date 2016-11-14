@@ -52,3 +52,5 @@ void leds_7seg_two_digit_set_hex(uint8_t rwo1, uint8_t row2, uint8_t value);
 void leds_7seg_dot_on(uint8_t row);
 void leds_7seg_dot_off(uint8_t row);
 void leds_7seg_clear(uint8_t row);
+void leds_7seg_note_set(uint8_t row1, uint8_t row2, uint8_t note);
+void leds_7seg_minus(void);

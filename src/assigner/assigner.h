@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -38,9 +38,12 @@ void assigner_midi_channel_change(uint8_t midi_channel, uint8_t chn);
 uint8_t assigner_midi_channel_get(uint8_t chn);
 
 enum assigner_mode {
-  MONO,
-  POLY1,
-  POLY2
+    MONO,
+    POLY,
 };
 
-extern enum assigner_mode assigner_mode;
+extern enum assigner_mode assigner_lower_mode;
+extern enum assigner_mode assigner_upper_mode;
+extern bool assigner_split;
+extern int8_t assigner_split_point;
+extern int8_t assigner_upper_mask[5];

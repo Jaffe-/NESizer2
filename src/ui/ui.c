@@ -32,6 +32,7 @@
 #include "ui/ui_settings.h"
 #include "io/leds.h"
 #include "io/input.h"
+#include "io/battery.h"
 #include "midi/midi.h"
 #include "modulation/modulation.h"
 
@@ -236,9 +237,22 @@ void getvalue_handler()
         mode = getvalue.previous_mode;
     }
 
-    if (getvalue.parameter.min < 0) {
+    if (getvalue.parameter.type == NOTE) {
+        leds_7seg_note_set(3, 4, value);
+    }
+    else if (getvalue.parameter.type == KBD_HALF) {
+        if (value == 1) {
+            leds[3] = 0b01111100; // U
+            leds[4] = 0b11001110; // p
+        }
+        else {
+            leds[3] = 0b00011100; // L
+            leds[4] = 0b00111010; // o
+        }
+    }
+    else if (getvalue.parameter.min < 0) {
         if (value < 0) {
-            leds_7seg_set(3, LEDS_7SEG_MINUS);
+            leds_7seg_minus();
             leds_7seg_set(4, -value);
         }
         else {

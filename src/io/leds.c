@@ -112,6 +112,11 @@ void leds_7seg_set(uint8_t row, uint8_t val)
     leds[row] = leds_7seg_values[val];
 }
 
+void leds_7seg_minus(void)
+{
+    leds[3] |= SYM_MINUS;
+}
+
 void leds_7seg_dot_on(uint8_t row)
 {
     leds[row] |= SYM_DOT;
@@ -159,7 +164,7 @@ void leds_7seg_note_set(uint8_t row1, uint8_t row2, uint8_t note)
     };
 
     leds[row1] = note_symbols[note % 12];
-    leds_7seg_set(row2, note / 12);
+    leds_7seg_set(row2, note / 12 - 1);
 }
 
 // For debugging use

@@ -32,9 +32,13 @@
 #include "assigner/assigner.h"
 
 // Page 2
-#define BTN_MONO 13
-#define BTN_POLY1 14
-#define BTN_POLY2 15
+#define BTN_SPLIT 9
+#define BTN_SET_SPLIT 10
+
+#define BTN_LOWER_POLY 12
+#define BTN_LOWER_MONO 13
+#define BTN_UPPER_POLY 14
+#define BTN_UPPER_MONO 15
 
 #define PATCH_MIN 0
 #define PATCH_MAX 99
@@ -65,7 +69,8 @@ const enum parameter_id sq1_parameters[] PROGMEM = {
 const enum parameter_id p2_sq1_parameters[] PROGMEM = {
     SQ1_PITCHBEND,
     SQ1_ENVMOD,
-    SQ1_VOLMOD
+    SQ1_VOLMOD,
+    SQ1_HALF
 };
 
 const enum parameter_id sq2_parameters[] PROGMEM = {
@@ -86,7 +91,8 @@ const enum parameter_id sq2_parameters[] PROGMEM = {
 const enum parameter_id p2_sq2_parameters[] PROGMEM = {
     SQ2_PITCHBEND,
     SQ2_ENVMOD,
-    SQ2_VOLMOD
+    SQ2_VOLMOD,
+    SQ2_HALF
 };
 
 const enum parameter_id tri_parameters[] PROGMEM = {
@@ -107,7 +113,8 @@ const enum parameter_id tri_parameters[] PROGMEM = {
 const enum parameter_id p2_tri_parameters[] PROGMEM = {
     TRI_PITCHBEND,
     TRI_ENVMOD,
-    0xFF
+    0xFF,
+    TRI_HALF
 };
 
 const enum parameter_id noise_parameters[] PROGMEM = {
@@ -128,7 +135,8 @@ const enum parameter_id noise_parameters[] PROGMEM = {
 const enum parameter_id p2_noise_parameters[] PROGMEM = {
     NOISE_PITCHBEND,
     NOISE_ENVMOD,
-    NOISE_VOLMOD
+    NOISE_VOLMOD,
+    NOISE_HALF
 };
 
 const enum parameter_id dmc_parameters[] PROGMEM = {
@@ -275,12 +283,16 @@ void programmer(void)
     dmc.enabled ? button_led_on(BTN_DMC) : button_led_off(BTN_DMC);
 
     // In page 2 we also want to indicate the assigner mode
-    mode == MODE_PAGE2 && assigner_mode == MONO ?
-        button_led_on(BTN_MONO) : button_led_off(BTN_MONO);
-    mode == MODE_PAGE2 && assigner_mode == POLY1 ?
-        button_led_on(BTN_POLY1) : button_led_off(BTN_POLY1);
-    mode == MODE_PAGE2 && assigner_mode == POLY2 ?
-        button_led_on(BTN_POLY2) : button_led_off(BTN_POLY2);
+    mode == MODE_PAGE2 && assigner_lower_mode == MONO ?
+        button_led_on(BTN_LOWER_MONO) : button_led_off(BTN_LOWER_MONO);
+    mode == MODE_PAGE2 && assigner_lower_mode == POLY ?
+        button_led_on(BTN_LOWER_POLY) : button_led_off(BTN_LOWER_POLY);
+    mode == MODE_PAGE2 && assigner_upper_mode == MONO ?
+        button_led_on(BTN_UPPER_MONO) : button_led_off(BTN_UPPER_MONO);
+    mode == MODE_PAGE2 && assigner_upper_mode == POLY ?
+        button_led_on(BTN_UPPER_POLY) : button_led_off(BTN_UPPER_POLY);
+    mode == MODE_PAGE2 && assigner_split ?
+        button_led_on(BTN_SPLIT) : button_led_off(BTN_SPLIT);
 
     if (mode == MODE_PAGE1) {
         main_buttons = p1_main_buttons;
@@ -290,7 +302,7 @@ void programmer(void)
     else {
         main_buttons = p2_main_buttons;
         main_buttons_length = sizeof(p2_main_buttons)/sizeof(p2_main_buttons[0]);
-        param_length = 3;
+        param_length = 4;
     }
 
     toplevel_handler();
@@ -356,12 +368,20 @@ static inline void toplevel_handler(void)
         }
     }
 
-    // In page 2 we also need to check the three assigner mode buttons.
     if (mode == MODE_PAGE2) {
-        for (int i = 13; i <= 15; i++) {
-            if (button_pressed(i)) {
-                assigner_mode = i - 13;
-            }
+        if (button_pressed(BTN_LOWER_POLY))
+            assigner_lower_mode = POLY;
+        if (button_pressed(BTN_LOWER_MONO))
+            assigner_lower_mode = MONO;
+        if (button_pressed(BTN_UPPER_POLY))
+            assigner_upper_mode = POLY;
+        if (button_pressed(BTN_UPPER_MONO))
+            assigner_upper_mode = MONO;
+        if (button_pressed(BTN_SPLIT))
+            assigner_split = !assigner_split;
+        if (button_pressed(BTN_SET_SPLIT)) {
+            struct parameter parameter = parameter_get(SPLIT_POINT);
+            init_getvalue(BTN_SET_SPLIT, 0xFF, &parameter);
         }
     }
 }

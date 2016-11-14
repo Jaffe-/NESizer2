@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -20,7 +20,7 @@
 
   Programmable parameters
 
-  Contains the list of parameters that can be programmed in a patch. 
+  Contains the list of parameters that can be programmed in a patch.
 */
 
 
@@ -28,14 +28,14 @@
 
 #include <stdint.h>
 
-#define NUM_PARAMETERS (LFO3_WAVEFORM - SQ1_ENABLED + 1)
+#define NUM_PARAMETERS (SPLIT_POINT - SQ1_ENABLED + 1)
 
 struct parameter {
-  int8_t* target;
-  enum {BOOL, RANGE, INVRANGE} type;
-  int8_t min;
-  int8_t max;
-  int8_t initial_value;
+    int8_t* target;
+    enum {BOOL, RANGE, INVRANGE, NOTE, KBD_HALF} type;
+    int8_t min;
+    int8_t max;
+    int8_t initial_value;
 };
 
 enum parameter_id {
@@ -50,6 +50,7 @@ enum parameter_id {
     SQ1_COARSE,
     SQ1_VOLMOD,
     SQ1_ENVMOD,
+    SQ1_HALF,
 
     SQ2_ENABLED,
     SQ2_DUTY,
@@ -62,6 +63,7 @@ enum parameter_id {
     SQ2_COARSE,
     SQ2_VOLMOD,
     SQ2_ENVMOD,
+    SQ2_HALF,
 
     TRI_ENABLED,
     TRI_GLIDE,
@@ -72,6 +74,7 @@ enum parameter_id {
     TRI_PITCHBEND,
     TRI_COARSE,
     TRI_ENVMOD,
+    TRI_HALF,
 
     NOISE_ENABLED,
     NOISE_LOOP,
@@ -81,6 +84,7 @@ enum parameter_id {
     NOISE_PITCHBEND,
     NOISE_VOLMOD,
     NOISE_ENVMOD,
+    NOISE_HALF,
 
     DMC_ENABLED,
     DMC_SAMPLE_LOOP,
@@ -107,7 +111,9 @@ enum parameter_id {
     LFO2_WAVEFORM,
 
     LFO3_PERIOD,
-    LFO3_WAVEFORM
+    LFO3_WAVEFORM,
+
+    SPLIT_POINT
 };
 
 struct parameter parameter_get(uint8_t num);
