@@ -35,6 +35,7 @@
 #include "io/battery.h"
 #include "midi/midi.h"
 #include "modulation/modulation.h"
+#include "patch/patch.h"
 
 #define BLINK_CNT 30
 
@@ -275,10 +276,19 @@ void getvalue_handler()
 
 #define BATT_FLASH_DURATION 64
 
+void ui_init(void)
+{
+    // Load first patch
+    patch_load(0);
+    mode = MODE_PAGE1;
+}
+
 void battery_check(void)
 {
-    if (battery_read() > 25)
-        mode = MODE_PAGE1;
+    if (battery_read() > 25) {
+        ui_init();
+        return;
+    }
 
     static uint8_t flash_count;
     static uint8_t duration_count;
@@ -296,6 +306,6 @@ void battery_check(void)
         duration_count = 0;
         disp_on ^= 1;
         if (disp_on && ++flash_count == 6)
-            mode = MODE_PAGE1;
+            ui_init();
     }
 }

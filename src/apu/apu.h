@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -37,41 +37,37 @@
 #define CHN_DMC 4
 
 struct square {
-  int8_t enabled;          // BOOL
-  int8_t duty;             // 2-bit integer
+    int8_t duty;             // 2-bit integer
 
-  // Used internally:
-  uint8_t volume;
-  uint16_t period;
+    // Used internally:
+    uint8_t volume;
+    uint16_t period;
 };
 
-struct triangle { 
-  int8_t enabled;          // BOOL 
-  int8_t silenced;          // BOOL
+struct triangle {
+    int8_t silenced;          // BOOL
 
-  // Used internally:
-  uint16_t period;
+    // Used internally:
+    uint16_t period;
 };
 
 struct noise {
-  int8_t enabled;
-  int8_t loop;             // BOOL: Loop mode (pitched noise) 
+    int8_t loop;             // BOOL: Loop mode (pitched noise)
 
-  // Used internally:
-  uint8_t volume : 4;
-  uint8_t period : 4;
+    // Used internally:
+    uint8_t volume : 4;
+    uint8_t period : 4;
 };
 
 struct dmc {
-  int8_t enabled;
-  int8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
-  uint8_t sample_number;
+    int8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
+    uint8_t sample_number;
 
-  // Used internally:
-  uint8_t sample_enabled : 1;
-  uint8_t data : 7;
+    // Used internally:
+    uint8_t sample_enabled : 1;
+    uint8_t data : 7;
 
-  struct sample sample;
+    struct sample sample;
 };
 
 extern struct square sq1, sq2;

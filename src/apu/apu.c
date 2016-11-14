@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -147,58 +147,48 @@ struct dmc dmc;
 
 inline void register_update(uint8_t reg, uint8_t val)
 {
-  io_reg_buffer[reg] = val;
+    io_reg_buffer[reg] = val;
 }
 
 /* Square channels */
 
 inline void sq_setup(uint8_t n)
 {
-  register_update(SQ1_VOL + n * 4, SQ_LENGTH_CNTR_DISABLE | SQ_CONSTANT_VOLUME);
-  register_update(SQ1_SWEEP + n * 4, 0x08);
-  register_update(SQ1_HI + n * 4, 1 << LENGTH_CNTR_LOAD_p);
+    register_update(SQ1_VOL + n * 4, SQ_LENGTH_CNTR_DISABLE | SQ_CONSTANT_VOLUME);
+    register_update(SQ1_SWEEP + n * 4, 0x08);
+    register_update(SQ1_HI + n * 4, 1 << LENGTH_CNTR_LOAD_p);
 }
 
 inline void sq_update(uint8_t n, struct square* sq)
 {
-  register_update(SQ1_VOL + n * 4, (io_reg_buffer[SQ1_VOL + n * 4] & ~(SQ_DUTY_m | VOLUME_m)) 
-		  | sq->volume << VOLUME_p
-		  | sq->duty << SQ_DUTY_p);
+    register_update(SQ1_VOL + n * 4, (io_reg_buffer[SQ1_VOL + n * 4] & ~(SQ_DUTY_m | VOLUME_m))
+                    | sq->volume << VOLUME_p
+                    | sq->duty << SQ_DUTY_p);
 
-  register_update(SQ1_LO + n * 4, sq->period & 0xFF);
+    register_update(SQ1_LO + n * 4, sq->period & 0xFF);
 
-  // Need to check if sq.enabled is true to decide the value of the length counter. 
-  // It is set to zero whenever the corresponding SND_CHN bit is cleared, and this needs
-  // to be reflected in the register mirror.
-  register_update(SQ1_HI + n * 4, ((sq->enabled) ? 0b1000 : 0) 
-		  | (((sq->period >> 8) & 0x07) << PERIOD_HI_p));
-
+    register_update(SQ1_HI + n * 4, 0b1000
+                    | (((sq->period >> 8) & 0x07) << PERIOD_HI_p));
 }
 
 void sq1_setup(void)
 {
-  sq_setup(0);
+    sq_setup(0);
 }
 
 void sq2_setup(void)
 {
-  sq_setup(1);
+    sq_setup(1);
 }
 
 void sq1_update(void)
 {
-  register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~SQ1_ENABLE_m) 
-		  | sq1.enabled << SQ1_ENABLE_p);
-
-  sq_update(0, &sq1);
+    sq_update(0, &sq1);
 }
 
 void sq2_update(void)
 {
-  register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~SQ2_ENABLE_m) 
-		  | sq2.enabled << SQ2_ENABLE_p);
-
-  sq_update(1, &sq2);
+    sq_update(1, &sq2);
 }
 
 
@@ -206,22 +196,17 @@ void sq2_update(void)
 
 void tri_setup(void)
 {
-  register_update(TRI_LINEAR, TRI_LENGTH_CNTR_DISABLE | 1);
-//    register_update(TRI_HI, 0b0000);
+    register_update(TRI_LINEAR, TRI_LENGTH_CNTR_DISABLE | 1);
 }
 
 void tri_update(void)
 {
-  register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~TRI_ENABLE_m) 
-		  | tri.enabled << TRI_ENABLE_p);
+    register_update(TRI_LO, tri.period & 0xFF);
 
-  register_update(TRI_LO, tri.period & 0xFF);
+    register_update(TRI_HI, (!tri.silenced ? 0b1000 : 0)
+                    | ((tri.period >> 8) & 0x07) << PERIOD_HI_p);
 
-  register_update(TRI_HI, (!tri.silenced ? 0b1000 : 0) 
-		  | ((tri.period >> 8) & 0x07) << PERIOD_HI_p);
-
-  register_update(TRI_LINEAR, tri.silenced ? 0 : (TRI_LENGTH_CNTR_DISABLE | 1)); 
-  
+    register_update(TRI_LINEAR, tri.silenced ? 0 : (TRI_LENGTH_CNTR_DISABLE | 1));
 }
 
 
@@ -229,181 +214,136 @@ void tri_update(void)
 
 void noise_setup(void){
 
-  register_update(NOISE_VOL, NOISE_LENGTH_CNTR_DISABLE | NOISE_CONSTANT_VOLUME);
-  register_update(NOISE_HI, 0b1000);
+    register_update(NOISE_VOL, NOISE_LENGTH_CNTR_DISABLE | NOISE_CONSTANT_VOLUME);
+    register_update(NOISE_HI, 0b1000);
 }
 
 void noise_update(void)
 {
-  register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~NOISE_ENABLE_m) 
-		  | noise.enabled << NOISE_ENABLE_p);
+    register_update(NOISE_VOL, (io_reg_buffer[NOISE_VOL] & ~VOLUME_m)
+                    | noise.volume << VOLUME_p);
 
-  register_update(NOISE_VOL, (io_reg_buffer[NOISE_VOL] & ~VOLUME_m)
-		  | noise.volume << VOLUME_p);
-
-  register_update(NOISE_LO, (io_reg_buffer[NOISE_VOL] & ~(NOISE_LOOP_m | NOISE_PERIOD_m))
-		  | noise.loop << NOISE_LOOP_p 
-		  | noise.period << NOISE_PERIOD_p);
-
-  register_update(NOISE_HI, (noise.enabled) ? 0b1000 : 0);
+    register_update(NOISE_LO, (io_reg_buffer[NOISE_VOL] & ~(NOISE_LOOP_m | NOISE_PERIOD_m))
+                    | noise.loop << NOISE_LOOP_p
+                    | noise.period << NOISE_PERIOD_p);
 }
 
 /* DMC channel */
 
 void dmc_setup(void)
 {
-  register_update(DMC_FREQ, 0);
-  register_update(DMC_RAW, 0);
-  register_update(DMC_START, 0);
-  register_update(DMC_LEN, 0);
-}
-
-void dmc_update(void)
-{
-  register_update(SND_CHN, (io_reg_buffer[SND_CHN] & ~DMC_ENABLE_m) 
-		  | dmc.enabled << DMC_ENABLE_p);
+    register_update(DMC_FREQ, 0);
+    register_update(DMC_RAW, 0);
+    register_update(DMC_START, 0);
+    register_update(DMC_LEN, 0);
 }
 
 void dmc_update_sample_raw(void)
-{  
-  dmc.data = sample_read_byte(&dmc.sample);
-   
-  io_register_write(DMC_RAW, dmc.data);
-  
-  if (dmc.sample.bytes_done == dmc.sample.size) {
-    sample_reset(&dmc.sample);
+{
+    dmc.data = sample_read_byte(&dmc.sample);
 
-    if (!dmc.sample_loop) 
-      dmc.sample_enabled = 0;
-  }
-	
+    io_register_write(DMC_RAW, dmc.data);
+
+    if (dmc.sample.bytes_done == dmc.sample.size) {
+        sample_reset(&dmc.sample);
+
+        if (!dmc.sample_loop)
+            dmc.sample_enabled = 0;
+    }
+
 }
-
-/*
-  void dmc_update_sample_dpcm() 
-  {
-  static uint8_t data;
-  static int8_t accumulator;
-  static uint8_t flag;
-
-  if (dmc.sample.bytes_done == 0) {
-  accumulator = sample_read_byte(&dmc.sample); 
-  flag = 1;
-  }
-  else if (!flag) {
-  data = sample_read_byte(&dmc.sample);
-  accumulator += delta_table[data & 0x0F];
-  }
-  else {
-  accumulator += delta_table[(data >> 4) & 0x0F];
-  }
-  flag ^= 1;
-    
-  dmc.data = accumulator >> 1;
-    
-  register_update(DMC_RAW, dmc.data);
-  io_register_write(DMC_RAW, dmc.data);
-    
-  if (dmc.sample.bytes_done == dmc.sample.size) {
-  sample_reset(&dmc.sample);
-  if (!dmc.sample_loop) {
-  dmc.sample_enabled = 0;
-  io_register_write(DMC_RAW, 0);
-  }
-  }
-  }
-*/
 
 void dmc_update_sample(void)
 {
 
-  if (dmc.sample.type == SAMPLE_TYPE_RAW)
-    dmc_update_sample_raw();
-//    else
-//	dmc_update_sample_dpcm();
+    if (dmc.sample.type == SAMPLE_TYPE_RAW)
+        dmc_update_sample_raw();
+    //    else
+    //	dmc_update_sample_dpcm();
 
 }
 
 void apu_refresh_channel(uint8_t ch_number)
-{  
-  io_write_changed(SND_CHN);
+{
+    io_write_changed(SND_CHN);
 
-  switch (ch_number) {
-  case CHN_SQ1:
-    io_write_changed(SQ1_VOL);
-    io_write_changed(SQ1_LO);
-    io_write_changed(SQ1_HI);
-    break;
+    switch (ch_number) {
+    case CHN_SQ1:
+        io_write_changed(SQ1_VOL);
+        io_write_changed(SQ1_LO);
+        io_write_changed(SQ1_HI);
+        break;
 
-  case CHN_SQ2:
-    io_write_changed(SQ2_VOL);
-    io_write_changed(SQ2_LO);
-    io_write_changed(SQ2_HI);
-    break;
+    case CHN_SQ2:
+        io_write_changed(SQ2_VOL);
+        io_write_changed(SQ2_LO);
+        io_write_changed(SQ2_HI);
+        break;
 
-  case CHN_TRI:
-    io_write_changed(TRI_LINEAR);
-    io_write_changed(TRI_LO);
-    io_write_changed(TRI_HI);
-    break;
+    case CHN_TRI:
+        io_write_changed(TRI_LINEAR);
+        io_write_changed(TRI_LO);
+        io_write_changed(TRI_HI);
+        break;
 
-  case CHN_NOISE:
-    io_write_changed(NOISE_VOL);
-    io_write_changed(NOISE_LO);
-    io_write_changed(NOISE_HI);
-    break;
-  }
-   
+    case CHN_NOISE:
+        io_write_changed(NOISE_VOL);
+        io_write_changed(NOISE_LO);
+        io_write_changed(NOISE_HI);
+        break;
+    }
+
 }
 
 void apu_refresh_all(void)
 {
-  for (uint8_t i = CHN_SQ1; i <= CHN_DMC; i++) 
-    apu_refresh_channel(i);
+    for (uint8_t i = CHN_SQ1; i <= CHN_DMC; i++)
+        apu_refresh_channel(i);
 }
 
 inline void apu_update_channel(uint8_t chn)
 {
-  switch (chn) {
-  case CHN_SQ1:
-    sq1_update(); break;
-  case CHN_SQ2:
-    sq2_update(); break;
-  case CHN_TRI:
-    tri_update(); break;
-  case CHN_NOISE:
-    noise_update(); break;
-  }
+    switch (chn) {
+    case CHN_SQ1:
+        sq1_update(); break;
+    case CHN_SQ2:
+        sq2_update(); break;
+    case CHN_TRI:
+        tri_update(); break;
+    case CHN_NOISE:
+        noise_update(); break;
+    }
 }
 
 // Task handler for updating APU channels
 void apu_update_handler(void)
 {
-  static uint8_t chn = CHN_SQ1;
+    static uint8_t chn = CHN_SQ1;
 
-  apu_update_channel(chn);
-  apu_refresh_channel(chn);
-  // Keep 6502's PC in check 
-  io_reset_pc();
+    apu_update_channel(chn);
+    apu_refresh_channel(chn);
+    // Keep 6502's PC in check
+    io_reset_pc();
 
-  if (++chn == 4) 
-    chn = 0;
-  
+    if (++chn == 4)
+        chn = 0;
+
 }
 
 // Update handler for the DMC specifically
 void apu_dmc_update_handler(void)
 {
-  if (dmc.enabled && dmc.sample_enabled) 
-    dmc_update_sample();
+    if (dmc.sample_enabled)
+        dmc_update_sample();
 }
 
 // Setup routine
 void apu_setup(void)
 {
-  sq1_setup();
-  sq2_setup();
-  tri_setup();
-  noise_setup();
-  dmc_setup();
+    sq1_setup();
+    sq2_setup();
+    tri_setup();
+    noise_setup();
+    dmc_setup();
+    register_update(SND_CHN, 0b11111);
 }

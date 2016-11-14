@@ -41,6 +41,8 @@ bool assigner_split;
 int8_t assigner_split_point;
 int8_t assigner_upper_mask[5];
 
+int8_t assigner_enabled[5];
+
 uint8_t assigned_notes[5];
 
 struct group {
@@ -233,6 +235,9 @@ int8_t midi_note_to_note(uint8_t midi_note)
 
 void play_note(uint8_t channel, uint8_t midi_note)
 {
+    if (!assigner_enabled[channel])
+        return;
+
     uint8_t note = midi_note_to_note(midi_note);
     assigned_notes[channel] = midi_note;
 

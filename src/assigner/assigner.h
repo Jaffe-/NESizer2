@@ -47,3 +47,4 @@ extern enum assigner_mode assigner_upper_mode;
 extern bool assigner_split;
 extern int8_t assigner_split_point;
 extern int8_t assigner_upper_mask[5];
+extern int8_t assigner_enabled[5];

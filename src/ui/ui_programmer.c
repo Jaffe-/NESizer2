@@ -276,11 +276,8 @@ void programmer(void)
         return;
     }
 
-    sq1.enabled ? button_led_on(BTN_SQ1) : button_led_off(BTN_SQ1);
-    sq2.enabled ? button_led_on(BTN_SQ2) : button_led_off(BTN_SQ2);
-    tri.enabled ? button_led_on(BTN_TRI) : button_led_off(BTN_TRI);
-    noise.enabled ? button_led_on(BTN_NOISE) : button_led_off(BTN_NOISE);
-    dmc.enabled ? button_led_on(BTN_DMC) : button_led_off(BTN_DMC);
+    for (uint8_t chn = 0; chn < 5; chn++)
+        assigner_enabled[chn] ? button_led_on(chn) : button_led_off(chn);
 
     // In page 2 we also want to indicate the assigner mode
     mode == MODE_PAGE2 && assigner_lower_mode == MONO ?

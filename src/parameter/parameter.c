@@ -35,7 +35,7 @@
 #include "assigner/assigner.h"
 
 const struct parameter parameters[] PROGMEM = {
-    [SQ1_ENABLED] = {&sq1.enabled, BOOL, 0, 0, 0},
+    [SQ1_ENABLED] = {&assigner_enabled[0], BOOL, 0, 0, 0},
     [SQ1_DUTY] = {&sq1.duty, RANGE, 0, 3, 2},
     [SQ1_GLIDE] = {&portamento_values[0], RANGE, 0, 99, 0},
     [SQ1_DETUNE] = {&mod_detune[0], RANGE, -9, 9, 0},
@@ -48,7 +48,7 @@ const struct parameter parameters[] PROGMEM = {
     [SQ1_ENVMOD] = {&mod_envmod[0], RANGE, -9, 9, 0},
     [SQ1_HALF] = {&assigner_upper_mask[0], KBD_HALF, 0, 1, 1},
 
-    [SQ2_ENABLED] = {&sq2.enabled, BOOL, 0, 0, 0},
+    [SQ2_ENABLED] = {&assigner_enabled[1], BOOL, 0, 0, 0},
     [SQ2_DUTY] = {&sq2.duty, RANGE, 0, 3, 2},
     [SQ2_GLIDE] = {&portamento_values[1], RANGE, 0, 99, 0},
     [SQ2_DETUNE] = {&mod_detune[1], RANGE, -9, 9, 0},
@@ -61,7 +61,7 @@ const struct parameter parameters[] PROGMEM = {
     [SQ2_ENVMOD] = {&mod_envmod[1], RANGE, -9, 9, 0},
     [SQ2_HALF] = {&assigner_upper_mask[1], KBD_HALF, 0, 1, 1},
 
-    [TRI_ENABLED] = {&tri.enabled, BOOL, 0, 0, 0},
+    [TRI_ENABLED] = {&assigner_enabled[2], BOOL, 0, 0, 0},
     [TRI_GLIDE] = {&portamento_values[2], RANGE, 0, 99, 0},
     [TRI_DETUNE] = {&mod_detune[2], RANGE, -9, 9, 0},
     [TRI_LFO1] = {&mod_lfo_modmatrix[2][0], RANGE, 0, 99, 0},
@@ -72,7 +72,7 @@ const struct parameter parameters[] PROGMEM = {
     [TRI_ENVMOD] = {&mod_envmod[2], RANGE, -9, 9, 0},
     [TRI_HALF] = {&assigner_upper_mask[2], KBD_HALF, 0, 1, 0},
 
-    [NOISE_ENABLED] = {&noise.enabled, BOOL, 0, 0, 0},
+    [NOISE_ENABLED] = {&assigner_enabled[3], BOOL, 0, 0, 0},
     [NOISE_LOOP] = {&noise.loop, RANGE, 0, 1,  0},
     [NOISE_LFO1] = {&mod_lfo_modmatrix[3][0], RANGE, 0, 99, 0},
     [NOISE_LFO2] = {&mod_lfo_modmatrix[3][1], RANGE, 0, 99, 0},
@@ -81,7 +81,7 @@ const struct parameter parameters[] PROGMEM = {
     [NOISE_ENVMOD] = {&mod_envmod[3], RANGE, -9, 9, 0},
     [NOISE_HALF] = {&assigner_upper_mask[3], KBD_HALF, 0, 1, 1},
 
-    [DMC_ENABLED] = {&dmc.enabled, BOOL, 0, 1, 0},
+    [DMC_ENABLED] = {&assigner_enabled[4], BOOL, 0, 1, 0},
     [DMC_SAMPLE_LOOP] = {&dmc.sample_loop, RANGE, 0, 1, 0},
 
     [ENV1_ATTACK] = {&env[0].attack, RANGE, 0, 99, 0},

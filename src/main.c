@@ -34,6 +34,7 @@
 #include "io/midi.h"
 #include "io/battery.h"
 #include "modulation/periods.h"
+#include "assigner/assigner.h"
 
 int main()
 {
@@ -46,9 +47,6 @@ int main()
     midi_io_setup();
     apu_setup();
     battery_setup();
-
-    // Load first patch
-    patch_load(0);
 
     // The task manager takes over from here
     task_manager();

@@ -158,7 +158,6 @@ static inline void interpret_message()
 #define SYSEX_CMD_FIRMWARE_LOAD 2
 
 uint8_t midi_transfer_progress = 0;
-static uint8_t dmc_state;
 
 static struct sample sample;
 
@@ -204,7 +203,6 @@ static inline void transfer()
         if (val == SYSEX_STOP) {
             mode &= ~MODE_TRANSFER;
             state = STATE_MESSAGE;
-            dmc.enabled = dmc_state;
         }
 
         else if ((val & 0x80) == 0) {
@@ -235,8 +233,7 @@ static inline void initiate_transfer()
     mode |= MODE_TRANSFER;
 
     // Disable DMC
-    dmc_state = dmc.enabled;
-    dmc.enabled = 0;
+    dmc.sample_enabled = 0;
 
     state = STATE_TRANSFER;
     midi_transfer_progress = 0;
