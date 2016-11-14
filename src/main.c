@@ -32,6 +32,7 @@
 #include "io/bus.h"
 #include "patch/patch.h"
 #include "io/midi.h"
+#include "io/battery.h"
 #include "modulation/periods.h"
 
 int main()
