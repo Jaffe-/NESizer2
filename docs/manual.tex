@@ -39,7 +39,7 @@
 \tikzstyle{dummybutton}=[font=\tiny,rectangle, fill=white, text=white, minimum height=1cm,minimum width=1cm]
 \tikzstyle{hcircbutton}=[font=\tiny,circle, fill=black, text=white, minimum height=1.2cm,minimum width=1.2cm]
 \tikzstyle{circbutton}=[font=\tiny,circle, fill=buttongray, text=gray, minimum height=1.2cm,minimum width=1.2cm]
-
+\tikzstyle{selcircbutton}=[font=\tiny,circle,line width=1mm,draw=green!80, fill=black, text=white, minimum height=1.2cm,minimum width=1.2cm]
 
 \begin{titlepage}
   \begin{center}
@@ -112,9 +112,9 @@ In the programming mode, the various parameters of the sound channels and LFOs c
 \begin{tikzpicture}[align=center, node distance=1.5cm, auto]
   \node [dummybutton] (1) {};
   \node [dummybutton, right of=1] (2) {};
-  \node [hcircbutton, right of=2] (3) {PROGRAM};
-  \node [circbutton, right of=3] (4) {PAGE 2};
-  \node [circbutton, right of=4] (5) {ASSIGNER};
+  \node [selcircbutton, right of=2] (3) {PROGRAM};
+  \node [selcircbutton, right of=3] (4) {PAGE 2};
+  \node [circbutton, right of=4] (5) {};
   \node [circbutton, right of=5] (6) {SETTINGS};
   \node [dummybutton, right of=6] (7) {};
   \node [dummybutton, right of=7] (8) {};
@@ -142,7 +142,7 @@ To enable or disable a channel, press the corresponding channel button. When a c
 
 \subsection{PAGE 2}
 
-By pressing \btn{PAGE 2}, a second ``page'' og parameters become available. Some of them are channel parameters, and others are related to note assignment. When Page 2 is selected, the \name is still in programmer mode. The parameters that are avilable in page 2 are shown in yellow color in the figures below.
+By pressing \btn{PAGE 2}, a second ``page'' og parameters become available. Some of them are channel parameters, and others are related to note assignment. When Page 2 is selected, the \name is still in programming mode, so pressing \btn{UP} or \btn{DOWN} will change the current patch, and will discard any changes that haven't been saved. The parameters that are avilable in page 2 are shown in yellow color in the figures below.
 
 \subsection{Changing channel parameters}
 To change a channel's parameter, press and hold the desired channel's button, and the desired parameter button. For example, to change the attack of the square 1 channel, press \btn{SQ1} and \btn{A}. The button LEDs will start to blink to indicate which channel parameter is being changed. Use the \btn{UP} and \btn{DOWN} buttons to change the parameter value. When you have the desired value, press \btn{SAVE}.
@@ -159,7 +159,7 @@ To change a channel's parameter, press and hold the desired channel's button, an
   \node [hbutton, right of=6] (7) {LFO2\\[4]\textcolor{yellow}{ENV MOD}};
   \node [hbutton, right of=7] (8) {LFO3\\[4]\textcolor{yellow}{VOL MOD}};
 
-  \node [hbutton, below=1] (9) {DUTY};
+  \node [hbutton, below=1] (9) {DUTY\\[4]\textcolor{yellow}{SPLIT HALF}};
   \node [hbutton, right of=9] (10) {DETUNE};
   \node [hbutton, right of=10] (11) {OCTAVE};
   \node [hbutton, right of=11] (12) {GLIDE};
@@ -185,6 +185,7 @@ To change a channel's parameter, press and hold the desired channel's button, an
   \textbf{BEND} (page 2) & Bend wheel intensity in semitones & 0 - 24\\
   \textbf{ENV MOD} (page 2) & Pitch envelope modulation amount & -9 - 9\\
   \textbf{VOL MOD} (page 2) & Volume modulation by LFO3 & 0 - 16\\
+  \textbf{SPLIT HALF} (page 2) & See section 1.3.6 & Lower - Upper\\
 \end{tabular}
 
 \subsubsection{Triangle channel}
@@ -199,7 +200,7 @@ To change a channel's parameter, press and hold the desired channel's button, an
   \node [hbutton, right of=6] (7) {LFO2\\[4]\textcolor{yellow}{ENV MOD}};
   \node [hbutton, right of=7] (8) {LFO3};
 
-  \node [button, below=1] (9) {};
+  \node [hbutton, below=1] (9) {\textcolor{yellow}{SPLIT HALF}};
   \node [hbutton, right of=9] (10) {DETUNE};
   \node [hbutton, right of=10] (11) {OCTAVE};
   \node [hbutton, right of=11] (12) {GLIDE};
@@ -219,6 +220,7 @@ To change a channel's parameter, press and hold the desired channel's button, an
   \textbf{GLIDE} & Portamento glide time & 0 - 99\\
   \textbf{BEND} (page 2) & Bend wheel intensity in semitones & 0 - 24\\
   \textbf{ENV MOD} (page 2) & Pitch envelope modulation (noise envelope) & -9 - 9\\
+  \textbf{SPLIT HALF} (page 2) & See section 1.3.6 & Lower - Upper\\
 \end{tabular}
 
 \subsubsection{Noise channel}
@@ -233,7 +235,7 @@ To change a channel's parameter, press and hold the desired channel's button, an
   \node [hbutton, right of=6] (7) {LFO2\\[4]\textcolor{yellow}{ENV MOD}};
   \node [hbutton, right of=7] (8) {LFO3\\[4]\textcolor{yellow}{VOL MOD}};
 
-  \node [hbutton, below=1] (9) {LOOP};
+  \node [hbutton, below=1] (9) {LOOP\\[4]\textcolor{yellow}{SPLIT HALF}};
   \node [button, right of=9] (10) {};
   \node [button, right of=10] (11) {};
   \node [button, right of=11] (12) {};
@@ -256,6 +258,7 @@ To change a channel's parameter, press and hold the desired channel's button, an
   \textbf{BEND} (page 2) & Bend wheel intensity (in steps) & 0 - 15\\
   \textbf{ENV MOD} (page 2) & Pitch envelope modulation amount & -9 - 9\\
   \textbf{VOL MOD} (page 2) & Volume modulation by LFO3 & 0 - 16\\
+  \textbf{SPLIT HALF} (page 2) & See section 1.3.6 & Lower - Upper\\
 \end{tabular}
 
 \subsubsection{DMC channel}
@@ -271,7 +274,7 @@ To change a channel's parameter, press and hold the desired channel's button, an
   \node [button, right of=7] (8) {LFO3};
 
   \node [hbutton, below=1] (9) {LOOP};
-  \node [hbutton, right of=9] (10) {DIVIDER};
+  \node [hbutton, right of=9] (10) {};
   \node [button, right of=10] (11) {};
   \node [button, right of=11] (12) {};
   \node [button, right of=12] (13) {};
@@ -317,6 +320,39 @@ To change a channel's parameter, press and hold the desired channel's button, an
   & & 5 - triangle
 \end{tabular}
 
+\subsection{Note assignment}
+
+\begin{tikzpicture}[align=center, node distance=1.5cm and 0.5cm]
+  \node [mhbutton] (1) {SQ1};
+  \node [mhbutton, right of=1] (2) {SQ2};
+  \node [mhbutton, right of=2] (3) {TRI};
+  \node [mhbutton, right of=3] (4) {NOISE};
+  \node [mhbutton, right of=4] (5) {DMC};
+  \node [mbutton, right of=5] (6) {LFO1};
+  \node [mbutton, right of=6] (7) {LFO2};
+  \node [mbutton, right of=7] (8) {LFO3};
+
+  \node [hbutton, below=1] (9) {\textcolor{yellow}{SPLIT HALF}};
+  \node [hbutton, right of=9] (10) {\textcolor{yellow}{SPLIT}\\\textcolor{yellow}{ON/OFF}};
+  \node [hbutton, right of=10] (11) {\textcolor{yellow}{SPLIT}\\\textcolor{yellow}{SET POINT}};
+  \node [button, right of=11] (12) {};
+  \node [hbutton, right of=12] (13) {\textcolor{yellow}{LOWER}\\\textcolor{yellow}{POLY}};
+  \node [hbutton, right of=13] (14) {\textcolor{yellow}{LOWER}\\\textcolor{yellow}{MONO}};
+  \node [hbutton, right of=14] (15) {\textcolor{yellow}{(UPPER)}\\\textcolor{yellow}{POLY}};
+  \node [hbutton, right of=15] (16) {\textcolor{yellow}{(UPPER)}\\\textcolor{yellow}{MONO}};
+\end{tikzpicture}
+
+\subsubsection{Monophonic and polyphonic modes}
+
+When several channels are sharing the same MIDI channel, notes can be assigned either monophonically or polyphonically. In \textbf{monophonic} mode, all channels will play the same incoming MIDI note, and any new note will cut off the previous. This mode is selected by pressing \btn{(UPPER) MONO}. In \textbf{polyphonic} mode, the channels will be allocated in turn to each of the incoming MIDI notes. This mode is selected by pressing \btn{(UPPER) POLY}.
+
+\subsubsection{Splitting the keyboard}
+
+The MIDI keyboard\footnote{Not necessarily a physical keyboard, but more generally the range of MIDI notes.} can be split into two sections, a \emph{lower} and a \emph{upper} section. To activate this split, press \btn{SPLIT ON/OFF}. When the split is active, the \emph{splitting point} sets the boundary between the lower and upper half. To change the splitting point, press \btn{SPLIT SET POINT}, and select the note where you want the split. The notes are shown with a letter in the first half of the display, and the octave number in the second. A dot on the first display indicates a flat note. For instance, \verb+E.5+ would indicate the note E$\flat$ in the fourth octave (as numbered in MIDI).
+
+The channels can be assigned to either section by pressing and holding the corresponding channel button and then pressing \btn{SPLIT HALF}. The sections are named on the display as \verb+Lo+ and \verb+UP+, short for Lower and Upper, respectively. When a channel has been assigned to one of the halves, that channel will only play a note when that note is in the same half.
+
+Several channels can be assigned to the same half of the keyboard, so there are separate monophonic and polypohnic settings for each half. Use \btn{LOWER POLY} and \btn{LOWER MONO} to select the assignment mode for the lower half. Similarly, use \btn{(UPPER) POLY} and \btn{(UPPER) MONO} to select the assignment mode for the upper half (these are the same buttons as used for assignment mode when split is off).
 
 \section{SETTINGS}
 
@@ -340,15 +376,26 @@ When in the settings mode, various aspects of how the \name operates can be chan
   \node [button, right of=13] (14) {};
   \node [hbutton, right of=14] (15) {SAMPLE\\RESET};
   \node [hbutton, right of=15] (16) {SAMPLE\\DELETE};
+\end{tikzpicture}
 
-  \node [circbutton, below= of 9] (17) {};
-  \node [circbutton, right of=17] (18) {};
-  \node [dummybutton, right of=18] (19) {};
-  \node [dummybutton, right of=19] (20) {};
-  \node [dummybutton, right of=20] (21) {};
-  \node [dummybutton, right of=21] (22) {};
-  \node [hcircbutton, right of=22] (23) {UP};
-  \node [hcircbutton, right of=23] (24) {DOWN};
+\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
+  \node [dummybutton] (1) {};
+  \node [dummybutton, right of=1] (2) {};
+  \node [circbutton, right of=2] (3) {PROGRAM};
+  \node [circbutton, right of=3] (4) {PAGE 2};
+  \node [circbutton, right of=4] (5) {};
+  \node [selcircbutton, right of=5] (6) {SETTINGS};
+  \node [dummybutton, right of=6] (7) {};
+  \node [dummybutton, right of=7] (8) {};
+
+  \node [hcircbutton, below=1] (8) {CLEAR};
+  \node [hcircbutton, right of=8] (9) {SAVE};
+  \node [dummybutton, right of=9] (10) {};
+  \node [dummybutton, right of=10] (11) {};
+  \node [dummybutton, right of=11] (12) {};
+  \node [dummybutton, right of=12] (13) {};
+  \node [hcircbutton, right of=13] (14) {UP};
+  \node [hcircbutton, right of=14] (15) {DOWN};
 \end{tikzpicture}
 
 \btn{UP} and \btn{DOWN} can be used to select a sample number. Sample numbers that are occupied are marked with a dot on the display. A selected sample can be deleted by pressing \btn{DELETE}.
