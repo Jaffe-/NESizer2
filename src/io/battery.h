@@ -23,6 +23,8 @@
   Configures ADC and reads battery voltage.
 */
 
+#pragma once
+
 #include <stdint.h>
 
 void battery_setup(void);
