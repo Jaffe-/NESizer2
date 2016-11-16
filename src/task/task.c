@@ -49,9 +49,9 @@ struct task {
 
 struct task tasks[] = {
     {.handler = &apu_dmc_update_handler, .period = 1, .counter = 1},
+    {.handler = &lfo_update_handler, .period = 1, .counter = 1},
     {.handler = &midi_io_handler, .period = 5, .counter = 0},
     {.handler = &apu_update_handler, .period = 10, .counter = 1},
-    {.handler = &lfo_update_handler, .period = 10, .counter = 2},
     {.handler = &envelope_update_handler, .period = 10, .counter = 3},
     {.handler = &portamento_handler, .period = 10, .counter = 4},
     {.handler = &midi_handler, .period = 20, .counter = 5},

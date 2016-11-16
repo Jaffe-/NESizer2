@@ -37,7 +37,7 @@ struct lfo {
   // Used by LFO logic:
   int8_t value;
   uint8_t counter;
-  uint8_t position;
+  int8_t position;
 };
 
 extern struct lfo lfo[3];

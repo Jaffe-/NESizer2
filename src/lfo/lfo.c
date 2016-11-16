@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2016 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -27,64 +27,65 @@
 #include "lfo/lfo.h"
 #include <avr/pgmspace.h>
 #include <stdint.h>
-#include "apu/apu.h" 
+#include "apu/apu.h"
 #include "data/sine.c"
 
 struct lfo lfo[3];
 
 void lfo_update(struct lfo *lfo)
 {
-  if (++lfo->counter == lfo->period) {
-    lfo->counter = 0;
+    if (++lfo->counter == lfo->period) {
+        lfo->counter = 0;
 
-    switch (lfo->waveform) {
-    case SINE:
-      lfo->value = pgm_read_byte_near(&sine_table[lfo->position]);
-      break;
-      
-    case RAMP_DOWN:
-      lfo->value = 4 * lfo->position - 0x80;
-      break;
+        switch (lfo->waveform) {
+        case SINE:
+            lfo->value = pgm_read_byte_near(&sine_table[lfo->position]);
+            break;
 
-    case RAMP_UP:
-      lfo->value = 0x80 - 4 * lfo->position;
-      break;
+        case RAMP_DOWN:
+            lfo->value = 4*(lfo->position - 32);
+            break;
 
-    case SQUARE:
-      if (lfo->position < 32)
-	lfo->value = -127;
-      else
-	lfo->value = 127;
-      break;
+        case RAMP_UP:
+            lfo->value = 4*(32 - lfo->position);
+            break;
 
-    case TRIANGLE:
-      if (lfo->position < 32) 
-	lfo->value = 0x80 - 8 * lfo->position;
-      else
-	lfo->value = 8 * (lfo->position - 32) - 0x80;
-      break;
+        case SQUARE:
+            if (lfo->position < 32)
+                lfo->value = -127;
+            else
+                lfo->value = 127;
+            break;
 
-    default:
-      break;
+        case TRIANGLE:
+            if (lfo->position < 32)
+                lfo->value = 8 * (lfo->position - 16);
+            else if (lfo->position == 32)
+                lfo->value = 127;
+            else
+                lfo->value = 8 * (48 - lfo->position);
+            break;
+
+        default:
+            break;
+        }
+
+        if (++lfo->position == 64)
+            lfo->position = 0;
     }
-
-    if (++lfo->position == 64)
-      lfo->position = 0;
-  }
 }
 
 int16_t lfo_value(struct lfo *lfo, uint8_t intensity)
 {
-  if (intensity == 0) 
-    return 0;
-  else
-    return lfo->value;
+    if (intensity == 0)
+        return 0;
+    else
+        return lfo->value;
 }
 
 void lfo_update_handler(void)
-{  
-  lfo_update(&lfo[0]);
-  lfo_update(&lfo[1]);
-  lfo_update(&lfo[2]);
+{
+    lfo_update(&lfo[0]);
+    lfo_update(&lfo[1]);
+    lfo_update(&lfo[2]);
 }
-
