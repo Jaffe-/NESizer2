@@ -197,6 +197,9 @@ static void play_pattern(void)
 {
     for (uint8_t i = 0; i < 16; i++)
         button_led_off(i);
+    leds_7seg_two_digit_set(3, 4, sequencer_tempo_count);
+
+    ui_updown((int8_t*)&sequencer_tempo_count, 1, 99);
 
     if (button_pressed(BTN_PLAY)) {
         sequencer_stop();

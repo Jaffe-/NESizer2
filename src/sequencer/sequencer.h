@@ -31,6 +31,7 @@ struct sequencer_note {
 
 extern struct sequencer_note pattern_data[5][16];
 extern uint8_t sequencer_cur_position;
+extern uint8_t sequencer_tempo_count;
 
 void sequencer_handler(void);
 void sequencer_pattern_load(uint8_t pattern);
