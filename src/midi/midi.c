@@ -201,7 +201,7 @@ static inline void transfer()
         uint8_t val = midi_io_read_byte();
 
         if (val == SYSEX_STOP) {
-            mode &= ~MODE_TRANSFER;
+            mode = MODE_PAGE1;
             state = STATE_MESSAGE;
         }
 
@@ -230,7 +230,7 @@ static inline void initiate_transfer()
 {
     // Set UI mode to transfer (which turns the button LEDs into a status bar
     // for the duration of the transfer)
-    mode |= MODE_TRANSFER;
+    mode = MODE_TRANSFER;
 
     // Disable DMC
     dmc.sample_enabled = 0;

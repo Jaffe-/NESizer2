@@ -59,6 +59,7 @@ struct mode_data {
 
 void getvalue_handler(void);
 void battery_check(void);
+void transfer(void);
 
 struct mode_data modes[] = {
     [MODE_PAGE1] = {.button = BTN_PAGE1,
@@ -78,7 +79,7 @@ struct mode_data modes[] = {
                        .handler = getvalue_handler},
     [MODE_TRANSFER] = {.button = 0xFF,
                        .leds = 0,
-                       .handler = 0},
+                       .handler = transfer},
     [MODE_BATTERY_CHECK] = {.button = 0xFF,
                             .leds = 0,
                             .handler = battery_check}
@@ -308,4 +309,9 @@ void battery_check(void)
         if (disp_on && ++flash_count == 6)
             ui_init();
     }
+}
+
+void transfer(void)
+{
+
 }
