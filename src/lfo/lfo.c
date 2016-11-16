@@ -75,14 +75,6 @@ void lfo_update(struct lfo *lfo)
     }
 }
 
-int16_t lfo_value(struct lfo *lfo, uint8_t intensity)
-{
-    if (intensity == 0)
-        return 0;
-    else
-        return lfo->value;
-}
-
 void lfo_update_handler(void)
 {
     lfo_update(&lfo[0]);

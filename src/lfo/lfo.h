@@ -43,5 +43,4 @@ struct lfo {
 extern struct lfo lfo[3];
 
 void lfo_update(struct lfo* lfo);
-int16_t lfo_value(struct lfo* lfo, uint8_t intensity);
 void lfo_update_handler(void);
