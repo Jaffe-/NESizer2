@@ -26,6 +26,10 @@
 #include <stdbool.h>
 #include "sequencer.h"
 #include "assigner/assigner.h"
+#include "io/memory.h"
+
+#define SEQUENCER_START 6656
+#define PATTERN_SIZE 160 // 2 * 5 * 16
 
 struct sequencer_note pattern_data[5][16];
 
@@ -35,6 +39,8 @@ uint8_t sequencer_cur_position;
 static uint8_t duration_counter;
 static uint8_t tempo_counter;
 static bool play;
+
+struct memory_context ctx;
 
 void sequencer_handler(void)
 {
@@ -83,10 +89,22 @@ void sequencer_stop(void)
 
 void sequencer_pattern_load(uint8_t pattern)
 {
-
+    memory_set_address(&ctx, SEQUENCER_START + PATTERN_SIZE * pattern);
+    for (uint8_t chn = 0; chn < 5; chn++) {
+        for (uint8_t i = 0; i < 16; i++) {
+            pattern_data[chn][i].note = memory_read_sequential(&ctx);
+            pattern_data[chn][i].length = memory_read_sequential(&ctx);
+        }
+    }
 }
 
 void sequencer_pattern_save(uint8_t pattern)
 {
-
+    memory_set_address(&ctx, SEQUENCER_START + PATTERN_SIZE * pattern);
+    for (uint8_t chn = 0; chn < 5; chn++) {
+        for (uint8_t i = 0; i < 16; i++) {
+            memory_write_sequential(&ctx, pattern_data[chn][i].note);
+            memory_write_sequential(&ctx, pattern_data[chn][i].length);
+        }
+    }
 }
