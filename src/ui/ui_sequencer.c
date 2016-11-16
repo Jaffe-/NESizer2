@@ -186,6 +186,9 @@ void enter_note(void)
         ui_updown((int8_t*)&channel_octave[current_channel], 1, 7);
     }
 
+    else if (button_pressed(BTN_OK))
+        enter_note_exit();
+
     else {
         leds_7seg_two_digit_set(3, 4, channel_length[current_channel]);
         ui_updown((int8_t*)&channel_length[current_channel], 1, 4);
