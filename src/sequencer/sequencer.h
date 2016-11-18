@@ -29,13 +29,21 @@ struct sequencer_note {
     uint8_t length;
 };
 
-extern struct sequencer_note pattern_data[5][16];
+struct sequencer_pattern {
+    uint8_t scale;
+
+    struct sequencer_note notes[5][16];
+};
+
+extern struct sequencer_pattern sequencer_pattern;
 extern uint8_t sequencer_cur_position;
 extern uint8_t sequencer_tempo_count;
+extern bool sequencer_ext_clock;
 
 void sequencer_handler(void);
+void sequencer_midi_clock(void);
 void sequencer_pattern_load(uint8_t pattern);
 void sequencer_pattern_save(uint8_t pattern);
 void sequencer_play(void);
 void sequencer_stop(void);
-
+void sequencer_continue(void);

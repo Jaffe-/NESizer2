@@ -34,6 +34,9 @@
 
 #define BTN_OCTAVE 6
 #define BTN_NOTE_CLEAR 7
+
+#define BTN_SCALE 15
+
 #define BTN_BACK 16
 #define BTN_PLAY 16
 #define BTN_OK 17
@@ -112,6 +115,17 @@ void select_pattern(void)
         state = STATE_PLAYING;
     }
 
+    if (button_pressed(BTN_SCALE)) {
+        getvalue.button1 = BTN_SCALE;
+        getvalue.button2 = 0xFF;
+        getvalue.parameter.target = &sequencer_pattern.scale;
+        getvalue.parameter.type = SCALE;
+        getvalue.parameter.min = 0;
+        getvalue.parameter.max = 2;
+        getvalue.previous_mode = mode;
+        mode = MODE_GETVALUE;
+    }
+
     leds_7seg_two_digit_set(3, 4, current_pattern);
 }
 
@@ -170,14 +184,14 @@ void enter_note(void)
         note = sequencer_midi_note;
 
     if (note != 0xFF) {
-        pattern_data[current_channel][current_note].note = note;
-        pattern_data[current_channel][current_note].length = channel_length[current_channel];
+        sequencer_pattern.notes[current_channel][current_note].note = note;
+        sequencer_pattern.notes[current_channel][current_note].length = channel_length[current_channel];
         enter_note_exit();
     }
 
     // Other button presses:
     else if (button_pressed(BTN_NOTE_CLEAR)) {
-        pattern_data[current_channel][current_note].length = 0;
+        sequencer_pattern.notes[current_channel][current_note].length = 0;
         enter_note_exit();
     }
 
@@ -215,7 +229,7 @@ static void play_pattern(void)
 static void display_pattern(void)
 {
     for (uint8_t i = 0; i < 16; i++) {
-        if (pattern_data[current_channel][i].length != 0)
+        if (sequencer_pattern.notes[current_channel][i].length != 0)
             button_led_on(i);
         else
             button_led_off(i);

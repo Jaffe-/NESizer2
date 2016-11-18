@@ -32,7 +32,7 @@
 
 struct parameter {
     int8_t* target;
-    enum {BOOL, RANGE, INVRANGE, NOTE, KBD_HALF} type;
+    enum {BOOL, RANGE, INVRANGE, NOTE, KBD_HALF, SCALE} type;
     int8_t min;
     int8_t max;
     int8_t initial_value;

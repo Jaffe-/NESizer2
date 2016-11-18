@@ -251,6 +251,9 @@ void getvalue_handler()
     if (getvalue.parameter.type == NOTE) {
         leds_7seg_note_set(3, 4, value);
     }
+    else if (getvalue.parameter.type == SCALE) {
+        leds_7seg_two_digit_set(3, 4, 1 << value);
+    }
     else if (getvalue.parameter.type == KBD_HALF) {
         if (value == 1) {
             leds[3] = 0b01111100; // U

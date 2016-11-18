@@ -36,6 +36,7 @@
 #include "portamento/portamento.h"
 #include "assigner/assigner.h"
 #include "sample/sample.h"
+#include "sequencer/sequencer.h"
 
 typedef enum {STATE_MESSAGE, STATE_SYSEX, STATE_TRANSFER} midi_state_e;
 
@@ -131,15 +132,19 @@ static inline void interpret_message()
                     break;
 
                 case MIDI_CMD_CLOCK:
+                    sequencer_midi_clock();
                     break;
 
                 case MIDI_CMD_START:
+                    sequencer_play();
                     break;
 
                 case MIDI_CMD_CONTINUE:
+                    sequencer_continue();
                     break;
 
                 case MIDI_CMD_STOP:
+                    sequencer_stop();
                     break;
 
                 case MIDI_CMD_ACTIVESENSE:
