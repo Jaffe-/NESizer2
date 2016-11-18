@@ -38,10 +38,12 @@
 #include "io/2a03.h"
 #include "assigner/assigner.h"
 #include "io/battery.h"
+#include "sequencer/sequencer.h"
 
 #define BTN_MIDI_CHN 5
 #define BTN_BATTERY 6
 #define BTN_PATCH_FORMAT 8
+#define BTN_SEQ_EXTCLK 10
 #define BTN_SAMPLE_FORMAT 14
 #define BTN_SAMPLE_DELETE 15
 #define BTN_CLOCKDIV 7
@@ -140,5 +142,16 @@ static inline void toplevel(void)
     if (button_on(BTN_BATTERY)) {
         leds_7seg_two_digit_set(3, 4, battery_read());
         leds_7seg_dot_on(3);
+    }
+
+    if (button_on(BTN_SEQ_EXTCLK)) {
+        getvalue.parameter.target = &sequencer_ext_clock;
+        getvalue.parameter.type = RANGE;
+        getvalue.parameter.min = 0;
+        getvalue.parameter.max = 1;
+        getvalue.button1 = BTN_SEQ_EXTCLK;
+        getvalue.button2 = 0xFF;
+        getvalue.previous_mode = mode;
+        mode = MODE_GETVALUE;
     }
 }
