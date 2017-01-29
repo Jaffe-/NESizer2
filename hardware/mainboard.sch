@@ -21685,7 +21685,7 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <part name="R3" library="rcl" deviceset="R-US_" device="0207/7" value="100"/>
 <part name="R12" library="rcl" deviceset="R-US_" device="0207/7" value="15k"/>
 <part name="R9" library="rcl" deviceset="R-US_" device="0207/7" value="27k"/>
-<part name="IC3" library="linear" deviceset="TL074" device="P" value="TL974"/>
+<part name="IC3" library="linear" deviceset="TL074" device="P" value="TLC074"/>
 <part name="R8" library="rcl" deviceset="R-US_" device="0207/7" value="68k"/>
 <part name="R7" library="rcl" deviceset="R-US_" device="0207/7" value="10k"/>
 <part name="C10" library="resistor" deviceset="CPOL-EU" device="E2-5" value="10uF"/>
@@ -21779,12 +21779,18 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <part name="IC13" library="maxim-custom" deviceset="DS1210-8PDIP" device=""/>
 <part name="Q1" library="transistor-pnp" deviceset="BC557" device=""/>
 <part name="Q2" library="transistor-pnp" deviceset="BC557" device=""/>
-<part name="R19" library="rcl" deviceset="R-US_" device="0207/7" value="1k"/>
-<part name="R20" library="rcl" deviceset="R-US_" device="0207/7" value="1k"/>
+<part name="R19" library="rcl" deviceset="R-US_" device="0207/7" value="4.7k"/>
+<part name="R20" library="rcl" deviceset="R-US_" device="0207/7" value="4.7k"/>
 <part name="R21" library="rcl" deviceset="R-US_" device="0207/7" value="100k"/>
 <part name="R22" library="rcl" deviceset="R-US_" device="0207/7" value="100k"/>
 <part name="GND23" library="supply1" deviceset="GND" device=""/>
 <part name="P+7" library="supply1" deviceset="VCC" device=""/>
+<part name="R23" library="rcl" deviceset="R-US_" device="0207/7" value="10M"/>
+<part name="GND17" library="supply1" deviceset="GND" device=""/>
+<part name="R1" library="rcl" deviceset="R-US_" device="0207/7" value="4.7k"/>
+<part name="C7" library="capacitor-wima" deviceset="C" device="2.5/2" value="10n"/>
+<part name="GND24" library="supply1" deviceset="GND" device=""/>
+<part name="P+6" library="supply1" deviceset="VCC" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -21876,7 +21882,7 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <instance part="SV2" gate="G$1" x="60.96" y="-7.62"/>
 <instance part="GND9" gate="1" x="50.8" y="-20.32"/>
 <instance part="P+11" gate="VCC" x="50.8" y="7.62"/>
-<instance part="BAT1" gate="G$1" x="203.2" y="-96.52" rot="R270"/>
+<instance part="BAT1" gate="G$1" x="203.2" y="-99.06" rot="R270"/>
 <instance part="GND10" gate="1" x="203.2" y="-114.3" rot="MR0"/>
 <instance part="IC4" gate="D" x="142.24" y="-53.34"/>
 <instance part="R6" gate="G$1" x="-50.8" y="43.18"/>
@@ -21964,7 +21970,7 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 </instance>
 <instance part="GND8" gate="1" x="251.46" y="-114.3"/>
 <instance part="IC4" gate="E" x="121.92" y="12.7"/>
-<instance part="IC4" gate="F" x="271.78" y="-71.12"/>
+<instance part="IC4" gate="F" x="106.68" y="-142.24"/>
 <instance part="X2" gate="G$1" x="99.06" y="-81.28"/>
 <instance part="GND4" gate="1" x="83.82" y="-99.06"/>
 <instance part="IC13" gate="G$1" x="220.98" y="-83.82"/>
@@ -21979,7 +21985,13 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <instance part="R21" gate="G$1" x="279.4" y="-93.98" rot="MR270"/>
 <instance part="R22" gate="G$1" x="287.02" y="-93.98" rot="MR270"/>
 <instance part="GND23" gate="1" x="210.82" y="-114.3"/>
-<instance part="P+7" gate="VCC" x="210.82" y="-81.28"/>
+<instance part="P+7" gate="VCC" x="213.36" y="-81.28"/>
+<instance part="R23" gate="G$1" x="203.2" y="-81.28" rot="MR270"/>
+<instance part="GND17" gate="1" x="93.98" y="-147.32"/>
+<instance part="R1" gate="G$1" x="-7.62" y="88.9" rot="R90"/>
+<instance part="C7" gate="G$1" x="-7.62" y="73.66" rot="R180"/>
+<instance part="GND24" gate="1" x="-7.62" y="68.58"/>
+<instance part="P+6" gate="VCC" x="-7.62" y="96.52"/>
 </instances>
 <busses>
 <bus name="DB[0..7]">
@@ -22097,7 +22109,7 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <segment>
 <pinref part="BAT1" gate="G$1" pin="-"/>
 <pinref part="GND10" gate="1" pin="GND"/>
-<wire x1="203.2" y1="-111.76" x2="203.2" y2="-101.6" width="0.1524" layer="91"/>
+<wire x1="203.2" y1="-111.76" x2="203.2" y2="-104.14" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="IC14" gate="G$1" pin="GND"/>
@@ -22244,6 +22256,16 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <wire x1="210.82" y1="-91.44" x2="210.82" y2="-111.76" width="0.1524" layer="91"/>
 <pinref part="GND23" gate="1" pin="GND"/>
 </segment>
+<segment>
+<pinref part="IC4" gate="F" pin="I"/>
+<wire x1="96.52" y1="-142.24" x2="93.98" y2="-142.24" width="0.1524" layer="91"/>
+<wire x1="93.98" y1="-142.24" x2="93.98" y2="-144.78" width="0.1524" layer="91"/>
+<pinref part="GND17" gate="1" pin="GND"/>
+</segment>
+<segment>
+<pinref part="C7" gate="G$1" pin="1"/>
+<pinref part="GND24" gate="1" pin="GND"/>
+</segment>
 </net>
 <net name="VCC" class="0">
 <segment>
@@ -22348,9 +22370,13 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 </segment>
 <segment>
 <pinref part="IC13" gate="G$1" pin="VCCI"/>
-<wire x1="215.9" y1="-86.36" x2="210.82" y2="-86.36" width="0.1524" layer="91"/>
-<wire x1="210.82" y1="-86.36" x2="210.82" y2="-83.82" width="0.1524" layer="91"/>
+<wire x1="215.9" y1="-86.36" x2="213.36" y2="-86.36" width="0.1524" layer="91"/>
+<wire x1="213.36" y1="-86.36" x2="213.36" y2="-83.82" width="0.1524" layer="91"/>
 <pinref part="P+7" gate="VCC" pin="VCC"/>
+</segment>
+<segment>
+<pinref part="R1" gate="G$1" pin="2"/>
+<pinref part="P+6" gate="VCC" pin="VCC"/>
 </segment>
 </net>
 <net name="CLK" class="0">
@@ -22373,18 +22399,19 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <net name="RESET" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="PC6(/RESET)"/>
-<wire x1="10.16" y1="81.28" x2="7.62" y2="81.28" width="0.1524" layer="91"/>
-<label x="7.62" y="81.28" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="10.16" y1="81.28" x2="-7.62" y2="81.28" width="0.1524" layer="91"/>
+<label x="-12.7" y="81.28" size="1.27" layer="95" rot="R180" xref="yes"/>
+<pinref part="C7" gate="G$1" pin="2"/>
+<wire x1="-7.62" y1="81.28" x2="-12.7" y2="81.28" width="0.1524" layer="91"/>
+<wire x1="-7.62" y1="78.74" x2="-7.62" y2="81.28" width="0.1524" layer="91"/>
+<pinref part="R1" gate="G$1" pin="1"/>
+<wire x1="-7.62" y1="83.82" x2="-7.62" y2="81.28" width="0.1524" layer="91"/>
+<junction x="-7.62" y="81.28"/>
 </segment>
 <segment>
 <pinref part="SV1" gate="1" pin="5"/>
 <wire x1="-58.42" y1="73.66" x2="-60.96" y2="73.66" width="0.1524" layer="91"/>
 <label x="-60.96" y="73.66" size="1.27" layer="95" rot="R180" xref="yes"/>
-</segment>
-<segment>
-<pinref part="IC4" gate="F" pin="O"/>
-<wire x1="281.94" y1="-71.12" x2="289.56" y2="-71.12" width="0.1524" layer="91"/>
-<label x="289.56" y="-71.12" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="MISO" class="0">
@@ -23780,13 +23807,13 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <pinref part="IC3" gate="D" pin="-IN"/>
 <wire x1="205.74" y1="-68.58" x2="203.2" y2="-68.58" width="0.1524" layer="91"/>
 <wire x1="203.2" y1="-68.58" x2="203.2" y2="-60.96" width="0.1524" layer="91"/>
-<wire x1="203.2" y1="-60.96" x2="223.52" y2="-60.96" width="0.1524" layer="91"/>
-<wire x1="223.52" y1="-60.96" x2="223.52" y2="-71.12" width="0.1524" layer="91"/>
+<wire x1="203.2" y1="-60.96" x2="226.06" y2="-60.96" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="-60.96" x2="226.06" y2="-71.12" width="0.1524" layer="91"/>
 <pinref part="IC3" gate="D" pin="OUT"/>
-<wire x1="223.52" y1="-71.12" x2="220.98" y2="-71.12" width="0.1524" layer="91"/>
-<wire x1="223.52" y1="-71.12" x2="226.06" y2="-71.12" width="0.1524" layer="91"/>
-<label x="226.06" y="-71.12" size="1.27" layer="95" xref="yes"/>
-<junction x="223.52" y="-71.12"/>
+<wire x1="226.06" y1="-71.12" x2="220.98" y2="-71.12" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="-71.12" x2="228.6" y2="-71.12" width="0.1524" layer="91"/>
+<label x="228.6" y="-71.12" size="1.27" layer="95" xref="yes"/>
+<junction x="226.06" y="-71.12"/>
 </segment>
 </net>
 <net name="N$28" class="0">
@@ -23831,9 +23858,6 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <pinref part="R20" gate="G$1" pin="2"/>
 <wire x1="256.54" y1="-93.98" x2="254" y2="-93.98" width="0.1524" layer="91"/>
 <junction x="254" y="-93.98"/>
-<wire x1="254" y1="-93.98" x2="254" y2="-71.12" width="0.1524" layer="91"/>
-<pinref part="IC4" gate="F" pin="I"/>
-<wire x1="254" y1="-71.12" x2="261.62" y2="-71.12" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$37" class="0">
@@ -23852,12 +23876,19 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <segment>
 <pinref part="IC13" gate="G$1" pin="VBAT1"/>
 <pinref part="BAT1" gate="G$1" pin="+"/>
-<wire x1="203.2" y1="-91.44" x2="203.2" y2="-88.9" width="0.1524" layer="91"/>
-<wire x1="203.2" y1="-88.9" x2="203.2" y2="-73.66" width="0.1524" layer="91"/>
-<wire x1="203.2" y1="-73.66" x2="205.74" y2="-73.66" width="0.1524" layer="91"/>
-<pinref part="IC3" gate="D" pin="+IN"/>
+<wire x1="203.2" y1="-93.98" x2="203.2" y2="-88.9" width="0.1524" layer="91"/>
 <wire x1="215.9" y1="-88.9" x2="203.2" y2="-88.9" width="0.1524" layer="91"/>
+<pinref part="R23" gate="G$1" pin="2"/>
+<wire x1="203.2" y1="-88.9" x2="203.2" y2="-86.36" width="0.1524" layer="91"/>
 <junction x="203.2" y="-88.9"/>
+</segment>
+</net>
+<net name="N$19" class="0">
+<segment>
+<pinref part="IC3" gate="D" pin="+IN"/>
+<wire x1="203.2" y1="-73.66" x2="205.74" y2="-73.66" width="0.1524" layer="91"/>
+<pinref part="R23" gate="G$1" pin="1"/>
+<wire x1="203.2" y1="-76.2" x2="203.2" y2="-73.66" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
