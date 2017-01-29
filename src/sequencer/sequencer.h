@@ -47,3 +47,4 @@ void sequencer_pattern_save(uint8_t pattern);
 void sequencer_play(void);
 void sequencer_stop(void);
 void sequencer_continue(void);
+void sequencer_pattern_init();

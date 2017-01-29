@@ -43,6 +43,7 @@
 #define BTN_MIDI_CHN 5
 #define BTN_BATTERY 6
 #define BTN_PATCH_FORMAT 8
+#define BTN_PATTERN_FORMAT 9
 #define BTN_SEQ_EXTCLK 10
 #define BTN_SAMPLE_FORMAT 14
 #define BTN_SAMPLE_DELETE 15
@@ -154,4 +155,7 @@ static inline void toplevel(void)
         getvalue.previous_mode = mode;
         mode = MODE_GETVALUE;
     }
+
+    if (button_on(BTN_PATTERN_FORMAT))
+        sequencer_pattern_init();
 }

@@ -116,6 +116,21 @@ void sequencer_pattern_save(uint8_t pattern)
     memory_write_sequential(&ctx, sequencer_pattern.scale);
 }
 
+void sequencer_pattern_init()
+{
+    memory_set_address(&ctx, SEQUENCER_START);
+    for (uint8_t pat = 0; pat < 100; pat++) {
+        for (uint8_t chn = 0; chn < 5; chn++) {
+            for (uint8_t i = 0; i < 16; i++) {
+                memory_write_sequential(&ctx, 0);
+                memory_write_sequential(&ctx, 0);
+            }
+        }
+        memory_write_sequential(&ctx, 2); // scale
+        memory_write_sequential(&ctx, 16); // end point
+    }
+}
+
 void tick(void)
 {
     for (uint8_t chn = 0; chn < 5; chn++) {
