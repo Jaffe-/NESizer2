@@ -40,12 +40,15 @@ extern struct sequencer_pattern sequencer_pattern;
 extern uint8_t sequencer_cur_position;
 extern uint8_t sequencer_tempo_count;
 extern bool sequencer_ext_clock;
+extern uint8_t sequencer_midi_note;
 
 void sequencer_handler(void);
 void sequencer_midi_clock(void);
 void sequencer_pattern_load(uint8_t pattern);
 void sequencer_pattern_save(uint8_t pattern);
 void sequencer_play(void);
+void sequencer_record(uint8_t chn);
 void sequencer_stop(void);
 void sequencer_continue(void);
+void sequencer_single_note(uint8_t chn);
 void sequencer_pattern_init();

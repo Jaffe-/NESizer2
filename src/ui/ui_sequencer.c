@@ -51,6 +51,7 @@ static void select_pattern(void);
 static void enter_note(void);
 static void select_note(void);
 static void play_pattern(void);
+static void record_pattern(void);
 static void enter_end_point(void);
 
 static void enter_note_init(uint8_t);
@@ -75,6 +76,7 @@ void (*state_handlers[])(void) = {
     [STATE_ENTER_NOTE] = enter_note,
     [STATE_SAVE] = select_pattern,
     [STATE_PLAYING] = play_pattern,
+    [STATE_RECORDING] = record_pattern,
     [STATE_ENTER_END_POINT] = enter_end_point
 };
 
@@ -114,6 +116,14 @@ void select_pattern(void)
         }
     }
 
+    if (button_on(BTN_RECORD)) {
+        for (uint8_t chn = 0; chn < 5; chn++) {
+            if (button_pressed(chn)) {
+                sequencer_record(chn);
+                state = STATE_RECORDING;
+            }
+        }
+    }
     if (button_pressed(BTN_PLAY)) {
         sequencer_play();
         state = STATE_PLAYING;
@@ -274,6 +284,11 @@ static void play_pattern(void)
     }
     else
         button_led_on(sequencer_cur_position);
+}
+
+static void record_pattern(void)
+{
+    play_pattern();
 }
 
 static void display_pattern(void)

@@ -29,18 +29,25 @@
 #include "io/memory.h"
 
 #define SEQUENCER_START 6656
-#define PATTERN_SIZE 160 // 2 * 5 * 16
+#define PATTERN_SIZE 162 // 2 * 5 * 16 + 2
+
+#define ENTER_NOTE_COUNT 100
 
 struct sequencer_pattern sequencer_pattern;
 
 uint8_t sequencer_tempo_count = 10;
 uint8_t sequencer_cur_position;
 bool sequencer_ext_clock;
+uint8_t sequencer_midi_note;
 
 static uint8_t duration_counter;
 static uint8_t tempo_counter;
 static uint8_t midi_clock_count;
-static bool play;
+static uint8_t record_chn;
+
+static enum { SINGLE_NOTE, PLAY, RECORD, STOP } mode = STOP;
+
+uint8_t enter_note_chn;
 
 void tick(void);
 
@@ -48,7 +55,12 @@ struct memory_context ctx;
 
 void sequencer_handler(void)
 {
-    if (sequencer_ext_clock || !play)
+    if (mode == SINGLE_NOTE && ++tempo_counter == ENTER_NOTE_COUNT) {
+        stop_note(enter_note_chn);
+        mode = STOP;
+    }
+
+    if (sequencer_ext_clock || (mode != PLAY && mode != RECORD))
         return;
 
     if (++tempo_counter == sequencer_tempo_count) {
@@ -57,9 +69,15 @@ void sequencer_handler(void)
     }
 }
 
+void sequencer_single_note(uint8_t chn)
+{
+    enter_note_chn = chn;
+    mode = SINGLE_NOTE;
+}
+
 void sequencer_midi_clock(void)
 {
-    if (!sequencer_ext_clock || !play)
+    if (!sequencer_ext_clock || (mode != PLAY && mode != RECORD))
         return;
 
     if (++midi_clock_count == (1 << sequencer_pattern.scale)) {
@@ -70,13 +88,21 @@ void sequencer_midi_clock(void)
 
 void sequencer_play(void)
 {
-    play = true;
+    mode = PLAY;
     sequencer_cur_position = 0;
+}
+
+void sequencer_record(uint8_t chn)
+{
+    mode = RECORD;
+    record_chn = chn;
+    sequencer_cur_position = 0;
+    sequencer_midi_note = 0xFF;
 }
 
 void sequencer_stop(void)
 {
-    play = false;
+    mode = STOP;
     tempo_counter = 0;
     duration_counter = 0;
     midi_clock_count = 0;
@@ -89,7 +115,7 @@ void sequencer_stop(void)
 
 void sequencer_continue(void)
 {
-    play = true;
+    mode = PLAY;
 }
 
 void sequencer_pattern_load(uint8_t pattern)
@@ -136,7 +162,13 @@ void sequencer_pattern_init()
 void tick(void)
 {
     for (uint8_t chn = 0; chn < 5; chn++) {
-        const struct sequencer_note* current_note = &sequencer_pattern.notes[chn][sequencer_cur_position];
+        struct sequencer_note* current_note = &sequencer_pattern.notes[chn][sequencer_cur_position];
+
+        if (mode == RECORD && record_chn == chn && sequencer_midi_note != 0xFF) {
+            current_note->note = sequencer_midi_note;
+            current_note->length = 4; // actually time this
+            sequencer_midi_note = 0xFF;
+        }
 
         if (duration_counter == 0) {
             if (current_note->length > 0)
