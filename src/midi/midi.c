@@ -71,6 +71,8 @@ void midi_channel_apply(struct midi_message* msg)
         break;
 
     case MIDI_CMD_NOTE_OFF:
+        if (sequencer_midi_note == msg->data1)
+            sequencer_midi_note == 0xFF;
         assigner_notify_note_off(midi_channel, msg->data1);
         break;
 

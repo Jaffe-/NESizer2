@@ -102,6 +102,7 @@ void sequencer_pattern_load(uint8_t pattern)
         }
     }
     sequencer_pattern.scale = memory_read_sequential(&ctx);
+    sequencer_pattern.end_point = memory_read_sequential(&ctx);
 }
 
 void sequencer_pattern_save(uint8_t pattern)
@@ -114,6 +115,7 @@ void sequencer_pattern_save(uint8_t pattern)
         }
     }
     memory_write_sequential(&ctx, sequencer_pattern.scale);
+    memory_write_sequential(&ctx, sequencer_pattern.end_point);
 }
 
 void sequencer_pattern_init()
@@ -143,10 +145,12 @@ void tick(void)
         else if (current_note->length == duration_counter) {
             stop_note(chn);
         }
+
     }
 
     if (++duration_counter == 6) {
         duration_counter = 0;
-        sequencer_cur_position = (sequencer_cur_position + 1) % 16;
+        if (++sequencer_cur_position == sequencer_pattern.end_point)
+            sequencer_cur_position = 0;
     }
 }

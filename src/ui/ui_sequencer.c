@@ -35,13 +35,15 @@
 #define BTN_OCTAVE 6
 #define BTN_NOTE_CLEAR 7
 
+#define BTN_RECORD 8
+#define BTN_END_POINT 14
 #define BTN_SCALE 15
 
 #define BTN_BACK 16
 #define BTN_PLAY 16
 #define BTN_OK 17
 
-enum state { STATE_TOPLEVEL, STATE_ENTER_NOTE, STATE_SAVE, STATE_SELECT_NOTE, STATE_PLAYING };
+enum state { STATE_TOPLEVEL, STATE_ENTER_NOTE, STATE_SAVE, STATE_SELECT_NOTE, STATE_PLAYING, STATE_RECORDING, STATE_ENTER_END_POINT };
 
 static enum state state = STATE_TOPLEVEL;
 
@@ -49,19 +51,20 @@ static void select_pattern(void);
 static void enter_note(void);
 static void select_note(void);
 static void play_pattern(void);
+static void enter_end_point(void);
 
 static void enter_note_init(uint8_t);
+void enter_end_point_init(void);
 static void save_init(uint8_t*);
 static void display_pattern(void);
 
-uint8_t sequencer_midi_note;
-
 // Used to remember the last settings for the channel
-static uint8_t channel_octave[5];
-static uint8_t channel_length[5];
+static uint8_t channel_octave[5] = {4, 4, 4, 0, 0};
+static uint8_t channel_length[5] = {3, 3, 3, 3, 3};
 
 static uint8_t current_channel;
 static uint8_t current_pattern;
+static uint8_t current_pos;
 static uint8_t current_note;
 
 uint8_t sequencer_leds[6];
@@ -71,7 +74,8 @@ void (*state_handlers[])(void) = {
     [STATE_SELECT_NOTE] = select_note,
     [STATE_ENTER_NOTE] = enter_note,
     [STATE_SAVE] = select_pattern,
-    [STATE_PLAYING] = play_pattern
+    [STATE_PLAYING] = play_pattern,
+    [STATE_ENTER_END_POINT] = enter_end_point
 };
 
 static inline uint8_t btn_to_note(uint8_t btn);
@@ -126,6 +130,10 @@ void select_pattern(void)
         mode = MODE_GETVALUE;
     }
 
+    if (button_pressed(BTN_END_POINT)) {
+        enter_end_point_init();
+    }
+
     leds_7seg_two_digit_set(3, 4, current_pattern);
 }
 
@@ -159,39 +167,46 @@ void select_note(void)
 void enter_note_init(uint8_t btn)
 {
     button_led_blink(btn);
-    current_note = btn;
+    current_pos = btn;
     sequencer_midi_note = 0xFF;
+    current_note = sequencer_pattern.notes[current_channel][current_pos].note;
     state = STATE_ENTER_NOTE;
 }
 
 void enter_note_exit(void)
 {
-    button_led_off(current_note);
+    button_led_off(current_pos);
     state = STATE_SELECT_NOTE;
 }
 
 void enter_note(void)
 {
+    uint8_t new_note = 0xFF;
+
     // Check if any of the note buttons have been pressed:
-    uint8_t note = 0xFF;
     for (uint8_t i = 0; i < 16; i++) {
-        if (button_pressed(i))
-            note = btn_to_note(i);
+        if (button_pressed(i)) {
+            uint8_t note = btn_to_note(i);
+            if (note != 0xFF)
+                new_note = note;
+        }
     }
 
-    // If none of the on-board keys were pressed, check MIDI:
-    if (sequencer_midi_note != 0xFF)
-        note = sequencer_midi_note;
+    // Check for MIDI note:
+    if (sequencer_midi_note != 0xFF) {
+        new_note = sequencer_midi_note;
+        sequencer_midi_note = 0xFF;
+    }
 
-    if (note != 0xFF) {
-        sequencer_pattern.notes[current_channel][current_note].note = note;
-        sequencer_pattern.notes[current_channel][current_note].length = channel_length[current_channel];
-        enter_note_exit();
+    if (new_note != 0xFF) {
+        current_note = new_note;
+        play_note(current_channel, current_note);
+        sequencer_single_note(current_channel);
     }
 
     // Other button presses:
-    else if (button_pressed(BTN_NOTE_CLEAR)) {
-        sequencer_pattern.notes[current_channel][current_note].length = 0;
+    if (button_pressed(BTN_NOTE_CLEAR)) {
+        sequencer_pattern.notes[current_channel][current_pos].length = 0;
         enter_note_exit();
     }
 
@@ -200,14 +215,49 @@ void enter_note(void)
         ui_updown((int8_t*)&channel_octave[current_channel], 1, 7);
     }
 
-    else if (button_pressed(BTN_OK))
+    else if (button_pressed(BTN_OK)) {
+        if (current_note != 0xFF) {
+            sequencer_pattern.notes[current_channel][current_pos].note = current_note;
+            sequencer_pattern.notes[current_channel][current_pos].length = channel_length[current_channel];
+        }
         enter_note_exit();
+    }
+
+    else if (button_pressed(BTN_BACK)) {
+        enter_note_exit();
+    }
 
     else {
         leds_7seg_two_digit_set(3, 4, channel_length[current_channel]);
         ui_updown((int8_t*)&channel_length[current_channel], 1, 4);
     }
 
+}
+
+void enter_end_point_init(void)
+{
+    for (uint8_t i = 0; i < sequencer_pattern.end_point; i++) {
+        button_led_blink(i);
+    }
+    state = STATE_ENTER_END_POINT;
+}
+
+void enter_end_point_exit(void)
+{
+    for (uint8_t i = 0; i < 16; i++) {
+        button_led_off(i);
+    }
+    state = STATE_TOPLEVEL;
+}
+
+void enter_end_point(void)
+{
+    for (uint8_t i = 0; i < 16; i++) {
+        if (button_pressed(i)) {
+            sequencer_pattern.end_point = i + 1;
+            enter_end_point_exit();
+        }
+    }
 }
 
 static void play_pattern(void)

@@ -31,6 +31,7 @@ struct sequencer_note {
 
 struct sequencer_pattern {
     uint8_t scale;
+    uint8_t end_point;
 
     struct sequencer_note notes[5][16];
 };
