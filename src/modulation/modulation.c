@@ -127,7 +127,7 @@ static inline void calc_freqmod(uint8_t chn)
         dc_temp[chn] = dc;
     }
     else if (chn == CHN_NOISE) {
-        noise_period = (env[2].value * (-mod_envmod[chn])) / 8;
+        noise_period += (env[2].value * (-mod_envmod[chn])) / 8;
     }
 }
 
