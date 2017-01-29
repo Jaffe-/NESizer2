@@ -114,7 +114,7 @@ In the programming mode, the various parameters of the sound channels and LFOs c
   \node [dummybutton, right of=1] (2) {};
   \node [selcircbutton, right of=2] (3) {PROGRAM};
   \node [selcircbutton, right of=3] (4) {PAGE 2};
-  \node [circbutton, right of=4] (5) {};
+  \node [circbutton, right of=4] (5) {SEQ.};
   \node [circbutton, right of=5] (6) {SETTINGS};
   \node [dummybutton, right of=6] (7) {};
   \node [dummybutton, right of=7] (8) {};
@@ -354,6 +354,186 @@ The channels can be assigned to either section by pressing and holding the corre
 
 Several channels can be assigned to the same half of the keyboard, so there are separate monophonic and polypohnic settings for each half. Use \btn{LOWER POLY} and \btn{LOWER MONO} to select the assignment mode for the lower half. Similarly, use \btn{(UPPER) POLY} and \btn{(UPPER) MONO} to select the assignment mode for the upper half (these are the same buttons as used for assignment mode when split is off).
 
+
+\section{SEQUENCER}
+
+In the sequencer mode, 16-note patterns can be created and played back. The sequencer is somewhat more complicated to use than the programmer. The user interface employs several \emph{levels}.
+
+While a pattern is playing, you can change the NESIZER into any of the other modes. For example, the current patch can be edited while the sequence is playing.
+
+\subsection{Selection mode}
+
+When first entering the sequencer, it is at the \emph{selection layer}. This is where you select a pattern for playback or editing, as well as adjusting tempo.
+\begin{tikzpicture}[align=center, node distance=1.5cm]
+  \node [mhbutton] (1) {SQ1};
+  \node [mhbutton, right of=1] (2) {SQ2};
+  \node [mhbutton, right of=2] (3) {TRI};
+  \node [mhbutton, right of=3] (4) {NOISE};
+  \node [mhbutton, right of=4] (5) {DMC};
+  \node [button, right of=5] (6) {};
+  \node [button, right of=6] (7) {};
+  \node [button, right of=7] (8) {};
+
+  \node [button, below=1] (9) {};
+  \node [button, right of=9] (10) {};
+  \node [button, right of=10] (11) {};
+  \node [button, right of=11] (12) {};
+  \node [button, right of=12] (13) {};
+  \node [button, right of=13] (14) {};
+  \node [button, right of=14] (15) {};
+  \node [hbutton, right of=15] (16) {SCALE};
+
+  \node [dummybutton, below=9] (17) {};
+  \node [dummybutton, right of=17] (18) {};
+  \node [circbutton, right of=18] (19) {PROGRAM};
+  \node [circbutton, right of=19] (20) {PAGE 2};
+  \node [selcircbutton, right of=20] (21) {SEQ.};
+  \node [circbutton, right of=21] (22) {SETTINGS};
+  \node [dummybutton, right of=22] (23) {};
+  \node [dummybutton, right of=23] (24) {};
+
+  \node [hcircbutton, below=17] (25) {PLAY/\\STOP};
+  \node [hcircbutton, right of=25] (26) {SAVE};
+  \node [dummybutton, right of=26] (27) {};
+  \node [dummybutton, right of=27] (28) {};
+  \node [dummybutton, right of=28] (29) {};
+  \node [dummybutton, right of=29] (30) {};
+  \node [hcircbutton, right of=30] (31) {UP};
+  \node [hcircbutton, right of=31] (32) {DOWN};
+\end{tikzpicture}
+
+\subsubsection{Selecting a sequence}
+
+To select a new pattern, first make sure you are at the top level and not already editing a pattern. If you are, close the current pattern by pressing \btn{BACK}. Use \btn{UP} and \btn{DOWN} to select the pattern you want to edit. To edit the selected pattern, press the button for the channel you want to edit. The sequencer will then enter editing mode.
+
+\subsubsection{Playing back a sequence}
+
+To play back a selected sequence, press \btn{PLAY}. The sequence will loop indefinitely. Press \btn{PLAY} again to stop it. While a pattern is playing, \btn{UP} and \btn{DOWN} can be used to adjust the tempo.
+
+\subsubsection{Editing a sequence}
+
+To edit a pattern in the selected sequence, press the channel button corresponding to the one you want to edit. The sequencer will then enter pattern editing mode.
+
+\subsubsection{Saving a sequence}
+
+Any changes you have done to a sequence will not be saved until you press \btn{SAVE}. Saving sequences is done exactly the same way as saving programs.
+
+\subsubsection{Scaling}
+
+By pressing \btn{SCALE}, you can set the \emph{scale} of the sequence. The scale determines whether the 16-step sequence should represent one, two or four bars. When the scale is 1, each step in the sequence represents a 16th note in the bar. If the scale is 2, each step represents an 8th note. And finally, if the scale is set to 4, each step represents a quarter note.
+
+\subsection{Pattern editing mode}
+
+When in pattern editing mode, the buttons take on the following functions:
+
+\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
+  \node [mhbutton] (1) {1};
+  \node [mhbutton, right of=1] (2) {2};
+  \node [mhbutton, right of=2] (3) {3};
+  \node [mhbutton, right of=3] (4) {4};
+  \node [mhbutton, right of=4] (5) {5};
+  \node [hbutton, right of=5] (6) {6};
+  \node [hbutton, right of=6] (7) {7};
+  \node [hbutton, right of=7] (8) {8};
+
+  \node [hbutton, below=1] (9) {9};
+  \node [hbutton, right of=9] (10) {10};
+  \node [hbutton, right of=10] (11) {11};
+  \node [hbutton, right of=11] (12) {12};
+  \node [hbutton, right of=12] (13) {13};
+  \node [hbutton, right of=13] (14) {14};
+  \node [hbutton, right of=14] (15) {15};
+  \node [hbutton, right of=15] (16) {16};
+\end{tikzpicture}
+
+\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
+  \node [dummybutton] (1) {};
+  \node [dummybutton, right of=1] (2) {};
+  \node [circbutton, right of=2] (3) {PROGRAM};
+  \node [circbutton, right of=3] (4) {PAGE 2};
+  \node [selcircbutton, right of=4] (5) {SEQ.};
+  \node [circbutton, right of=5] (6) {SETTINGS};
+  \node [dummybutton, right of=6] (7) {};
+  \node [dummybutton, right of=7] (8) {};
+
+  \node [hcircbutton, below=1] (8) {BACK};
+  \node [circbutton, right of=8] (9) {};
+  \node [dummybutton, right of=9] (10) {};
+  \node [dummybutton, right of=10] (11) {};
+  \node [dummybutton, right of=11] (12) {};
+  \node [dummybutton, right of=12] (13) {};
+  \node [circbutton, right of=13] (14) {UP};
+  \node [circbutton, right of=14] (15) {DOWN};
+\end{tikzpicture}
+
+To help you remember which channel's pattern you're currently editing, the display will indicate a number ranging from 1 to 5, corresponding to SQ1, SQ2, TRI, NOISE and DMC, respectively.
+
+Each of the 16 top buttons represent a position in the pattern. To place a note at a particular position in the pattern, press the corresponding button. The sequencer will then enter note entering mode, indicated by the LED on the button flashing. The next section details how you enter a note.
+
+After a note has been entered, the button's LED will light up to indicate that a note is present at that position in the pattern.
+
+When you're done working on the channel's pattern, press \btn{BACK} to go back to pattern selection mode.
+
+\subsection{Note entering mode}
+
+When a note has been selected in a pattern, the LED for the corresponding button will flash. The buttons now take on the following functions:
+
+\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
+  \node [mhbutton] (1) {C\#};
+  \node [mhbutton, right of=1] (2) {D\#};
+  \node [mhbutton, right of=2] (3) {};
+  \node [mhbutton, right of=3] (4) {F\#};
+  \node [mhbutton, right of=4] (5) {G\#};
+  \node [hbutton, right of=5] (6) {A\#};
+  \node [hbutton, right of=6] (7) {OCTAVE};
+  \node [hbutton, right of=7] (8) {ERASE};
+
+  \node [hbutton, below=1] (9) {C};
+  \node [hbutton, right of=9] (10) {D};
+  \node [hbutton, right of=10] (11) {E};
+  \node [hbutton, right of=11] (12) {F};
+  \node [hbutton, right of=12] (13) {G};
+  \node [hbutton, right of=13] (14) {A};
+  \node [hbutton, right of=14] (15) {B};
+  \node [hbutton, right of=15] (16) {C};
+\end{tikzpicture}
+
+\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
+  \node [dummybutton] (1) {};
+  \node [dummybutton, right of=1] (2) {};
+  \node [circbutton, right of=2] (3) {PROGRAM};
+  \node [circbutton, right of=3] (4) {PAGE 2};
+  \node [selcircbutton, right of=4] (5) {SEQ.};
+  \node [circbutton, right of=5] (6) {SETTINGS};
+  \node [dummybutton, right of=6] (7) {};
+  \node [dummybutton, right of=7] (8) {};
+
+  \node [hcircbutton, below=1] (8) {BACK};
+  \node [hcircbutton, right of=8] (9) {SET};
+  \node [dummybutton, right of=9] (10) {};
+  \node [dummybutton, right of=10] (11) {};
+  \node [dummybutton, right of=11] (12) {};
+  \node [dummybutton, right of=12] (13) {};
+  \node [hcircbutton, right of=13] (14) {UP};
+  \node [hcircbutton, right of=14] (15) {DOWN};
+\end{tikzpicture}
+
+\subsubsection{Entering or changing notes}
+First enter the length you want for the note, using \btn{UP} and \btn{DOWN}. The length is given in a scale of 1/6 of the duration of one step, so if the length value is 3, that means that the note will last for half the duration of one step in the pattern. The length setting will be remembered the next time you enter a note again for the same channel.
+
+When the length has been set, you can enter the note by either using MIDI, or by using the built-in keyboard, as shown in the figure above. As soon as a note has been entered, the sequencer will be return to the pattern editing mode.
+
+When selecting notes on the built-in keyboard, you can change the current octave by holding \btn{OCTAVE} and using \btn{UP} and \btn{DOWN}.
+
+\subsubsection{Clearing notes}
+Press \btn{ERASE} if you want to clear the note. The sequencer will return to pattern editing mode, and the LED on the corresponding note will turn off to indicate that it is empty.
+
+\subsubsection{Editing length only}
+When the length has been set to the new value, press \btn{OK} to save the change without entering a new note.
+
+\subsubsection{Aborting}
+Press \btn{BACK} to go back to the pattern editing mode. Any changes you made to the note will be discarded.
+
 \section{SETTINGS}
 
 When in the settings mode, various aspects of how the \name operates can be changed. In this mode, the buttons have the following functions:
@@ -373,7 +553,7 @@ When in the settings mode, various aspects of how the \name operates can be chan
   \node [button, right of=10] (11) {};
   \node [button, right of=11] (12) {};
   \node [button, right of=12] (13) {};
-  \node [button, right of=13] (14) {};
+  \node [hbutton, right of=13] (14) {EXT.\\CLOCK};
   \node [hbutton, right of=14] (15) {SAMPLE\\RESET};
   \node [hbutton, right of=15] (16) {SAMPLE\\DELETE};
 \end{tikzpicture}
@@ -383,7 +563,7 @@ When in the settings mode, various aspects of how the \name operates can be chan
   \node [dummybutton, right of=1] (2) {};
   \node [circbutton, right of=2] (3) {PROGRAM};
   \node [circbutton, right of=3] (4) {PAGE 2};
-  \node [circbutton, right of=4] (5) {};
+  \node [circbutton, right of=4] (5) {SEQ.};
   \node [selcircbutton, right of=5] (6) {SETTINGS};
   \node [dummybutton, right of=6] (7) {};
   \node [dummybutton, right of=7] (8) {};
@@ -409,6 +589,9 @@ The \name can be controlled externally using MIDI.
 Each of the five sound channels can be assigned to any of the 16 MIDI channels, and will then only respond to incoming messages on the selected channel.
 
 To select a MIDI channel, enter the \lbl{SETTINGS} mode by pressing \btn{SETTINGS}. Hold down \btn{MIDI CHANNEL} and then press the desired channel's button. The LEDs will flash and you can select one of the 16 MIDI channels using the \btn{UP} and \btn{DOWN} buttons. If you select the value 0, the sound channel will not listen to any MIDI channel.
+
+\subsubsection{External clock}
+Use \btn{EXT. CLOCK} to use the incoming MIDI clock to set the tempo of the sequencer. When this is set to 1, the sequencer will not do anything unless an external MIDI device sends MIDI Clock messages. When the setting is 0, the internal tempo is used.
 
 \subsection{Checking the battery voltage}
 The NESIZER uses a battery for keeping the RAM storing the patches and samples alive when main power is disconnected. To check the battery's voltage, press and hold \btn{BATTERY VOLTAGE}. As long as the button is pressed, the battery's voltage will be shown in the display. If the battery voltage is below 2.6 V, it should be replaced. On startup, the NESIZER will give a warning if the battery is 2.5 V or less. The display will flash \verb+bL+ (Battery Low) for a short duration.
