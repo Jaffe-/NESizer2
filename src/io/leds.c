@@ -80,13 +80,18 @@ void leds_refresh(void)
 */
 {
     static uint8_t current_col = 1;
+    static uint8_t current_row_half = 0;
 
     // Fetch LED status for the rows in the current column
-    row_mirror = 0x1F & ~(isone(leds[0] & current_col)
-                          | (isone(leds[1] & current_col) << 1)
-                          | (isone(leds[2] & current_col) << 2)
-                          | (isone(leds[3] & current_col) << 3)
-                          | (isone(leds[4] & current_col) << 4));
+    if (current_row_half == 0) {
+        row_mirror = 0x1F & ~(isone(leds[0] & current_col)
+                              | (isone(leds[1] & current_col) << 1)
+                              | (isone(leds[2] & current_col) << 2));
+    }
+    else {
+        row_mirror = 0x1F & ~((isone(leds[3] & current_col) << 3)
+                              | (isone(leds[4] & current_col) << 4));
+    }
 
     // Address the row latch and put on bus
     bus_select(ROW_ADDRESS);
@@ -104,7 +109,9 @@ void leds_refresh(void)
     // Deselect to latch the value
     bus_deselect();
 
-    current_col = (current_col == 0x80) ? 1 : current_col << 1;
+    if (current_row_half == 1)
+        current_col = (current_col == 0x80) ? 1 : current_col << 1;
+    current_row_half ^= 1;
 }
 
 void leds_7seg_set(uint8_t row, uint8_t val)
