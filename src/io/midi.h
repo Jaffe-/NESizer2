@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -22,7 +22,7 @@
 
   Performs the low level functionality of receiving MIDI input. Receiving MIDI
   data is performed by the USART module of the Atmega microcontroller. Incoming
-  data is read into a ring buffer. 
+  data is read into a ring buffer.
 */
 
 

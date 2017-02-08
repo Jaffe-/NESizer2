@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -22,7 +22,7 @@
 
   Performs the low level functionality of receiving MIDI input. Receiving MIDI
   data is performed by the USART module of the Atmega microcontroller. Incoming
-  data is read into a ring buffer. 
+  data is read into a ring buffer.
 */
 
 
@@ -38,9 +38,9 @@ static uint8_t buffer_read_pos = 0;
 
 /* Length of messages, excluding the status byte */
 static const uint8_t message_lengths[] = {
-  2, 2, 2, 2, 1, 1, 2, 0,
-  0, 1, 2, 1, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0
+    2, 2, 2, 2, 1, 1, 2, 0,
+    0, 1, 2, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
 };
 
 
@@ -56,85 +56,78 @@ static inline uint8_t get_channel(uint8_t status);
 
 uint8_t midi_io_read_byte(void)
 {
-  uint8_t value = buffer[buffer_read_pos];
-   
-  if (++buffer_read_pos == BUFFER_SIZE)
-    buffer_read_pos = 0;
+    uint8_t value = buffer[buffer_read_pos];
 
-  return value;
+    if (++buffer_read_pos == BUFFER_SIZE)
+        buffer_read_pos = 0;
+
+    return value;
 }
 
 void midi_io_setup(void)
 {
-  // Enable USART receiver and set frame to 8 data bits
-  UBRR0H = 0;
-  // Period: 20 MHz / (16 * 31250) = 39
-  UBRR0L = 39;
+    // Enable USART receiver and set frame to 8 data bits
+    UBRR0H = 0;
+    // Period: 20 MHz / (16 * 31250) = 39
+    UBRR0L = 39;
 
-  UCSR0B = (1 << RXEN0);
-  UCSR0C = (0b11 << UCSZ00);
+    UCSR0B = (1 << RXEN0);
+    UCSR0C = (0b11 << UCSZ00);
 }
 
 void midi_io_handler(void)
-/* 
-Task handler for putting incoming MIDI data in buffer
-*/
-{
-  // If the RXC0 bit in UCSR0A is set, there is unread data in the receive
-  // register. 
-  while (UCSR0A & (1 << RXC0)) {
-    buffer[buffer_write_pos] = UDR0;
-	
-    if (++buffer_write_pos == BUFFER_SIZE) 
-      buffer_write_pos = 0;	
-  }  
-}
-
 /*
-uint8_t midi_is_channel_message(uint8_t command)
-{
-  return command < 8;
-}
+   Task handler for putting incoming MIDI data in buffer
 */
+{
+    // If the RXC0 bit in UCSR0A is set, there is unread data in the receive
+    // register.
+    while (UCSR0A & (1 << RXC0)) {
+        buffer[buffer_write_pos] = UDR0;
+
+        if (++buffer_write_pos == BUFFER_SIZE)
+            buffer_write_pos = 0;
+    }
+}
 
 uint8_t midi_io_bytes_remaining(void)
 /* Returns the raw unread buffer length */
 {
-  if (buffer_write_pos >= buffer_read_pos)
-    return buffer_write_pos - buffer_read_pos;
-  else 
-    return BUFFER_SIZE - (buffer_read_pos - buffer_write_pos);    
+    if (buffer_write_pos >= buffer_read_pos)
+        return buffer_write_pos - buffer_read_pos;
+    else
+        return BUFFER_SIZE - (buffer_read_pos - buffer_write_pos);
 }
 
 uint8_t midi_io_buffer_nonempty(void)
 {
-  uint8_t remaining = midi_io_bytes_remaining();
-  return ((remaining >= 1) && (remaining > message_length(get_command(buffer[buffer_read_pos]))));
+    uint8_t remaining = midi_io_bytes_remaining();
+    return ((remaining >= 1) && (remaining > message_length(get_command(buffer[buffer_read_pos]))));
 }
 
 uint8_t midi_io_read_message(struct midi_message *msg)
 /* Gets the next message from the buffer and puts the data in a struct object */
 {
-  uint8_t status;
-  // If for some reason the read position doesn't point to the first byte of a message,
-  // skip to the next one.
-  if (!((status = midi_io_read_byte()) & 0x80))
-    return 0;
-  
-  msg->command = get_command(status);
+    uint8_t status;
+    // If for some reason the read position doesn't point to the first byte of a message,
+    // skip to the next one.
+    if (!((status = midi_io_read_byte()) & 0x80))
+        return 0;
 
-  if (midi_is_channel_message(msg->command)) 
-    msg->channel = get_channel(status);
+    msg->command = get_command(status);
 
-  // Get first databyte, if any
-  if (message_length(msg->command) > 0)
-    msg->data1 = midi_io_read_byte();
-    
-  // Check the command to see if there is one or two bytes following the status byte
-  if (message_length(msg->command) > 1)
-    msg->data2 = midi_io_read_byte();
-        
-  return 1;
+    if (midi_is_channel_message(msg->command))
+        msg->channel = get_channel(status);
+
+    // Get first databyte, if any
+    if (message_length(msg->command) > 0)
+        msg->data1 = midi_io_read_byte();
+
+    // Check the command to see if there is one or two bytes following the status byte
+    if (message_length(msg->command) > 1)
+        msg->data2 = midi_io_read_byte();
+
+    return 1;
 }
 
 
@@ -142,24 +135,23 @@ uint8_t midi_io_read_message(struct midi_message *msg)
 
 static inline uint8_t message_length(uint8_t command)
 {
-  return message_lengths[command];
+    return message_lengths[command];
 }
 
 static inline uint8_t is_status_byte(uint8_t byte)
 {
-  return (byte & 0x80) != 0;
+    return (byte & 0x80) != 0;
 }
 
-static inline uint8_t get_command(uint8_t status) 
+static inline uint8_t get_command(uint8_t status)
 {
-  if ((status & 0xF0) != 0xF0) 
-    return (status >> 4) & 0x07;
-  else
-    return (status & 0x0F) + 0x08;
+    if ((status & 0xF0) != 0xF0)
+        return (status >> 4) & 0x07;
+    else
+        return (status & 0x0F) + 0x08;
 }
 
 static inline uint8_t get_channel(uint8_t status)
 {
-  return status & 0x0F;
+    return status & 0x0F;
 }
-
