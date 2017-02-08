@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -20,7 +20,7 @@
 
   Bus interface
 
-  Handles low level bus communication. 
+  Handles low level bus communication.
 */
 
 
@@ -56,39 +56,39 @@
 
 // Selects a component on the bus by sending the address to the decoder and then
 // enabling the decoder's outputs
-#define bus_select(ADDRESS)				\
-  PORTB = (PORTB & ~ADDR_m) | ((ADDRESS) << ADDR_p);	\
-  PORTD |= BUS_EN_m					
+#define bus_select(ADDRESS)                             \
+    PORTB = (PORTB & ~ADDR_m) | ((ADDRESS) << ADDR_p);	\
+    PORTD |= BUS_EN_m
 
 // Deactivates the currently selected component by deactivating the decoder's
 // output
-#define bus_deselect()				\
-  PORTD &= ~BUS_EN_m
+#define bus_deselect()                          \
+    PORTD &= ~BUS_EN_m
 
 // Puts VAL on the bus
-#define bus_write(VAL)						\
-  PORTC = (PORTC & ~DATA_PORTC_m) | ((VAL) & DATA_PORTC_m);	\
-  PORTD = (PORTD & ~DATA_PORTD_m) | ((VAL) & DATA_PORTD_m)	
+#define bus_write(VAL)                                          \
+    PORTC = (PORTC & ~DATA_PORTC_m) | ((VAL) & DATA_PORTC_m);	\
+    PORTD = (PORTD & ~DATA_PORTD_m) | ((VAL) & DATA_PORTD_m)
 
 // Reads from the bus
-#define bus_read()				\
-  (PIND & DATA_PORTD_m) | (PINC & DATA_PORTC_m)
+#define bus_read()                                  \
+    (PIND & DATA_PORTD_m) | (PINC & DATA_PORTC_m)
 
-// Configures the pins of PORTC and PORTD connected to the bus to be input pins. 
+// Configures the pins of PORTC and PORTD connected to the bus to be input pins.
 #define bus_dir_input()	                        \
-  PORTD &= ~DATA_PORTD_m;			\
-  DDRD &= ~DATA_PORTD_m;			\
-  PORTD |= DATA_PORTD_m;			\
-  PORTC &= ~DATA_PORTC_m;			\
-  DDRC &= ~DATA_PORTC_m;			\
-  PORTC |= DATA_PORTC_m
+    PORTD &= ~DATA_PORTD_m;                     \
+    DDRD &= ~DATA_PORTD_m;                      \
+    PORTD |= DATA_PORTD_m;                      \
+    PORTC &= ~DATA_PORTC_m;                     \
+    DDRC &= ~DATA_PORTC_m;                      \
+    PORTC |= DATA_PORTC_m
 
 // Configures the pins of PORTC and PORTD connected to the bus to be output pins
 #define bus_dir_output()                        \
-  PORTD &= ~DATA_PORTD_m;			\
-  DDRD |= DATA_PORTD_m;				\
-  PORTC &= ~DATA_PORTC_m;			\
-  DDRC |= DATA_PORTC_m
+    PORTD &= ~DATA_PORTD_m;                     \
+    DDRD |= DATA_PORTD_m;                       \
+    PORTC &= ~DATA_PORTC_m;                     \
+    DDRC |= DATA_PORTC_m
 
 // Setup function
 void bus_setup(void);

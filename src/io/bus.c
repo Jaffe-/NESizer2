@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -20,7 +20,7 @@
 
   Bus interface
 
-  Handles low level bus communication. 
+  Handles low level bus communication.
 */
 
 
@@ -30,11 +30,9 @@
 void bus_setup(void)
 {
     // Set address related port pins as outputs:
-    DDRB |= ADDR_m;
-    DDRD |= BUS_EN_m;
+    DDRB |= ADDR_m | BUS_EN_m;
 
     // The bus_dir_output macro will take care of setting the databus pins
     // correctly:
     bus_dir_output();
 }
-  
