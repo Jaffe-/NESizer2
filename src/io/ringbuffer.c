@@ -26,3 +26,8 @@ uint8_t ring_buffer_bytes_remaining(const struct ring_buffer *buffer)
     else
         return SIZE - (buffer->read_pos - buffer->write_pos);
 }
+
+uint8_t ring_buffer_peek(struct ring_buffer *buffer)
+{
+    return buffer->data[buffer->read_pos];
+}

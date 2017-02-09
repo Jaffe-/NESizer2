@@ -99,7 +99,7 @@ void midi_io_write_byte(uint8_t value)
 uint8_t midi_io_buffer_nonempty(void)
 {
     uint8_t remaining = ring_buffer_bytes_remaining(&input_buffer);
-    return ((remaining >= 1) && (remaining > message_length(get_command(ring_buffer_read(&input_buffer)))));
+    return ((remaining >= 1) && (remaining > message_length(get_command(ring_buffer_peek(&input_buffer)))));
 }
 
 /* Gets the next message from the buffer and puts the data in a struct object */
