@@ -128,6 +128,22 @@ uint8_t midi_io_read_message(struct midi_message *msg)
     return 1;
 }
 
+void midi_io_write_message(struct midi_message msg)
+{
+    uint8_t status;
+    if (msg.command < 0x08)
+        status = 0x80 | (msg.command << 4) | msg.channel;
+    else
+        status = 0xF0 | (msg.command - 0x08);
+    ring_buffer_write(&output_buffer, status);
+
+    if (message_length(msg.command) > 0)
+        ring_buffer_write(&output_buffer, msg.data1);
+
+    if (message_length(msg.command) > 1)
+        ring_buffer_write(&output_buffer, msg.data2);
+}
+
 
 /* Internal functions */
 
