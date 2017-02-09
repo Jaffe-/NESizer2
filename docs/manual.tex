@@ -9,6 +9,7 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes}
 \usetikzlibrary{positioning}
+\usetikzlibrary{calc}
 \usepackage{enumerate}
 \usepackage{framed}
 
@@ -39,7 +40,7 @@
 \tikzstyle{dummybutton}=[font=\tiny,rectangle, fill=white, text=white, minimum height=1cm,minimum width=1cm]
 \tikzstyle{hcircbutton}=[font=\tiny,circle, fill=black, text=white, minimum height=1.2cm,minimum width=1.2cm]
 \tikzstyle{circbutton}=[font=\tiny,circle, fill=buttongray, text=gray, minimum height=1.2cm,minimum width=1.2cm]
-\tikzstyle{selcircbutton}=[font=\tiny,circle,line width=1mm,draw=green!80, fill=black, text=white, minimum height=1.2cm,minimum width=1.2cm]
+\tikzstyle{selcircbutton}=[font=\tiny,circle,line width=0.7mm,draw=green!80, fill=black, text=white, minimum height=1.2cm,minimum width=1.2cm]
 
 \begin{titlepage}
   \begin{center}
@@ -90,43 +91,49 @@ This is the active mode when the \name starts up. When in other modes, press the
 In the programming mode, the various parameters of the sound channels and LFOs can be changed. A set of channel and LFO settings are collectively known as a \emph{patch}. The \name can save patches to memory, and has room for 100 patches.
 
 \begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [mhbutton] (1) {SQ1};
-  \node [mhbutton, right of=1] (2) {SQ2};
-  \node [mhbutton, right of=2] (3) {TRI};
-  \node [mhbutton, right of=3] (4) {NOISE};
-  \node [mhbutton, right of=4] (5) {DMC};
-  \node [hbutton, right of=5] (6) {LFO1};
-  \node [hbutton, right of=6] (7) {LFO2};
-  \node [hbutton, right of=7] (8) {LFO3};
+  \node(scope1) {
+    \begin{tikzpicture}
+      \node [mhbutton] (1) {SQ1};
+      \node [mhbutton, right of=1] (2) {SQ2};
+      \node [mhbutton, right of=2] (3) {TRI};
+      \node [mhbutton, right of=3] (4) {NOISE};
+      \node [mhbutton, right of=4] (5) {DMC};
+      \node [hbutton, right of=5] (6) {LFO1};
+      \node [hbutton, right of=6] (7) {LFO2};
+      \node [hbutton, right of=7] (8) {LFO3};
 
-  \node [hbutton, below=1] (9) {};
-  \node [hbutton, right of=9] (10) {};
-  \node [hbutton, right of=10] (11) {};
-  \node [hbutton, right of=11] (12) {};
-  \node [hbutton, right of=12] (13) {};
-  \node [hbutton, right of=13] (14) {};
-  \node [hbutton, right of=14] (15) {};
-  \node [hbutton, right of=15] (16) {};
-\end{tikzpicture}
+      \node [hbutton, below=1] (9) {};
+      \node [hbutton, right of=9] (10) {};
+      \node [hbutton, right of=10] (11) {};
+      \node [hbutton, right of=11] (12) {};
+      \node [hbutton, right of=12] (13) {};
+      \node [hbutton, right of=13] (14) {};
+      \node [hbutton, right of=14] (15) {};
+      \node [hbutton, right of=15] (16) {};
+    \end{tikzpicture}
+  };
 
-\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [dummybutton] (1) {};
-  \node [dummybutton, right of=1] (2) {};
-  \node [selcircbutton, right of=2] (3) {PROGRAM};
-  \node [selcircbutton, right of=3] (4) {PAGE 2};
-  \node [circbutton, right of=4] (5) {SEQ.};
-  \node [circbutton, right of=5] (6) {SETTINGS};
-  \node [dummybutton, right of=6] (7) {};
-  \node [dummybutton, right of=7] (8) {};
+  \node[at={($(scope1.south)$)},anchor=north] (scope2) {
+    \begin{tikzpicture}
+      \node [dummybutton] (1) {};
+      \node [dummybutton, right of=1] (2) {};
+      \node [selcircbutton, right of=2] (3) {PROGRAM};
+      \node [selcircbutton, right of=3] (4) {PAGE 2};
+      \node [circbutton, right of=4] (5) {SEQ.};
+      \node [circbutton, right of=5] (6) {SETTINGS};
+      \node [dummybutton, right of=6] (7) {};
+      \node [dummybutton, right of=7] (8) {};
 
-  \node [hcircbutton, below=1] (8) {CLEAR};
-  \node [hcircbutton, right of=8] (9) {SAVE};
-  \node [dummybutton, right of=9] (10) {};
-  \node [dummybutton, right of=10] (11) {};
-  \node [dummybutton, right of=11] (12) {};
-  \node [dummybutton, right of=12] (13) {};
-  \node [hcircbutton, right of=13] (14) {UP};
-  \node [hcircbutton, right of=14] (15) {DOWN};
+      \node [hcircbutton, below=0.1cm of 1] (9) {CLEAR};
+      \node [hcircbutton, right of=9] (10) {SAVE};
+      \node [dummybutton, right of=10] (11) {};
+      \node [dummybutton, right of=11] (12) {};
+      \node [dummybutton, right of=12] (13) {};
+      \node [dummybutton, right of=13] (14) {};
+      \node [hcircbutton, right of=14] (15) {UP};
+      \node [hcircbutton, right of=15] (16) {DOWN};
+    \end{tikzpicture}
+  };
 \end{tikzpicture}
 
 \subsection{Loading patches}
@@ -323,23 +330,49 @@ To change a channel's parameter, press and hold the desired channel's button, an
 \subsection{Note assignment}
 
 \begin{tikzpicture}[align=center, node distance=1.5cm and 0.5cm]
-  \node [mhbutton] (1) {SQ1};
-  \node [mhbutton, right of=1] (2) {SQ2};
-  \node [mhbutton, right of=2] (3) {TRI};
-  \node [mhbutton, right of=3] (4) {NOISE};
-  \node [mhbutton, right of=4] (5) {DMC};
-  \node [mbutton, right of=5] (6) {LFO1};
-  \node [mbutton, right of=6] (7) {LFO2};
-  \node [mbutton, right of=7] (8) {LFO3};
+  \node(scope1) {
+    \begin{tikzpicture}
+      \node [mhbutton] (1) {SQ1};
+      \node [mhbutton, right of=1] (2) {SQ2};
+      \node [mhbutton, right of=2] (3) {TRI};
+      \node [mhbutton, right of=3] (4) {NOISE};
+      \node [mhbutton, right of=4] (5) {DMC};
+      \node [button, right of=5] (6) {LFO1};
+      \node [button, right of=6] (7) {LFO2};
+      \node [button, right of=7] (8) {LFO3};
 
-  \node [hbutton, below=1] (9) {\textcolor{yellow}{SPLIT HALF}};
-  \node [hbutton, right of=9] (10) {\textcolor{yellow}{SPLIT}\\\textcolor{yellow}{ON/OFF}};
-  \node [hbutton, right of=10] (11) {\textcolor{yellow}{SPLIT}\\\textcolor{yellow}{SET POINT}};
-  \node [button, right of=11] (12) {};
-  \node [hbutton, right of=12] (13) {\textcolor{yellow}{LOWER}\\\textcolor{yellow}{POLY}};
-  \node [hbutton, right of=13] (14) {\textcolor{yellow}{LOWER}\\\textcolor{yellow}{MONO}};
-  \node [hbutton, right of=14] (15) {\textcolor{yellow}{(UPPER)}\\\textcolor{yellow}{POLY}};
-  \node [hbutton, right of=15] (16) {\textcolor{yellow}{(UPPER)}\\\textcolor{yellow}{MONO}};
+      \node [hbutton, below=1] (9) {\textcolor{yellow}{SPLIT HALF}};
+      \node [hbutton, right of=9] (10) {\textcolor{yellow}{SPLIT}\\\textcolor{yellow}{ON/OFF}};
+      \node [hbutton, right of=10] (11) {\textcolor{yellow}{SPLIT}\\\textcolor{yellow}{SET POINT}};
+      \node [button, right of=11] (12) {};
+      \node [hbutton, right of=12] (13) {\textcolor{yellow}{LOWER}\\\textcolor{yellow}{POLY}};
+      \node [hbutton, right of=13] (14) {\textcolor{yellow}{LOWER}\\\textcolor{yellow}{MONO}};
+      \node [hbutton, right of=14] (15) {\textcolor{yellow}{(UPPER)}\\\textcolor{yellow}{POLY}};
+      \node [hbutton, right of=15] (16) {\textcolor{yellow}{(UPPER)}\\\textcolor{yellow}{MONO}};
+    \end{tikzpicture}
+  };
+
+  \node[at={($(scope1.south)$)},anchor=north] (scope2) {
+    \begin{tikzpicture}
+      \node [dummybutton] (1) {};
+      \node [dummybutton, right of=1] (2) {};
+      \node [circbutton, right of=2] (3) {PROGRAM};
+      \node [selcircbutton, right of=3] (4) {PAGE 2};
+      \node [circbutton, right of=4] (5) {SEQ.};
+      \node [circbutton, right of=5] (6) {SETTINGS};
+      \node [dummybutton, right of=6] (7) {};
+      \node [dummybutton, right of=7] (8) {};
+
+      \node [hcircbutton, below=0.1cm of 1] (8) {CLEAR};
+      \node [hcircbutton, right of=8] (9) {SAVE};
+      \node [dummybutton, right of=9] (10) {};
+      \node [dummybutton, right of=10] (11) {};
+      \node [dummybutton, right of=11] (12) {};
+      \node [dummybutton, right of=12] (13) {};
+      \node [hcircbutton, right of=13] (14) {UP};
+      \node [hcircbutton, right of=14] (15) {DOWN};
+    \end{tikzpicture}
+  };
 \end{tikzpicture}
 
 \subsubsection{Monophonic and polyphonic modes}
@@ -364,42 +397,51 @@ While a pattern is playing, you can change the NESIZER into any of the other mod
 \subsection{Selection mode}
 
 When first entering the sequencer, it is at the \emph{selection layer}. This is where you select a pattern for playback or editing, as well as adjusting tempo.
-\begin{tikzpicture}[align=center, node distance=1.5cm]
-  \node [mhbutton] (1) {SQ1};
-  \node [mhbutton, right of=1] (2) {SQ2};
-  \node [mhbutton, right of=2] (3) {TRI};
-  \node [mhbutton, right of=3] (4) {NOISE};
-  \node [mhbutton, right of=4] (5) {DMC};
-  \node [button, right of=5] (6) {};
-  \node [button, right of=6] (7) {};
-  \node [button, right of=7] (8) {};
 
-  \node [button, below=1] (9) {};
-  \node [button, right of=9] (10) {};
-  \node [button, right of=10] (11) {};
-  \node [button, right of=11] (12) {};
-  \node [button, right of=12] (13) {};
-  \node [button, right of=13] (14) {};
-  \node [button, right of=14] (15) {};
-  \node [hbutton, right of=15] (16) {SCALE};
+\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
+  \node(scope1) {
+    \begin{tikzpicture}
+      \node [mhbutton] (1) {SQ1};
+      \node [mhbutton, right of=1] (2) {SQ2};
+      \node [mhbutton, right of=2] (3) {TRI};
+      \node [mhbutton, right of=3] (4) {NOISE};
+      \node [mhbutton, right of=4] (5) {DMC};
+      \node [hbutton, right of=5] (6) {MIDI OUT\\CHANNEL};
+      \node [button, right of=6] (7) {};
+      \node [button, right of=7] (8) {};
 
-  \node [dummybutton, below=9] (17) {};
-  \node [dummybutton, right of=17] (18) {};
-  \node [circbutton, right of=18] (19) {PROGRAM};
-  \node [circbutton, right of=19] (20) {PAGE 2};
-  \node [selcircbutton, right of=20] (21) {SEQ.};
-  \node [circbutton, right of=21] (22) {SETTINGS};
-  \node [dummybutton, right of=22] (23) {};
-  \node [dummybutton, right of=23] (24) {};
+      \node [hbutton, below=1] (9) {RECORD};
+      \node [button, right of=9] (10) {};
+      \node [button, right of=10] (11) {};
+      \node [button, right of=11] (12) {};
+      \node [button, right of=12] (13) {};
+      \node [button, right of=13] (14) {};
+      \node [hbutton, right of=14] (15) {END POINT};
+      \node [hbutton, right of=15] (16) {SCALE};
+    \end{tikzpicture}
+  };
 
-  \node [hcircbutton, below=17] (25) {PLAY/\\STOP};
-  \node [hcircbutton, right of=25] (26) {SAVE};
-  \node [dummybutton, right of=26] (27) {};
-  \node [dummybutton, right of=27] (28) {};
-  \node [dummybutton, right of=28] (29) {};
-  \node [dummybutton, right of=29] (30) {};
-  \node [hcircbutton, right of=30] (31) {UP};
-  \node [hcircbutton, right of=31] (32) {DOWN};
+  \node[at={($(scope1.south)$)},anchor=north] (scope2) {
+    \begin{tikzpicture}
+      \node [dummybutton] (1) {};
+      \node [dummybutton, right of=1] (2) {};
+      \node [circbutton, right of=2] (3) {PROGRAM};
+      \node [circbutton, right of=3] (4) {PAGE 2};
+      \node [selcircbutton, right of=4] (5) {SEQ.};
+      \node [circbutton, right of=5] (6) {SETTINGS};
+      \node [dummybutton, right of=6] (7) {};
+      \node [dummybutton, right of=7] (8) {};
+
+      \node [hcircbutton, below=0.1cm of 1] (8) {PLAY/\\STOP};
+      \node [hcircbutton, right of=8] (9) {SAVE};
+      \node [dummybutton, right of=9] (10) {};
+      \node [dummybutton, right of=10] (11) {};
+      \node [dummybutton, right of=11] (12) {};
+      \node [dummybutton, right of=12] (13) {};
+      \node [hcircbutton, right of=13] (14) {UP};
+      \node [hcircbutton, right of=14] (15) {DOWN};
+    \end{tikzpicture}
+  };
 \end{tikzpicture}
 
 \subsubsection{Selecting a sequence}
@@ -422,48 +464,63 @@ Any changes you have done to a sequence will not be saved until you press \btn{S
 
 By pressing \btn{SCALE}, you can set the \emph{scale} of the sequence. The scale determines whether the 16-step sequence should represent one, two or four bars. When the scale is 1, each step in the sequence represents a 16th note in the bar. If the scale is 2, each step represents an 8th note. And finally, if the scale is set to 4, each step represents a quarter note.
 
+\subsubsection{Setting the end point}
+
+Sequences have the full length of 16 notes by default. To create sequences that fit with other time signatures, press \btn{END POINT}. The 16 pattern position LEDs will start blinking. Press the pattern position button that you want to be the last one in the sequence. The LEDs will stop blinking, and the new end point has been set.
+
+\subsubsection{Selecting MIDI output channels}
+Each of the five channel patterns can be assigned to an output MIDI channel. To do this, press and hold \btn{MIDI OUT CHANNEL} while pressing the button for the desired channel to assign an output MIDI channel to. When playing any sequence, notes from that pattern will then play on the selected MIDI channel, while still playing on the corresponding 2A03 channel.
+
+\emph{Tip: By using a patch where no 2A03 channels are enabled, the sequencer can be used as a general MIDI sequencer.}
+
 \subsection{Pattern editing mode}
 
 When in pattern editing mode, the buttons take on the following functions:
 
 \begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [mhbutton] (1) {1};
-  \node [mhbutton, right of=1] (2) {2};
-  \node [mhbutton, right of=2] (3) {3};
-  \node [mhbutton, right of=3] (4) {4};
-  \node [mhbutton, right of=4] (5) {5};
-  \node [hbutton, right of=5] (6) {6};
-  \node [hbutton, right of=6] (7) {7};
-  \node [hbutton, right of=7] (8) {8};
+  \node(scope1) {
+    \begin{tikzpicture}
+      \node [mhbutton] (1) {1};
+      \node [mhbutton, right of=1] (2) {2};
+      \node [mhbutton, right of=2] (3) {3};
+      \node [mhbutton, right of=3] (4) {4};
+      \node [mhbutton, right of=4] (5) {5};
+      \node [hbutton, right of=5] (6) {6};
+      \node [hbutton, right of=6] (7) {7};
+      \node [hbutton, right of=7] (8) {8};
 
-  \node [hbutton, below=1] (9) {9};
-  \node [hbutton, right of=9] (10) {10};
-  \node [hbutton, right of=10] (11) {11};
-  \node [hbutton, right of=11] (12) {12};
-  \node [hbutton, right of=12] (13) {13};
-  \node [hbutton, right of=13] (14) {14};
-  \node [hbutton, right of=14] (15) {15};
-  \node [hbutton, right of=15] (16) {16};
-\end{tikzpicture}
+      \node [hbutton, below=1] (9) {9};
+      \node [hbutton, right of=9] (10) {10};
+      \node [hbutton, right of=10] (11) {11};
+      \node [hbutton, right of=11] (12) {12};
+      \node [hbutton, right of=12] (13) {13};
+      \node [hbutton, right of=13] (14) {14};
+      \node [hbutton, right of=14] (15) {15};
+      \node [hbutton, right of=15] (16) {16};
+    \end{tikzpicture}
+  };
 
-\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [dummybutton] (1) {};
-  \node [dummybutton, right of=1] (2) {};
-  \node [circbutton, right of=2] (3) {PROGRAM};
-  \node [circbutton, right of=3] (4) {PAGE 2};
-  \node [selcircbutton, right of=4] (5) {SEQ.};
-  \node [circbutton, right of=5] (6) {SETTINGS};
-  \node [dummybutton, right of=6] (7) {};
-  \node [dummybutton, right of=7] (8) {};
+  \node[at={($(scope1.south)$)},anchor=north] (scope2) {
+    \begin{tikzpicture}
+      \node [dummybutton] (1) {};
+      \node [dummybutton, right of=1] (2) {};
+      \node [circbutton, right of=2] (3) {PROGRAM};
+      \node [circbutton, right of=3] (4) {PAGE 2};
+      \node [selcircbutton, right of=4] (5) {SEQ.};
+      \node [circbutton, right of=5] (6) {SETTINGS};
+      \node [dummybutton, right of=6] (7) {};
+      \node [dummybutton, right of=7] (8) {};
 
-  \node [hcircbutton, below=1] (8) {BACK};
-  \node [circbutton, right of=8] (9) {};
-  \node [dummybutton, right of=9] (10) {};
-  \node [dummybutton, right of=10] (11) {};
-  \node [dummybutton, right of=11] (12) {};
-  \node [dummybutton, right of=12] (13) {};
-  \node [circbutton, right of=13] (14) {UP};
-  \node [circbutton, right of=14] (15) {DOWN};
+      \node [hcircbutton, below=0.1cm of 1] (9) {BACK};
+      \node [circbutton, right of=9] (10) {};
+      \node [dummybutton, right of=10] (11) {};
+      \node [dummybutton, right of=11] (12) {};
+      \node [dummybutton, right of=12] (13) {};
+      \node [dummybutton, right of=13] (14) {};
+      \node [circbutton, right of=14] (15) {UP};
+      \node [circbutton, right of=15] (16) {DOWN};
+    \end{tikzpicture}
+  };
 \end{tikzpicture}
 
 To help you remember which channel's pattern you're currently editing, the display will indicate a number ranging from 1 to 5, corresponding to SQ1, SQ2, TRI, NOISE and DMC, respectively.
@@ -479,43 +536,49 @@ When you're done working on the channel's pattern, press \btn{BACK} to go back t
 When a note has been selected in a pattern, the LED for the corresponding button will flash. The buttons now take on the following functions:
 
 \begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [mhbutton] (1) {C\#};
-  \node [mhbutton, right of=1] (2) {D\#};
-  \node [mhbutton, right of=2] (3) {};
-  \node [mhbutton, right of=3] (4) {F\#};
-  \node [mhbutton, right of=4] (5) {G\#};
-  \node [hbutton, right of=5] (6) {A\#};
-  \node [hbutton, right of=6] (7) {OCTAVE};
-  \node [hbutton, right of=7] (8) {ERASE};
+  \node(scope1) {
+    \begin{tikzpicture}
+      \node [mhbutton] (1) {C\#};
+      \node [mhbutton, right of=1] (2) {D\#};
+      \node [mhbutton, right of=2] (3) {};
+      \node [mhbutton, right of=3] (4) {F\#};
+      \node [mhbutton, right of=4] (5) {G\#};
+      \node [hbutton, right of=5] (6) {A\#};
+      \node [hbutton, right of=6] (7) {OCTAVE};
+      \node [hbutton, right of=7] (8) {ERASE};
 
-  \node [hbutton, below=1] (9) {C};
-  \node [hbutton, right of=9] (10) {D};
-  \node [hbutton, right of=10] (11) {E};
-  \node [hbutton, right of=11] (12) {F};
-  \node [hbutton, right of=12] (13) {G};
-  \node [hbutton, right of=13] (14) {A};
-  \node [hbutton, right of=14] (15) {B};
-  \node [hbutton, right of=15] (16) {C};
-\end{tikzpicture}
+      \node [hbutton, below=1] (9) {C};
+      \node [hbutton, right of=9] (10) {D};
+      \node [hbutton, right of=10] (11) {E};
+      \node [hbutton, right of=11] (12) {F};
+      \node [hbutton, right of=12] (13) {G};
+      \node [hbutton, right of=13] (14) {A};
+      \node [hbutton, right of=14] (15) {B};
+      \node [hbutton, right of=15] (16) {C};
+    \end{tikzpicture}
+  };
 
-\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [dummybutton] (1) {};
-  \node [dummybutton, right of=1] (2) {};
-  \node [circbutton, right of=2] (3) {PROGRAM};
-  \node [circbutton, right of=3] (4) {PAGE 2};
-  \node [selcircbutton, right of=4] (5) {SEQ.};
-  \node [circbutton, right of=5] (6) {SETTINGS};
-  \node [dummybutton, right of=6] (7) {};
-  \node [dummybutton, right of=7] (8) {};
+  \node[at={($(scope1.south)$)},anchor=north] (scope2) {
+    \begin{tikzpicture}
+      \node [dummybutton] (1) {};
+      \node [dummybutton, right of=1] (2) {};
+      \node [circbutton, right of=2] (3) {PROGRAM};
+      \node [circbutton, right of=3] (4) {PAGE 2};
+      \node [selcircbutton, right of=4] (5) {SEQ.};
+      \node [circbutton, right of=5] (6) {SETTINGS};
+      \node [dummybutton, right of=6] (7) {};
+      \node [dummybutton, right of=7] (8) {};
 
-  \node [hcircbutton, below=1] (8) {BACK};
-  \node [hcircbutton, right of=8] (9) {SET};
-  \node [dummybutton, right of=9] (10) {};
-  \node [dummybutton, right of=10] (11) {};
-  \node [dummybutton, right of=11] (12) {};
-  \node [dummybutton, right of=12] (13) {};
-  \node [hcircbutton, right of=13] (14) {UP};
-  \node [hcircbutton, right of=14] (15) {DOWN};
+      \node [hcircbutton, below=0.1cm of 1] (9) {BACK};
+      \node [hcircbutton, right of=9] (10) {SET};
+      \node [dummybutton, right of=10] (11) {};
+      \node [dummybutton, right of=11] (12) {};
+      \node [dummybutton, right of=12] (13) {};
+      \node [dummybutton, right of=13] (14) {};
+      \node [hcircbutton, right of=14] (15) {UP};
+      \node [hcircbutton, right of=15] (16) {DOWN};
+    \end{tikzpicture}
+  };
 \end{tikzpicture}
 
 \subsubsection{Entering or changing notes}
@@ -539,43 +602,49 @@ Press \btn{BACK} to go back to the pattern editing mode. Any changes you made to
 When in the settings mode, various aspects of how the \name operates can be changed. In this mode, the buttons have the following functions:
 
 \begin{tikzpicture}[align=center, node distance=1.5cm]
-  \node [mhbutton] (1) {SQ1};
-  \node [mhbutton, right of=1] (2) {SQ2};
-  \node [mhbutton, right of=2] (3) {TRI};
-  \node [mhbutton, right of=3] (4) {NOISE};
-  \node [mhbutton, right of=4] (5) {DMC};
-  \node [hbutton, right of=5] (6) {MIDI CHN};
-  \node [hbutton, right of=6] (7) {BATTERY\\VOLTAGE};
-  \node [hbutton, right of=7] (8) {CHIP TYPE};
+  \node(scope1) {
+    \begin{tikzpicture}
+      \node [mhbutton] (1) {SQ1};
+      \node [mhbutton, right of=1] (2) {SQ2};
+      \node [mhbutton, right of=2] (3) {TRI};
+      \node [mhbutton, right of=3] (4) {NOISE};
+      \node [mhbutton, right of=4] (5) {DMC};
+      \node [hbutton, right of=5] (6) {MIDI\\CHANNEL};
+      \node [hbutton, right of=6] (7) {BATTERY\\VOLTAGE};
+      \node [hbutton, right of=7] (8) {CHIP TYPE};
 
-  \node [hbutton, below=1] (9) {PATCH\\RESET};
-  \node [button, right of=9] (10) {};
-  \node [button, right of=10] (11) {};
-  \node [button, right of=11] (12) {};
-  \node [button, right of=12] (13) {};
-  \node [hbutton, right of=13] (14) {EXT.\\CLOCK};
-  \node [hbutton, right of=14] (15) {SAMPLE\\RESET};
-  \node [hbutton, right of=15] (16) {SAMPLE\\DELETE};
-\end{tikzpicture}
+      \node [hbutton, below=1] (9) {PATCH\\RESET};
+      \node [button, right of=9] (10) {};
+      \node [button, right of=10] (11) {};
+      \node [button, right of=11] (12) {};
+      \node [button, right of=12] (13) {};
+      \node [hbutton, right of=13] (14) {EXT.\\CLOCK};
+      \node [hbutton, right of=14] (15) {SAMPLE\\RESET};
+      \node [hbutton, right of=15] (16) {SAMPLE\\DELETE};
+    \end{tikzpicture}
+  };
 
-\begin{tikzpicture}[align=center, node distance=1.5cm, auto]
-  \node [dummybutton] (1) {};
-  \node [dummybutton, right of=1] (2) {};
-  \node [circbutton, right of=2] (3) {PROGRAM};
-  \node [circbutton, right of=3] (4) {PAGE 2};
-  \node [circbutton, right of=4] (5) {SEQ.};
-  \node [selcircbutton, right of=5] (6) {SETTINGS};
-  \node [dummybutton, right of=6] (7) {};
-  \node [dummybutton, right of=7] (8) {};
+  \node[at={($(scope1.south)$)},anchor=north] (scope2) {
+    \begin{tikzpicture}
+      \node [dummybutton] (1) {};
+      \node [dummybutton, right of=1] (2) {};
+      \node [circbutton, right of=2] (3) {PROGRAM};
+      \node [circbutton, right of=3] (4) {PAGE 2};
+      \node [circbutton, right of=4] (5) {SEQ.};
+      \node [selcircbutton, right of=5] (6) {SETTINGS};
+      \node [dummybutton, right of=6] (7) {};
+      \node [dummybutton, right of=7] (8) {};
 
-  \node [hcircbutton, below=1] (8) {CLEAR};
-  \node [hcircbutton, right of=8] (9) {SAVE};
-  \node [dummybutton, right of=9] (10) {};
-  \node [dummybutton, right of=10] (11) {};
-  \node [dummybutton, right of=11] (12) {};
-  \node [dummybutton, right of=12] (13) {};
-  \node [hcircbutton, right of=13] (14) {UP};
-  \node [hcircbutton, right of=14] (15) {DOWN};
+      \node [hcircbutton, below=0.1cm of 1] (9) {CLEAR};
+      \node [hcircbutton, right of=9] (10) {SAVE};
+      \node [dummybutton, right of=10] (11) {};
+      \node [dummybutton, right of=11] (12) {};
+      \node [dummybutton, right of=12] (13) {};
+      \node [dummybutton, right of=13] (14) {};
+      \node [hcircbutton, right of=14] (15) {UP};
+      \node [hcircbutton, right of=15] (16) {DOWN};
+    \end{tikzpicture}
+  };
 \end{tikzpicture}
 
 \btn{UP} and \btn{DOWN} can be used to select a sample number. Sample numbers that are occupied are marked with a dot on the display. A selected sample can be deleted by pressing \btn{DELETE}.
