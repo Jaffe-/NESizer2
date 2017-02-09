@@ -28,13 +28,13 @@
 
 #include <avr/io.h>
 #include "midi.h"
+#include "ringbuffer.h"
 
 #define BUFFER_SIZE 32
 
 /* Message ring buffer */
-static uint8_t buffer[BUFFER_SIZE];
-static uint8_t buffer_write_pos = 0;
-static uint8_t buffer_read_pos = 0;
+static struct ring_buffer input_buffer;
+static struct ring_buffer output_buffer;
 
 /* Length of messages, excluding the status byte */
 static const uint8_t message_lengths[] = {
@@ -54,16 +54,6 @@ static inline uint8_t get_channel(uint8_t status);
 
 /* Public functions */
 
-uint8_t midi_io_read_byte(void)
-{
-    uint8_t value = buffer[buffer_read_pos];
-
-    if (++buffer_read_pos == BUFFER_SIZE)
-        buffer_read_pos = 0;
-
-    return value;
-}
-
 void midi_io_setup(void)
 {
     // Enable USART receiver and set frame to 8 data bits
@@ -71,47 +61,55 @@ void midi_io_setup(void)
     // Period: 20 MHz / (16 * 31250) = 39
     UBRR0L = 39;
 
-    UCSR0B = (1 << RXEN0);
+    UCSR0B = (1 << TXEN0) | (1 << RXEN0);
     UCSR0C = (0b11 << UCSZ00);
 }
 
-void midi_io_handler(void)
 /*
    Task handler for putting incoming MIDI data in buffer
 */
+void midi_io_handler(void)
 {
     // If the RXC0 bit in UCSR0A is set, there is unread data in the receive
     // register.
     while (UCSR0A & (1 << RXC0)) {
-        buffer[buffer_write_pos] = UDR0;
+        ring_buffer_write(&input_buffer, UDR0);
+    }
 
-        if (++buffer_write_pos == BUFFER_SIZE)
-            buffer_write_pos = 0;
+    if (ring_buffer_bytes_remaining(&output_buffer) > 0) {
+        while (!(UCSR0A & (1 << UDRE0)));
+        UDR0 = ring_buffer_read(&output_buffer);
     }
 }
 
-uint8_t midi_io_bytes_remaining(void)
-/* Returns the raw unread buffer length */
+uint8_t midi_io_read_byte(void)
 {
-    if (buffer_write_pos >= buffer_read_pos)
-        return buffer_write_pos - buffer_read_pos;
-    else
-        return BUFFER_SIZE - (buffer_read_pos - buffer_write_pos);
+    return ring_buffer_read(&input_buffer);
+}
+
+uint8_t midi_io_bytes_remaining(void)
+{
+    return ring_buffer_bytes_remaining(&input_buffer);
+}
+
+void midi_io_write_byte(uint8_t value)
+{
+    ring_buffer_write(&output_buffer, value);
 }
 
 uint8_t midi_io_buffer_nonempty(void)
 {
-    uint8_t remaining = midi_io_bytes_remaining();
-    return ((remaining >= 1) && (remaining > message_length(get_command(buffer[buffer_read_pos]))));
+    uint8_t remaining = ring_buffer_bytes_remaining(&input_buffer);
+    return ((remaining >= 1) && (remaining > message_length(get_command(ring_buffer_read(&input_buffer)))));
 }
 
-uint8_t midi_io_read_message(struct midi_message *msg)
 /* Gets the next message from the buffer and puts the data in a struct object */
+uint8_t midi_io_read_message(struct midi_message *msg)
 {
     uint8_t status;
     // If for some reason the read position doesn't point to the first byte of a message,
     // skip to the next one.
-    if (!((status = midi_io_read_byte()) & 0x80))
+    if (!((status = ring_buffer_read(&input_buffer)) & 0x80))
         return 0;
 
     msg->command = get_command(status);
@@ -121,11 +119,11 @@ uint8_t midi_io_read_message(struct midi_message *msg)
 
     // Get first databyte, if any
     if (message_length(msg->command) > 0)
-        msg->data1 = midi_io_read_byte();
+        msg->data1 = ring_buffer_read(&input_buffer);
 
     // Check the command to see if there is one or two bytes following the status byte
     if (message_length(msg->command) > 1)
-        msg->data2 = midi_io_read_byte();
+        msg->data2 = ring_buffer_read(&input_buffer);
 
     return 1;
 }

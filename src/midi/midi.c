@@ -193,7 +193,6 @@ static inline void sysex()
             state = STATE_TRANSFER;
         }
     }
-
 }
 
 static inline void transfer()
