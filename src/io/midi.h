@@ -65,4 +65,3 @@ uint8_t midi_io_buffer_nonempty(void);
 uint8_t midi_io_read_message(struct midi_message *msg);
 uint8_t midi_io_read_byte(void);
 uint8_t midi_io_bytes_remaining(void);
-//uint8_t midi_is_channel_message(uint8_t command);
