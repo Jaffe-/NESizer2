@@ -21794,6 +21794,8 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <part name="GND27" library="supply1" deviceset="GND" device=""/>
 <part name="R24" library="rcl" deviceset="R-US_" device="0207/7" value="220"/>
 <part name="GND17" library="supply1" deviceset="GND" device=""/>
+<part name="R25" library="rcl" deviceset="R-US_" device="0207/7" value="220"/>
+<part name="GND28" library="supply1" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -21998,6 +22000,8 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <instance part="GND27" gate="1" x="121.92" y="-93.98"/>
 <instance part="R24" gate="G$1" x="129.54" y="-81.28" rot="MR180"/>
 <instance part="GND17" gate="1" x="88.9" y="-93.98"/>
+<instance part="R25" gate="G$1" x="83.82" y="-81.28" rot="MR0"/>
+<instance part="GND28" gate="1" x="76.2" y="-93.98"/>
 </instances>
 <busses>
 <bus name="DB[0..7]">
@@ -22273,14 +22277,16 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <pinref part="GND27" gate="1" pin="GND"/>
 </segment>
 <segment>
-<pinref part="X3" gate="G$1" pin="5"/>
-<wire x1="91.44" y1="-81.28" x2="88.9" y2="-81.28" width="0.1524" layer="91"/>
-<wire x1="88.9" y1="-81.28" x2="88.9" y2="-86.36" width="0.1524" layer="91"/>
 <pinref part="GND17" gate="1" pin="GND"/>
 <pinref part="X3" gate="G$1" pin="PE"/>
 <wire x1="88.9" y1="-86.36" x2="88.9" y2="-91.44" width="0.1524" layer="91"/>
 <wire x1="91.44" y1="-86.36" x2="88.9" y2="-86.36" width="0.1524" layer="91"/>
-<junction x="88.9" y="-86.36"/>
+</segment>
+<segment>
+<pinref part="R25" gate="G$1" pin="2"/>
+<wire x1="78.74" y1="-81.28" x2="76.2" y2="-81.28" width="0.1524" layer="91"/>
+<wire x1="76.2" y1="-81.28" x2="76.2" y2="-91.44" width="0.1524" layer="91"/>
+<pinref part="GND28" gate="1" pin="GND"/>
 </segment>
 </net>
 <net name="VCC" class="0">
@@ -23931,6 +23937,13 @@ the battery is switched on to supply the RAM with uninterrupted power.</descript
 <pinref part="R24" gate="G$1" pin="1"/>
 <pinref part="X3" gate="G$1" pin="4"/>
 <wire x1="116.84" y1="-81.28" x2="124.46" y2="-81.28" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$42" class="0">
+<segment>
+<pinref part="X3" gate="G$1" pin="5"/>
+<wire x1="91.44" y1="-81.28" x2="88.9" y2="-81.28" width="0.1524" layer="91"/>
+<pinref part="R25" gate="G$1" pin="1"/>
 </segment>
 </net>
 </nets>
