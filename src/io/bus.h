@@ -42,8 +42,8 @@
 // Lower 2 bits of databus in bits 4, 5 of PORTC:
 #define DATA_PORTC_m 0b00000011
 
-// Address select bit is bit 1 of PORTD:
-#define BUS_EN_m 0b00000010
+// Address select bit is bit 7 of PORTB:
+#define BUS_EN_m 0b10000000
 
 // Addresses for the various components on the bus. These are hardware determined.
 #define CPU_ADDRESS 0
@@ -57,13 +57,12 @@
 // Selects a component on the bus by sending the address to the decoder and then
 // enabling the decoder's outputs
 #define bus_select(ADDRESS)                             \
-    PORTB = (PORTB & ~ADDR_m) | ((ADDRESS) << ADDR_p);	\
-    PORTD |= BUS_EN_m
+    PORTB = BUS_EN_m | (PORTB & ~ADDR_m) | ((ADDRESS) << ADDR_p);	\
 
 // Deactivates the currently selected component by deactivating the decoder's
 // output
 #define bus_deselect()                          \
-    PORTD &= ~BUS_EN_m
+    PORTB &= ~BUS_EN_m
 
 // Puts VAL on the bus
 #define bus_write(VAL)                                          \
