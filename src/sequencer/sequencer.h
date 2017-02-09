@@ -41,6 +41,7 @@ extern uint8_t sequencer_cur_position;
 extern uint8_t sequencer_tempo_count;
 extern bool sequencer_ext_clock;
 extern uint8_t sequencer_midi_note;
+extern uint8_t sequencer_midi_out_channels[5];
 
 void sequencer_handler(void);
 void sequencer_midi_clock(void);

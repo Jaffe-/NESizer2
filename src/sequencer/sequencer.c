@@ -27,6 +27,7 @@
 #include "sequencer.h"
 #include "assigner/assigner.h"
 #include "io/memory.h"
+#include "io/midi.h"
 
 #define SEQUENCER_START 6656
 #define PATTERN_SIZE 162 // 2 * 5 * 16 + 2
@@ -39,6 +40,7 @@ uint8_t sequencer_tempo_count = 10;
 uint8_t sequencer_cur_position;
 bool sequencer_ext_clock;
 uint8_t sequencer_midi_note;
+uint8_t sequencer_midi_out_channels[5];
 
 static uint8_t duration_counter;
 static uint8_t tempo_counter;
@@ -171,11 +173,26 @@ void tick(void)
         }
 
         if (duration_counter == 0) {
-            if (current_note->length > 0)
+            if (current_note->length > 0) {
                 play_note(chn, current_note->note);
+                if (sequencer_midi_out_channels[chn] != 0) {
+                    struct midi_message msg = {.command = MIDI_CMD_NOTE_ON,
+                                               .channel = sequencer_midi_out_channels[chn] - 1,
+                                               .data1 = current_note->note,
+                                               .data2 = 127};
+                    midi_io_write_message(msg);
+                }
+            }
         }
         else if (current_note->length == duration_counter) {
             stop_note(chn);
+            if (sequencer_midi_out_channels[chn] != 0) {
+                struct midi_message msg = {.command = MIDI_CMD_NOTE_OFF,
+                                           .channel = sequencer_midi_out_channels[chn] - 1,
+                                           .data1 = current_note->note,
+                                           .data2 = 127};
+                midi_io_write_message(msg);
+            }
         }
 
     }

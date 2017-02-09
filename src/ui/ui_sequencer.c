@@ -32,6 +32,7 @@
 #include "assigner/assigner.h"
 #include "sequencer/sequencer.h"
 
+#define BTN_MIDI_OUT_CHN 5
 #define BTN_OCTAVE 6
 #define BTN_NOTE_CLEAR 7
 
@@ -111,8 +112,20 @@ void select_pattern(void)
 
     for (uint8_t b = 0; b < 5; b++) {
         if (button_pressed(b)) {
-            current_channel = b;
-            state = STATE_SELECT_NOTE;
+            if (button_on(BTN_MIDI_OUT_CHN)) {
+                getvalue.button1 = BTN_MIDI_OUT_CHN;
+                getvalue.button2 = b;
+                getvalue.parameter.target = &sequencer_midi_out_channels[b];
+                getvalue.parameter.type = RANGE;
+                getvalue.parameter.min = 0;
+                getvalue.parameter.max = 16;
+                getvalue.previous_mode = mode;
+                mode = MODE_GETVALUE;
+            }
+            else {
+                current_channel = b;
+                state = STATE_SELECT_NOTE;
+            }
         }
     }
 
