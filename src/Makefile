@@ -22,7 +22,7 @@ LDFLAGS = -mmcu=$(MCU) -Wl,-Map=$(TARGET).map
 compile: $(TARGET).hex
 
 flash: compile
-	avrdude -c $(PROGRAMMER) -P usb -p $(MCU) -B 2 -U flash:w:$(TARGET).hex
+	avrdude -c $(PROGRAMMER) -P usb -p $(MCU) -B 1 -U flash:w:$(TARGET).hex
 
 clean:
 	rm -f $(OBJ) $(TARGET).{hex,map}
