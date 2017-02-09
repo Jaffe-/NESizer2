@@ -38,9 +38,8 @@ static struct ring_buffer output_buffer;
 
 /* Length of messages, excluding the status byte */
 static const uint8_t message_lengths[] = {
-    2, 2, 2, 2, 1, 1, 2, 0,
-    0, 1, 2, 1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0
+    2, 2, 2, 2, 1, 1, 2, 0, // channel messages
+    0, 1, 2, 1              // sysex messages
 };
 
 
@@ -149,7 +148,10 @@ void midi_io_write_message(struct midi_message msg)
 
 static inline uint8_t message_length(uint8_t command)
 {
-    return message_lengths[command];
+    if (command >= 12)
+        return 0;
+    else
+        return message_lengths[command];
 }
 
 static inline uint8_t is_status_byte(uint8_t byte)
