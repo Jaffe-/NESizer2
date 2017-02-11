@@ -284,7 +284,6 @@ void ui_init(void)
 {
     // Load first patch and first pattern
     patch_load(0);
-    sequencer_pattern_load(0);
     mode = MODE_PAGE1;
 }
 

@@ -39,9 +39,9 @@ struct sequencer_pattern sequencer_pattern;
 
 uint8_t sequencer_tempo_count = 10;
 uint8_t sequencer_cur_position;
-bool sequencer_ext_clock;
+int8_t sequencer_ext_clock;
 uint8_t sequencer_midi_note;
-uint8_t sequencer_midi_out_channels[5];
+int8_t sequencer_midi_out_channels[5];
 
 static uint8_t duration_counter;
 static uint8_t tempo_counter;

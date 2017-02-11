@@ -58,7 +58,7 @@ static void enter_end_point(void);
 
 static void enter_note_init(uint8_t);
 void enter_end_point_init(void);
-static void save_init(uint8_t*);
+static void save_init(int8_t*);
 static void display_pattern(void);
 
 // Used to remember the last settings for the channel
@@ -66,7 +66,7 @@ static uint8_t channel_octave[5] = {4, 4, 4, 0, 0};
 static uint8_t channel_length[5] = {3, 3, 3, 3, 3};
 
 static uint8_t current_channel;
-static uint8_t current_pattern;
+static int8_t current_pattern;
 static uint8_t current_pos;
 static uint8_t current_note;
 
@@ -322,7 +322,7 @@ static void display_pattern(void)
     }
 }
 
-void save_init(uint8_t* pattern)
+void save_init(int8_t* pattern)
 {
     getvalue.button1 = BTN_SAVE;
     getvalue.button2 = 0xFF;

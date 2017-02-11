@@ -63,8 +63,8 @@ static enum state state = STATE_TOPLEVEL;
 static inline void toplevel(void);
 
 uint8_t settings_leds[6];
-uint8_t assign_chn;
-uint8_t assign_midi_chn;
+int8_t assign_chn;
+int8_t assign_midi_chn;
 
 void settings(void)
 {
@@ -82,7 +82,7 @@ void settings(void)
 
 static inline void toplevel(void)
 {
-    static uint8_t cur_index = 0;
+    static int8_t cur_index = 0;
     static uint8_t index_state;
 
     leds_7seg_two_digit_set(3, 4, cur_index);

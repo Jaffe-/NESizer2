@@ -49,7 +49,7 @@
 #define nop() asm volatile("nop")
 
 uint8_t io_reg_buffer[0x18];
-uint8_t reg_mirror[0x16];
+uint8_t reg_mirror[0x18];
 uint8_t reg_update[0x16];
 
 /* Assembly functions in 2a03_asm.s */

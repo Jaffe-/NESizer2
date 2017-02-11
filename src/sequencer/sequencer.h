@@ -30,8 +30,8 @@ struct sequencer_note {
 };
 
 struct sequencer_pattern {
-    uint8_t scale;
-    uint8_t end_point;
+    int8_t scale;
+    int8_t end_point;
 
     struct sequencer_note notes[5][16];
 };
@@ -39,9 +39,9 @@ struct sequencer_pattern {
 extern struct sequencer_pattern sequencer_pattern;
 extern uint8_t sequencer_cur_position;
 extern uint8_t sequencer_tempo_count;
-extern bool sequencer_ext_clock;
+extern int8_t sequencer_ext_clock;
 extern uint8_t sequencer_midi_note;
-extern uint8_t sequencer_midi_out_channels[5];
+extern int8_t sequencer_midi_out_channels[5];
 
 void sequencer_setup(void);
 void sequencer_handler(void);
