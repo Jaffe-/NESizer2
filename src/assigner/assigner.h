@@ -32,6 +32,7 @@ uint16_t note_to_period(uint8_t channel, uint8_t note);
 void play_note(uint8_t channel, uint8_t note);
 void stop_note(uint8_t channel);
 
+void assigner_setup(void);
 void assigner_notify_note_on(uint8_t midi_channel, uint8_t note);
 void assigner_notify_note_off(uint8_t midi_channel, uint8_t note);
 void assigner_midi_channel_change(uint8_t midi_channel, uint8_t chn);

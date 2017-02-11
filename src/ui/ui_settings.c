@@ -39,12 +39,14 @@
 #include "assigner/assigner.h"
 #include "io/battery.h"
 #include "sequencer/sequencer.h"
+#include "settings/settings.h"
 
 #define BTN_MIDI_CHN 5
 #define BTN_BATTERY 6
 #define BTN_PATCH_FORMAT 8
 #define BTN_PATTERN_FORMAT 9
 #define BTN_SEQ_EXTCLK 10
+#define BTN_INIT_SETTINGS 11
 #define BTN_SAMPLE_FORMAT 14
 #define BTN_SAMPLE_DELETE 15
 #define BTN_CLOCKDIV 7
@@ -109,6 +111,10 @@ static inline void toplevel(void)
             if (sample_occupied(i))
                 sample_delete(i);
         }
+    }
+
+    if (button_pressed(BTN_INIT_SETTINGS)) {
+        settings_init();
     }
 
     if (button_on(BTN_CLOCKDIV))

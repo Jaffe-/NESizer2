@@ -27,6 +27,7 @@
 #pragma once
 #include <stdint.h>
 
+void ui_programmer_setup(void);
 void programmer(void);
 
 extern uint8_t programmer_leds[6];

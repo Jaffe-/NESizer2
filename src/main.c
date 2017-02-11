@@ -35,6 +35,9 @@
 #include "io/battery.h"
 #include "modulation/periods.h"
 #include "assigner/assigner.h"
+#include "sequencer/sequencer.h"
+#include "ui/ui_sequencer.h"
+#include "ui/ui_programmer.h"
 
 int main()
 {
@@ -47,6 +50,10 @@ int main()
     midi_io_setup();
     apu_setup();
     battery_setup();
+    assigner_setup();
+    sequencer_setup();
+    ui_sequencer_setup();
+    ui_programmer_setup();
 
     // The task manager takes over from here
     task_manager();

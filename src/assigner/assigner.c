@@ -23,6 +23,7 @@
   Assigns notes from MIDI or button input to sound channels.
 */
 
+#include <stdbool.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "modulation/modulation.h"
@@ -33,7 +34,7 @@
 #include "sample/sample.h"
 #include "modulation/periods.h"
 #include "midi/midi.h"
-#include <stdbool.h>
+#include "settings/settings.h"
 
 enum assigner_mode assigner_lower_mode = MONO;
 enum assigner_mode assigner_upper_mode = MONO;
@@ -66,10 +67,22 @@ static inline void group_notify_note_off(int8_t group, uint8_t note);
 
 uint8_t midi_channels[5];
 
+void assigner_setup(void)
+{
+    for (uint8_t i = 0; i < 5; i++)
+        assigner_midi_channel_change(settings_read(MIDI_CHN + i), i);
+
+    assigner_lower_mode = settings_read(ASSIGNER_LOWER_MODE);
+    assigner_upper_mode = settings_read(ASSIGNER_UPPER_MODE);
+    assigner_split = settings_read(ASSIGNER_SPLIT);
+}
+
 /* This is called by the SETTINGS UI when the user assigns
    the given channel to a given midi channel */
 void assigner_midi_channel_change(uint8_t midi_channel, uint8_t chn)
 {
+    settings_write(MIDI_CHN + chn, midi_channel);
+
     // If new channel is different from old, remove chn as a member of its group
     if (midi_channels[chn] != midi_channel && midi_channels[chn] != 0) {
         // Avoid stuck notes

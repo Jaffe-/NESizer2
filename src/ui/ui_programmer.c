@@ -30,6 +30,7 @@
 #include "patch/patch.h"
 #include "apu/apu.h"
 #include "assigner/assigner.h"
+#include "settings/settings.h"
 
 // Page 2
 #define BTN_SPLIT 9
@@ -48,6 +49,8 @@ uint8_t programmer_leds[6];
 enum state { STATE_TOPLEVEL, STATE_SAVE };
 
 static enum state state = STATE_TOPLEVEL;
+
+static int8_t patchno = 0;
 
 #define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
@@ -240,6 +243,12 @@ static uint8_t param_length;
 
 static inline void toplevel_handler(void);
 
+void ui_programmer_setup(void)
+{
+    patchno = settings_read(PROGRAMMER_SELECTED_PATCH);
+    patch_load(patchno);
+}
+
 void programmer(void)
 /* Handles the front panel functions when at the top level
 
@@ -247,21 +256,20 @@ void programmer(void)
    of possible button presses and combinations.
 */
 {
-    static int8_t patchno = 0;
 
     // Display the selected patch number
     leds_7seg_two_digit_set(3, 4, patchno);
 
-    int8_t last_patchno = patchno;
     // Handle UP and DOWN presses
-    ui_updown(&patchno, PATCH_MIN, PATCH_MAX);
+    if (ui_updown(&patchno, PATCH_MIN, PATCH_MAX)) {
+        patch_load(patchno);
+        settings_write(PROGRAMMER_SELECTED_PATCH, patchno);
+    }
 
     if (state == STATE_SAVE) {
         patch_save(patchno);
         state = STATE_TOPLEVEL;
     }
-    else if (patchno != last_patchno)
-        patch_load(patchno);
 
     if (button_pressed(BTN_SAVE)) {
         getvalue.button1 = BTN_SAVE;
@@ -366,16 +374,26 @@ static inline void toplevel_handler(void)
     }
 
     if (mode == MODE_PAGE2) {
-        if (button_pressed(BTN_LOWER_POLY))
+        if (button_pressed(BTN_LOWER_POLY)) {
             assigner_lower_mode = POLY;
-        if (button_pressed(BTN_LOWER_MONO))
+            settings_write(ASSIGNER_LOWER_MODE, POLY);
+        }
+        if (button_pressed(BTN_LOWER_MONO)) {
             assigner_lower_mode = MONO;
-        if (button_pressed(BTN_UPPER_POLY))
+            settings_write(ASSIGNER_LOWER_MODE, MONO);
+        }
+        if (button_pressed(BTN_UPPER_POLY)) {
             assigner_upper_mode = POLY;
-        if (button_pressed(BTN_UPPER_MONO))
+            settings_write(ASSIGNER_UPPER_MODE, POLY);
+        }
+        if (button_pressed(BTN_UPPER_MONO)) {
             assigner_upper_mode = MONO;
-        if (button_pressed(BTN_SPLIT))
+            settings_write(ASSIGNER_UPPER_MODE, MONO);
+        }
+        if (button_pressed(BTN_SPLIT)) {
             assigner_split = !assigner_split;
+            settings_write(ASSIGNER_SPLIT, assigner_split);
+        }
         if (button_pressed(BTN_SET_SPLIT)) {
             struct parameter parameter = parameter_get(SPLIT_POINT);
             init_getvalue(BTN_SET_SPLIT, 0xFF, &parameter);

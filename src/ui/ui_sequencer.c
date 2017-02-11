@@ -31,6 +31,7 @@
 #include "midi/midi.h"
 #include "assigner/assigner.h"
 #include "sequencer/sequencer.h"
+#include "settings/settings.h"
 
 #define BTN_MIDI_OUT_CHN 5
 #define BTN_OCTAVE 6
@@ -83,6 +84,11 @@ void (*state_handlers[])(void) = {
 
 static inline uint8_t btn_to_note(uint8_t btn);
 
+void ui_sequencer_setup(void)
+{
+    current_pattern = settings_read(SEQUENCER_SELECTED_SEQ);
+    sequencer_pattern_load(current_pattern);
+}
 
 void sequencer(void)
 {
@@ -103,8 +109,10 @@ void select_pattern(void)
         state = STATE_TOPLEVEL;
     }
 
-    else if (ui_updown((int8_t*)&current_pattern, 0, 99))
+    else if (ui_updown((int8_t*)&current_pattern, 0, 99)) {
         sequencer_pattern_load(current_pattern);
+        settings_write(SEQUENCER_SELECTED_SEQ, current_pattern);
+    }
 
     else if (button_pressed(BTN_SAVE)) {
         save_init(&current_pattern);

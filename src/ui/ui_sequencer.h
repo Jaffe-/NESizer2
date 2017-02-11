@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+void ui_sequencer_setup(void);
 void sequencer(void);
 void sequence_handler(void);
 

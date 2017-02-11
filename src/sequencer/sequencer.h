@@ -43,6 +43,7 @@ extern bool sequencer_ext_clock;
 extern uint8_t sequencer_midi_note;
 extern uint8_t sequencer_midi_out_channels[5];
 
+void sequencer_setup(void);
 void sequencer_handler(void);
 void sequencer_midi_clock(void);
 void sequencer_pattern_load(uint8_t pattern);

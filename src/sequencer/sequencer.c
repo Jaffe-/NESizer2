@@ -28,6 +28,7 @@
 #include "assigner/assigner.h"
 #include "io/memory.h"
 #include "io/midi.h"
+#include "settings/settings.h"
 
 #define SEQUENCER_START 6656
 #define PATTERN_SIZE 162 // 2 * 5 * 16 + 2
@@ -54,6 +55,11 @@ uint8_t enter_note_chn;
 void tick(void);
 
 struct memory_context ctx;
+
+void sequencer_setup(void)
+{
+    sequencer_ext_clock = settings_read(SEQUENCER_EXT_CLK);
+}
 
 void sequencer_handler(void)
 {
