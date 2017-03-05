@@ -43,7 +43,7 @@
 #define JMP_abs 0x4C
 
 // Pins used to interface with 6502
-#define RES 100             // PC2
+#define RES 0b100             // PC2
 #define RW 0b1000          // PC3
 
 uint8_t io_reg_buffer[0x18];
