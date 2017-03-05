@@ -38,6 +38,7 @@
 #define BTN_NOTE_CLEAR 7
 
 #define BTN_RECORD 8
+#define BTN_CLEAR_SEQUENCE 9
 #define BTN_END_POINT 14
 #define BTN_SCALE 15
 
@@ -62,8 +63,8 @@ static void save_init(int8_t*);
 static void display_pattern(void);
 
 // Used to remember the last settings for the channel
-static uint8_t channel_octave[5] = {4, 4, 4, 0, 0};
-static uint8_t channel_length[5] = {3, 3, 3, 3, 3};
+static int8_t channel_octave[5] = {4, 4, 4, 0, 0};
+static int8_t channel_length[5] = {3, 3, 3, 3, 3};
 
 static uint8_t current_channel;
 static int8_t current_pattern;
@@ -116,6 +117,10 @@ void select_pattern(void)
 
     else if (button_pressed(BTN_SAVE)) {
         save_init(&current_pattern);
+    }
+
+    if (button_pressed(BTN_CLEAR_SEQUENCE)) {
+        sequencer_clear_sequence();
     }
 
     for (uint8_t b = 0; b < 5; b++) {
@@ -260,7 +265,7 @@ void enter_note(void)
 
     else {
         leds_7seg_two_digit_set(3, 4, channel_length[current_channel]);
-        ui_updown((int8_t*)&channel_length[current_channel], 1, 4);
+        ui_updown(&channel_length[current_channel], 1, 5);
     }
 
 }

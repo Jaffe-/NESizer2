@@ -152,7 +152,17 @@ void sequencer_pattern_save(uint8_t pattern)
     memory_write_sequential(&ctx, sequencer_pattern.end_point);
 }
 
-void sequencer_pattern_init()
+void sequencer_clear_sequence(void)
+{
+    for (uint8_t chn = 0; chn < 5; chn++) {
+        for (uint8_t i = 0; i < 16; i++) {
+            sequencer_pattern.notes[chn][i].note = 0;
+            sequencer_pattern.notes[chn][i].length = 0;
+        }
+    }
+}
+
+void sequencer_pattern_init(void)
 {
     memory_set_address(&ctx, SEQUENCER_START);
     for (uint8_t pat = 0; pat < 100; pat++) {

@@ -53,4 +53,5 @@ void sequencer_record(uint8_t chn);
 void sequencer_stop(void);
 void sequencer_continue(void);
 void sequencer_single_note(uint8_t chn);
-void sequencer_pattern_init();
+void sequencer_pattern_init(void);
+void sequencer_clear_sequence(void);
