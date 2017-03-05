@@ -38,32 +38,37 @@
 
 struct square {
     int8_t duty;             // 2-bit integer
-
-    // Used internally:
     uint8_t volume;
     uint16_t period;
+
+    union sq_vol* vol;
+    union sq_sweep* sweep;
+    union sq_lo* lo;
+    union sq_hi* hi;
 };
 
 struct triangle {
     int8_t silenced;          // BOOL
-
-    // Used internally:
     uint16_t period;
+
+    union tri_linear* linear;
+    union tri_lo* lo;
+    union tri_hi* hi;
 };
 
 struct noise {
     int8_t loop;             // BOOL: Loop mode (pitched noise)
-
-    // Used internally:
     uint8_t volume : 4;
     uint8_t period : 4;
+
+    union noise_vol* vol;
+    union noise_lo* lo;
+    union noise_hi* hi;
 };
 
 struct dmc {
     int8_t sample_loop;       // BOOL: Wether or not sample is automatically looped
     uint8_t sample_number;
-
-    // Used internally:
     uint8_t sample_enabled : 1;
     uint8_t data : 7;
 

@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2016 Johan Fjeldtvedt
+  Copyright 2014-2017 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -66,79 +66,93 @@
 #define SND_CHN 0x15
 
 
-/* Common bit masks and positions */
-
-#define VOLUME_m 0b00001111
-#define PERIOD_HI_m 0b00000111
-
-#define VOLUME_p 0
-#define PERIOD_HI_p 0
-
-#define LENGTH_CNTR_LOAD_p 3
-
-
 /* Square channels */
 
-// flags
-#define SQ_LENGTH_CNTR_DISABLE 0b00100000
-#define SQ_CONSTANT_VOLUME 0b00010000
+union sq_vol {
+    uint8_t byte;
+    struct {
+        uint8_t volume_envelope : 4;
+        uint8_t constant_volume : 1;
+        uint8_t length_cntr_halt : 1;
+        uint8_t duty : 2;
+    } __attribute__((packed));
+};
 
-// bit positions
-#define SQ_DUTY_p 6
-#define SQ_VOLUME_p 0
-#define SQ_LENGTH_CNTR_LOAD_p 3
+union sq_sweep {
+    uint8_t byte;
+    struct {
+        uint8_t shift : 3;
+        uint8_t negate : 1;
+        uint8_t period : 3;
+        uint8_t enabled : 1;
+    } __attribute__((packed));
+};
 
-// masks
-#define SQ_DUTY_m 0b11000000
+union sq_lo {
+    uint8_t byte;
+    uint8_t timer_low;
+};
 
+union sq_hi {
+    uint8_t byte;
+    struct {
+        uint8_t timer_high : 3;
+        uint8_t length_cntr_load : 5;
+    } __attribute__((packed));
+};
 
-/* Triangle channel */
+/* Triangle */
 
-// flags
-#define TRI_LENGTH_CNTR_DISABLE 0b10000000
+union tri_linear {
+    uint8_t byte;
+    struct {
+        uint8_t linear_counter_load : 7;
+        uint8_t length_cntr_disable: 1;
+    } __attribute__((packed));
+};
 
-// bit positions
-#define TRI_LINEAR_RELOAD_bp 0
-#define TRI_LENGTH_CNTR_LOAD_bp 3
+union tri_lo {
+    uint8_t byte;
+    uint8_t timer_low;
+};
 
+union tri_hi {
+    uint8_t byte;
+    struct {
+        uint8_t timer_high : 3;
+        uint8_t length_cntr_load : 5;
+    } __attribute__((packed));
+};
 
-/* Noise channel */
+/* Noise */
 
-// flags
-#define NOISE_LENGTH_CNTR_DISABLE 0b00100000
-#define NOISE_CONSTANT_VOLUME 0b00010000
+union noise_vol {
+    uint8_t byte;
+    struct {
+        uint8_t volume_envelope : 4;
+        uint8_t constant_volume : 1;
+        uint8_t length_cntr_halt : 1;
+        uint8_t unused : 2;
+    } __attribute__((packed));
+};
 
-// bit positions
-#define NOISE_LENGTH_CNTR_LOAD_bp 3
-#define NOISE_LOOP_p 7
-#define NOISE_PERIOD_p 0
-#define NOISE_HW_ENV_p 4
+union noise_lo {
+    uint8_t byte;
+    struct {
+        uint8_t period : 4;
+        uint8_t unused : 3;
+        uint8_t loop : 1;
+    } __attribute__((packed));
+};
 
-// masks
-#define NOISE_LOOP_m 0b10000000
-#define NOISE_PERIOD_m 0b00001111
-#define NOISE_HW_ENV_m 0b00010000
+union noise_hi {
+    uint8_t byte;
+    struct {
+        uint8_t unused : 3;
+        uint8_t length_cntr_load : 5;
+    } __attribute__((packed));
+};
 
-/* DMC channel */
-
-// flags
-#define DMC_IRQ_ENABLE 0b10000000
-#define DMC_LOOP_SAMPLE 0b01000000
-
-
-/* Control register */
-
-#define DMC_ENABLE_m 0b00010000
-#define NOISE_ENABLE_m 0b00001000
-#define TRI_ENABLE_m 0b00000100
-#define SQ2_ENABLE_m 0b00000010
-#define SQ1_ENABLE_m 0b00000001
-
-#define DMC_ENABLE_p 4
-#define NOISE_ENABLE_p 3
-#define TRI_ENABLE_p 2
-#define SQ2_ENABLE_p 1
-#define SQ1_ENABLE_p 0
 
 struct square sq1, sq2;
 struct triangle tri;
@@ -152,43 +166,45 @@ inline void register_update(uint8_t reg, uint8_t val)
 
 /* Square channels */
 
-inline void sq_setup(uint8_t n)
+inline void sq_setup(uint8_t n, struct square* sq)
 {
-    register_update(SQ1_VOL + n * 4, SQ_LENGTH_CNTR_DISABLE | SQ_CONSTANT_VOLUME);
-    register_update(SQ1_SWEEP + n * 4, 0x08);
-    register_update(SQ1_HI + n * 4, 1 << LENGTH_CNTR_LOAD_p);
+    sq->vol = (union sq_vol*)&io_reg_buffer[SQ1_VOL + 4 * n];
+    sq->sweep = (union sq_sweep*)&io_reg_buffer[SQ1_SWEEP + 4 * n];
+    sq->lo = (union sq_lo*)&io_reg_buffer[SQ1_LO + 4 * n];
+    sq->hi = (union sq_hi*)&io_reg_buffer[SQ1_HI + 4 * n];
+
+    sq->vol->length_cntr_halt = 1;
+    sq->vol->constant_volume = 1;
+    sq->sweep->negate = 1;
+    sq->hi->length_cntr_load = 1;
 }
 
-inline void sq_update(uint8_t n, struct square* sq)
+inline void sq_update(struct square* sq)
 {
-    register_update(SQ1_VOL + n * 4, (io_reg_buffer[SQ1_VOL + n * 4] & ~(SQ_DUTY_m | VOLUME_m))
-                    | sq->volume << VOLUME_p
-                    | sq->duty << SQ_DUTY_p);
-
-    register_update(SQ1_LO + n * 4, sq->period & 0xFF);
-
-    register_update(SQ1_HI + n * 4, 0b1000
-                    | (((sq->period >> 8) & 0x07) << PERIOD_HI_p));
+    sq->vol->duty = sq->duty;
+    sq->vol->volume_envelope = sq->volume;
+    sq->lo->timer_low = sq->period & 0xFF;
+    sq->hi->timer_high = (sq->period >> 8);
 }
 
 void sq1_setup(void)
 {
-    sq_setup(0);
+    sq_setup(0, &sq1);
 }
 
 void sq2_setup(void)
 {
-    sq_setup(1);
+    sq_setup(1, &sq2);
 }
 
 void sq1_update(void)
 {
-    sq_update(0, &sq1);
+    sq_update(&sq1);
 }
 
 void sq2_update(void)
 {
-    sq_update(1, &sq2);
+    sq_update(&sq2);
 }
 
 
@@ -196,36 +212,49 @@ void sq2_update(void)
 
 void tri_setup(void)
 {
-    register_update(TRI_LINEAR, TRI_LENGTH_CNTR_DISABLE | 1);
+    tri.linear = (union tri_linear*)&io_reg_buffer[TRI_LINEAR];
+    tri.lo = (union tri_lo*)&io_reg_buffer[TRI_LO];
+    tri.hi = (union tri_hi*)&io_reg_buffer[TRI_HI];
+
+    tri.linear->length_cntr_disable = 1;
 }
 
 void tri_update(void)
 {
-    register_update(TRI_LO, tri.period & 0xFF);
-
-    register_update(TRI_HI, (!tri.silenced ? 0b1000 : 0)
-                    | ((tri.period >> 8) & 0x07) << PERIOD_HI_p);
-
-    register_update(TRI_LINEAR, tri.silenced ? 0 : (TRI_LENGTH_CNTR_DISABLE | 1));
+    tri.lo->timer_low = tri.period & 0xFF;
+    tri.hi->length_cntr_load = !tri.silenced ? 1 : 0;
+    tri.hi->timer_high = (tri.period >> 8);
+    if (!tri.silenced) {
+        tri.hi->length_cntr_load = 1;
+        tri.linear->length_cntr_disable = 1;
+        tri.linear->linear_counter_load = 1;
+    }
+    else {
+        tri.hi->length_cntr_load = 0;
+        tri.linear->length_cntr_disable = 0;
+        tri.linear->linear_counter_load = 0;
+    }
 }
 
 
 /* Noise channel */
 
-void noise_setup(void){
+void noise_setup(void)
+{
+    noise.vol = (union noise_vol*)&io_reg_buffer[NOISE_VOL];
+    noise.lo = (union noise_lo*)&io_reg_buffer[NOISE_LO];
+    noise.hi = (union noise_hi*)&io_reg_buffer[NOISE_HI];
 
-    register_update(NOISE_VOL, NOISE_LENGTH_CNTR_DISABLE | NOISE_CONSTANT_VOLUME);
-    register_update(NOISE_HI, 0b1000);
+    noise.vol->length_cntr_halt = 1;
+    noise.vol->constant_volume = 1;
+    noise.hi->length_cntr_load = 1;
 }
 
 void noise_update(void)
 {
-    register_update(NOISE_VOL, (io_reg_buffer[NOISE_VOL] & ~VOLUME_m)
-                    | noise.volume << VOLUME_p);
-
-    register_update(NOISE_LO, (io_reg_buffer[NOISE_VOL] & ~(NOISE_LOOP_m | NOISE_PERIOD_m))
-                    | noise.loop << NOISE_LOOP_p
-                    | noise.period << NOISE_PERIOD_p);
+    noise.vol->volume_envelope = noise.volume;
+    noise.lo->loop = noise.loop;
+    noise.lo->period = noise.period;
 }
 
 /* DMC channel */
