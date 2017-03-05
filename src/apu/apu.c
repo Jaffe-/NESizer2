@@ -29,14 +29,6 @@
 #include "lfo/lfo.h"
 #include "io/2a03.h"
 
-/* APU channel bit masks */
-
-#define SQ1_bm 1
-#define SQ2_bm 0b10
-#define TRI_bm 0b100
-#define NOISE_bm 0b1000
-#define DMC_bm 0b10000
-
 
 /* The APU registers (discarding the 0x40 upper byte) */
 
@@ -187,26 +179,6 @@ inline void sq_update(struct square* sq)
     sq->hi->timer_high = (sq->period >> 8);
 }
 
-void sq1_setup(void)
-{
-    sq_setup(0, &sq1);
-}
-
-void sq2_setup(void)
-{
-    sq_setup(1, &sq2);
-}
-
-void sq1_update(void)
-{
-    sq_update(&sq1);
-}
-
-void sq2_update(void)
-{
-    sq_update(&sq2);
-}
-
 
 /* Triangle channel */
 
@@ -284,12 +256,8 @@ void dmc_update_sample_raw(void)
 
 void dmc_update_sample(void)
 {
-
     if (dmc.sample.type == SAMPLE_TYPE_RAW)
         dmc_update_sample_raw();
-    //    else
-    //	dmc_update_sample_dpcm();
-
 }
 
 void apu_refresh_channel(uint8_t ch_number)
@@ -334,9 +302,9 @@ inline void apu_update_channel(uint8_t chn)
 {
     switch (chn) {
     case CHN_SQ1:
-        sq1_update(); break;
+        sq_update(&sq1); break;
     case CHN_SQ2:
-        sq2_update(); break;
+        sq_update(&sq2); break;
     case CHN_TRI:
         tri_update(); break;
     case CHN_NOISE:
@@ -369,8 +337,8 @@ void apu_dmc_update_handler(void)
 // Setup routine
 void apu_setup(void)
 {
-    sq1_setup();
-    sq2_setup();
+    sq_setup(0, &sq1);
+    sq_setup(1, &sq2);
     tri_setup();
     noise_setup();
     dmc_setup();
