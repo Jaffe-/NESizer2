@@ -30,7 +30,7 @@
 #include "midi.h"
 #include "ringbuffer.h"
 
-#define BUFFER_SIZE 32
+#define BUFFER_SIZE 8
 
 /* Message ring buffer */
 static struct ring_buffer input_buffer;
