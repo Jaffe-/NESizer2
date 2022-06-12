@@ -57,6 +57,8 @@ struct mode_data {
     void (*handler)(void);
 };
 
+struct getvalue_config getvalue;
+
 void getvalue_handler(void);
 void battery_check(void);
 void transfer(void);

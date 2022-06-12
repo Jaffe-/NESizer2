@@ -103,7 +103,7 @@ struct getvalue_config {
 extern uint8_t prev_input[3];
 extern uint8_t* button_leds;
 
-struct getvalue_config getvalue;
+extern struct getvalue_config getvalue;
 
 void ui_handler(void);
 void ui_leds_handler(void);
