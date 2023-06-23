@@ -63,7 +63,6 @@ void midi_channel_apply(struct midi_message* msg)
     case MIDI_CMD_NOTE_ON:
         if (getvalue.state == ACTIVE && getvalue.parameter.type == NOTE) {
             getvalue.midi_note = msg->data1;
-            getvalue.midi_note_vel = msg->data2;
         } else {
             sequencer_midi_note = msg->data1;
             if (msg->data2 == 0) {
