@@ -61,12 +61,15 @@ void midi_channel_apply(struct midi_message* msg)
     uint8_t midi_channel = get_midi_channel(msg->channel);
     switch (msg->command) {
     case MIDI_CMD_NOTE_ON:
-        if (getvalue.state == ACTIVE &&
-            getvalue.parameter.type == NOTE)
+        if (getvalue.state == ACTIVE && getvalue.parameter.type == NOTE) {
             getvalue.midi_note = msg->data1;
-        else {
+        } else {
             sequencer_midi_note = msg->data1;
-            assigner_notify_note_on(midi_channel, msg->data1);
+            if (msg->data2 == 0) {
+                assigner_notify_note_off(midi_channel, msg->data1);
+            } else {
+                assigner_notify_note_on(midi_channel, msg->data1);
+            }
         }
         break;
 
