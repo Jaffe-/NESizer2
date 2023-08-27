@@ -36,10 +36,13 @@
 #include "midi/midi.h"
 #include "modulation/modulation.h"
 #include "patch/patch.h"
+#include "io/memory.h"
+
+#include <stdbool.h>
 
 #define BLINK_CNT 30
 
-enum mode mode = MODE_BATTERY_CHECK;
+enum mode mode = MODE_STARTUP_CHECK;
 struct getvalue_config getvalue;
 
 uint8_t prev_input[3] = {0};
@@ -61,7 +64,7 @@ struct mode_data {
 struct getvalue_config getvalue;
 
 void getvalue_handler(void);
-void battery_check(void);
+void show_startup_errors(void);
 void transfer(void);
 
 struct mode_data modes[] = {
@@ -83,9 +86,9 @@ struct mode_data modes[] = {
     [MODE_TRANSFER] = {.button = 0xFF,
                        .leds = 0,
                        .handler = transfer},
-    [MODE_BATTERY_CHECK] = {.button = 0xFF,
+    [MODE_STARTUP_CHECK] = {.button = 0xFF,
                             .leds = 0,
-                            .handler = battery_check}
+                            .handler = show_startup_errors}
 };
 
 void ui_handler(void)
@@ -290,9 +293,12 @@ void ui_init(void)
     mode = MODE_PAGE1;
 }
 
-void battery_check(void)
+uint8_t ui_startup_errors;
+
+void show_startup_errors(void)
 {
-    if (battery_read() > 25) {
+    // Done when error mask is empty
+    if (!ui_startup_errors) {
         ui_init();
         return;
     }
@@ -300,20 +306,35 @@ void battery_check(void)
     static uint8_t flash_count;
     static uint8_t duration_count;
     static uint8_t disp_on = 1;
+    static uint8_t current_error = 0;
 
+    if (!(ui_startup_errors & (1 << current_error))) {
+        current_error++;
+        return;
+    }
+
+    leds[3] = 0;
+    leds[4] = 0;
     if (disp_on) {
-        leds[3] = 0b00111110; // b
-        leds[4] = 0b00011100; // L
-    } else {
-        leds[3] = 0;
-        leds[4] = 0;
+        switch (current_error) {
+        case UI_STARTUP_ERROR_BATTERY_LOW:
+            leds[3] = 0b00111110; // b
+            leds[4] = 0b00011100; // L
+            break;
+        case UI_STARTUP_ERROR_CORRUPT_RAM:
+            leds[3] = 0b00011010; // c
+            leds[4] = 0b00001010; // r
+            break;
+        }
     }
 
     if (++duration_count == BATT_FLASH_DURATION) {
         duration_count = 0;
         disp_on ^= 1;
-        if (disp_on && ++flash_count == 6)
-            ui_init();
+        if (disp_on && ++flash_count == 6) {
+            flash_count = 0;
+            ui_startup_errors &= ~(1 << current_error);
+        }
     }
 }
 

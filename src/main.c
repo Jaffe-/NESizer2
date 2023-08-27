@@ -38,19 +38,59 @@
 #include "sequencer/sequencer.h"
 #include "ui/ui_sequencer.h"
 #include "ui/ui_programmer.h"
+#include "ui/ui.h"
+#include "settings/settings.h"
+#include "patch/patch.h"
+
+#define MAGIC 0xdeadbeef
+
+static bool ram_integrity_check(void)
+{
+    for (uint8_t i = 0; i < 8; i++)
+        if (memory_read_dword(4*i) != MAGIC)
+            return false;
+    return true;
+}
+
+static void ram_initialize(void)
+{
+    for (uint8_t i = 0; i < 8; i++)
+        memory_write_dword(4*i, MAGIC);
+    settings_init();
+    for (uint8_t i = 0; i < 100; i++)
+        patch_initialize(i);
+    sequencer_pattern_init();
+}
+
+void startup_check(void)
+{
+    bool battery_good = battery_read() > 25;
+    bool ram_good = ram_integrity_check();
+    ui_startup_errors =
+        ((battery_good ? 0 : 1) << UI_STARTUP_ERROR_BATTERY_LOW)
+        | ((ram_good ? 0 : 1) << UI_STARTUP_ERROR_CORRUPT_RAM);
+
+    if (!ram_good) {
+        ram_initialize();
+    }
+}
 
 int main()
 {
-    // Set up low level systems:
+    // Set up low level:
     bus_setup();
     io_setup();
-    periods_setup();
     memory_setup();
-    task_setup();
     midi_io_setup();
     apu_setup();
     battery_setup();
+
+    startup_check();
+
+    // Set up higher level:
+    task_setup();
     assigner_setup();
+    periods_setup();
     sequencer_setup();
     ui_sequencer_setup();
     ui_programmer_setup();

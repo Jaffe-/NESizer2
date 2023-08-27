@@ -83,10 +83,16 @@ enum mode {
     MODE_SETTINGS,
     MODE_GETVALUE,
     MODE_TRANSFER,
-    MODE_BATTERY_CHECK
+    MODE_STARTUP_CHECK
 };
 
 extern enum mode mode;
+
+enum ui_startup_error_bits {
+    UI_STARTUP_ERROR_BATTERY_LOW = 0,
+    UI_STARTUP_ERROR_CORRUPT_RAM,
+};
+extern uint8_t ui_startup_errors;
 
 struct getvalue_config {
     struct parameter parameter;

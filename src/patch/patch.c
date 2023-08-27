@@ -33,6 +33,8 @@
 
 #define PATCH_SIZE NUM_PARAMETERS
 
+const uint16_t PATCH_MEMORY_END;
+
 void patch_initialize(uint8_t num)
 /* Initializes patch memory by writing initial values to the patch memory */
 {

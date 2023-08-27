@@ -681,5 +681,12 @@ Press \btn{PATCH RESET} to delete all patches. Every patch will be initialized t
 
 When in SETTINGS mode, the up and down buttons are used to select DMC samples. A dot appearing on the display indicates that the selected sample location is occupied. When an occupied sample is selected, it can be deleted by pressing \btn{SAMPLE DELETE}. All samples can be erased by pressing \btn{SAMPLE RESET}.
 
+\subsection{Startup indicators}
+If an error has occured, the display will flash some indicators to tell which errors were found during startup.
+The errors that can occur are:
+\begin{itemize}
+\item \verb+bL+: Battery low (less than 2.5 V measured) - battery should be changed
+\item \verb+cr+: Corrupt RAM - RAM contents will be re-initialized automatically
+\end{itemize}
 
 \end{document}
