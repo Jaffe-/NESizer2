@@ -41,8 +41,31 @@
 #include "assigner/assigner.h"
 #include "sequencer/sequencer.h"
 
+void misc_handler(void)
+{
+    static uint8_t cycle = 0;
+
+    if (cycle >= 2)
+        return;
+
+    if (cycle == 0) {
+        for (uint8_t i = 0; i < 4; i++) {
+            assigner_enabled[i] = 1;
+            play_note(i, 24);
+        }
+    }
+
+    if (cycle == 1) {
+        for (uint8_t i = 0; i < 4; i++) {
+            stop_note(i);
+            assigner_enabled[i] = 0;
+        }
+    }
+    cycle++;
+}
+
 struct task {
-    void (*const handler)();
+    void (*const handler)(void);
     const uint8_t period;
     uint8_t counter;
 };
@@ -61,7 +84,8 @@ struct task tasks[] = {
     {.handler = &leds_refresh, .period = 20, .counter = 8},
     {.handler = &input_refresh, .period = 80, .counter = 8},
     {.handler = &ui_handler, .period = 80, .counter = 9},
-    {.handler = &ui_leds_handler, .period = 80, .counter = 9}
+    {.handler = &ui_leds_handler, .period = 80, .counter = 9},
+    {.handler = &misc_handler, .period = 250, .counter = 10},
 };
 
 static const uint8_t num_tasks = sizeof(tasks)/sizeof(struct task);
