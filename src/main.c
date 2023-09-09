@@ -42,12 +42,16 @@
 #include "settings/settings.h"
 #include "patch/patch.h"
 
+#define F_CPU 20000000L
+#include <util/delay.h>
+
 #define MAGIC 0xdeadbeef
+#define MAGIC_ADDR 4
 
 static bool ram_integrity_check(void)
 {
     for (uint8_t i = 0; i < 8; i++)
-        if (memory_read_dword(4*i) != MAGIC)
+        if (memory_read_dword(MAGIC_ADDR+4*i) != MAGIC)
             return false;
     return true;
 }
@@ -55,7 +59,7 @@ static bool ram_integrity_check(void)
 static void ram_initialize(void)
 {
     for (uint8_t i = 0; i < 8; i++)
-        memory_write_dword(4*i, MAGIC);
+        memory_write_dword(MAGIC_ADDR+4*i, MAGIC);
     settings_init();
     for (uint8_t i = 0; i < 100; i++)
         patch_initialize(i);
