@@ -68,6 +68,8 @@ static void ram_initialize(void)
 
 void startup_check(void)
 {
+    /* This delay is necessary to get a stable and correct voltage measurement */
+    _delay_us(500);
     bool battery_good = battery_read() > 25;
     bool ram_good = ram_integrity_check();
     ui_startup_errors =

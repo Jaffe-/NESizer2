@@ -38,7 +38,7 @@ void battery_setup(void)
 uint8_t battery_read(void)
 {
     uint32_t val = ADCH;
-    uint16_t voltage_rounded = (5 * 100 * val) / 256 + 5;
+    uint16_t voltage_rounded = (5 * 100 * val) / 256;
 
     // Start new conversion
     ADCSRA |= (1 << ADSC);
