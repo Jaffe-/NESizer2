@@ -146,8 +146,12 @@ static inline void toplevel(void)
         }
     }
 
+    static uint8_t battery_level;
+    if (button_pressed(BTN_BATTERY)) {
+        battery_level = battery_read();
+    }
     if (button_on(BTN_BATTERY)) {
-        leds_7seg_two_digit_set(3, 4, battery_read());
+        leds_7seg_two_digit_set(3, 4, battery_level);
         leds_7seg_dot_on(3);
     }
 
