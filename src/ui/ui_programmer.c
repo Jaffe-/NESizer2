@@ -245,9 +245,6 @@ static inline void toplevel_handler(void);
 
 void ui_programmer_setup(void)
 {
-    for (uint8_t i = 0; i < 4; i++) {
-        stop_note(i);
-    }
     patchno = settings_read(PROGRAMMER_SELECTED_PATCH);
     patch_load(patchno);
 }

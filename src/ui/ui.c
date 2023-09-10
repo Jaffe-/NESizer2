@@ -37,12 +37,13 @@
 #include "modulation/modulation.h"
 #include "patch/patch.h"
 #include "io/memory.h"
+#include "assigner/assigner.h"
 
 #include <stdbool.h>
 
 #define BLINK_CNT 30
 
-enum mode mode = MODE_STARTUP_CHECK;
+enum mode mode = MODE_SILENCE;
 struct getvalue_config getvalue;
 
 uint8_t prev_input[3] = {0};
@@ -63,9 +64,10 @@ struct mode_data {
 
 struct getvalue_config getvalue;
 
-void getvalue_handler(void);
-void show_startup_errors(void);
-void transfer(void);
+static void getvalue_handler(void);
+static void show_startup_errors(void);
+static void silence_channels(void);
+static void transfer(void);
 
 struct mode_data modes[] = {
     [MODE_PAGE1] = {.button = BTN_PAGE1,
@@ -88,7 +90,10 @@ struct mode_data modes[] = {
                        .handler = transfer},
     [MODE_STARTUP_CHECK] = {.button = 0xFF,
                             .leds = 0,
-                            .handler = show_startup_errors}
+                            .handler = show_startup_errors},
+    [MODE_SILENCE] = {.button = 0xFF,
+                      .leds = 0,
+                      .handler = silence_channels}
 };
 
 void ui_handler(void)
@@ -199,7 +204,7 @@ uint8_t ui_updown(int8_t* value, int8_t min, int8_t max)
 
 struct getvalue_config getvalue = {.state = INACTIVE};
 
-void getvalue_handler()
+static void getvalue_handler(void)
 /* Handles getting a parameter value. A new getvalue-session is initiated by
    using ui_getvalue_session. This structure holds the current parameter to
    be changed, which buttons to blink, and the state.
@@ -288,7 +293,29 @@ void getvalue_handler()
 
 uint8_t ui_startup_errors;
 
-void show_startup_errors(void)
+static void silence_channels(void)
+{
+    static uint8_t count = 0;
+    static uint8_t enable = 0;
+
+    if (count == 0) {
+        for (uint8_t i = 0; i < 4; i++) {
+            enable |= assigner_enabled[i] << i;
+            assigner_enabled[i] = 1;
+            play_note(i, 24);
+        }
+    }
+    if (count == 1) {
+        for (uint8_t i = 0; i < 4; i++) {
+            stop_note(i);
+            assigner_enabled[i] = (enable >> i) & 1;
+        }
+        mode = MODE_STARTUP_CHECK;
+    }
+    count++;
+}
+
+static void show_startup_errors(void)
 {
     // Done when error mask is empty
     if (!ui_startup_errors) {

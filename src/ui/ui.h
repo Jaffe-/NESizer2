@@ -83,7 +83,8 @@ enum mode {
     MODE_SETTINGS,
     MODE_GETVALUE,
     MODE_TRANSFER,
-    MODE_STARTUP_CHECK
+    MODE_STARTUP_CHECK,
+    MODE_SILENCE,
 };
 
 extern enum mode mode;
