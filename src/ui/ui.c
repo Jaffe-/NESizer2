@@ -286,20 +286,13 @@ void getvalue_handler()
 
 #define BATT_FLASH_DURATION 64
 
-void ui_init(void)
-{
-    // Load first patch and first pattern
-    patch_load(0);
-    mode = MODE_PAGE1;
-}
-
 uint8_t ui_startup_errors;
 
 void show_startup_errors(void)
 {
     // Done when error mask is empty
     if (!ui_startup_errors) {
-        ui_init();
+        mode = MODE_PAGE1;
         return;
     }
 
