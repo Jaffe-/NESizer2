@@ -47,6 +47,7 @@
 #define BTN_PATTERN_FORMAT 9
 #define BTN_SEQ_EXTCLK 10
 #define BTN_INIT_SETTINGS 11
+#define BTN_MEM_DBG 12
 #define BTN_SAMPLE_FORMAT 14
 #define BTN_SAMPLE_DELETE 15
 #define BTN_CLOCKDIV 7
@@ -55,12 +56,14 @@
 
 enum state {
     STATE_TOPLEVEL,
-    STATE_MIDI_CHANNEL
+    STATE_MIDI_CHANNEL,
+    STATE_MEM_DBG,
 };
 
 static enum state state = STATE_TOPLEVEL;
 
 static inline void toplevel(void);
+static inline void mem_dbg(void);
 
 uint8_t settings_leds[6];
 int8_t assign_chn;
@@ -77,6 +80,9 @@ void settings(void)
 
         assigner_midi_channel_change(assign_midi_chn, assign_chn);
         state = STATE_TOPLEVEL;
+    }
+    else if (state == STATE_MEM_DBG) {
+        mem_dbg();
     }
 }
 
@@ -168,4 +174,28 @@ static inline void toplevel(void)
 
     if (button_on(BTN_PATTERN_FORMAT))
         sequencer_pattern_init();
+
+    if (button_pressed(BTN_MEM_DBG))
+        state = STATE_MEM_DBG;
+}
+
+static inline void mem_dbg(void)
+{
+    static uint32_t addr = 0;
+
+    if (button_pressed(BTN_SAVE)) {
+        state = STATE_TOPLEVEL;
+        return;
+    }
+
+    if (button_pressed(BTN_UP)) {
+        addr++;
+    }
+    if (button_pressed(BTN_DOWN)) {
+        if (addr > 0)
+            addr--;
+    }
+
+    uint8_t val = memory_read(addr);
+    leds_7seg_two_digit_set_hex(3, 4, val);
 }
