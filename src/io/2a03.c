@@ -162,8 +162,8 @@ void io_setup(void)
 {
     // Configure the /RES pin on PORT C as output and set /RES high, also set
     // bits 0, 1 as output
-    DDRC |= RES;
     PORTC |= RES | RW;
+    DDRC |= RES;
 
     bus_select(CPU_ADDRESS);
 
