@@ -46,7 +46,7 @@
 #include <util/delay.h>
 
 #define MAGIC 0xdeadbeef
-#define MAGIC_ADDR 4
+#define MAGIC_ADDR 0
 
 static bool ram_integrity_check(void)
 {
@@ -85,8 +85,8 @@ int main()
 {
     // Set up low level:
     bus_setup();
-    io_setup();
     memory_setup();
+    io_setup();
     midi_io_setup();
     apu_setup();
     battery_setup();

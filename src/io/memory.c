@@ -262,13 +262,11 @@ void memory_clean(void)
 
 void memory_setup(void)
 {
-  // Set WE (pin 5) as output
-  DDRC |= WE;
-
-  // Set WE high
-  PORTC |= WE;
-
-  // Make sure the upper address latch doesn't enable its outputs
+  // Make sure the upper address latch is driving CE1 and CE2 high (not asserted)
   deselect();
+
+  // Set WE high (not asserted)
+  PORTC |= WE;
+  DDRC |= WE;
 }
 
