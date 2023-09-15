@@ -116,4 +116,4 @@ enum parameter_id {
     SPLIT_POINT
 };
 
-struct parameter parameter_get(uint8_t num);
+struct parameter parameter_get(enum parameter_id parameter);
