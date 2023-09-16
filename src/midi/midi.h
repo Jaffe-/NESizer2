@@ -29,6 +29,18 @@
 
 #define MIDI_NOTE_LIST_MAX 8
 
+enum sysex_cmd {
+    SYSEX_CMD_SAMPLE_LOAD = 1,
+    SYSEX_CMD_SETTINGS_LOAD,
+    SYSEX_CMD_PATCH_LOAD,
+    SYSEX_CMD_SEQUENCE_LOAD,
+};
+
+enum sysex_data_format {
+    SYSEX_DATA_FORMAT_4BIT,
+    SYSEX_DATA_FORMAT_7BIT_TRUNC,
+};
+
 struct midi_channel {
   uint8_t note_list[MIDI_NOTE_LIST_MAX];
   uint8_t note_list_length;

@@ -38,11 +38,15 @@
 #include "sample/sample.h"
 #include "sequencer/sequencer.h"
 
-typedef enum {STATE_MESSAGE, STATE_SYSEX, STATE_TRANSFER} midi_state_e;
+enum midi_state {
+    STATE_MESSAGE,
+    STATE_SYSEX,
+    STATE_TRANSFER
+};
 
 uint8_t midi_notes[5];
 
-static midi_state_e state = STATE_MESSAGE;
+static enum midi_state state = STATE_MESSAGE;
 static uint8_t sysex_command;
 
 static inline void interpret_message();
@@ -109,63 +113,61 @@ static inline void interpret_message()
 {
     while (midi_io_buffer_nonempty()) {
         struct midi_message msg = {0};
-        if (midi_io_read_message(&msg)) {
+        if (!midi_io_read_message(&msg))
+            continue;
 
-            if (midi_is_channel_message(msg.command)) {
-                midi_channel_apply(&msg);
-            }
+        if (midi_is_channel_message(msg.command)) {
+            midi_channel_apply(&msg);
+            continue;
+        }
 
-            else {
-                switch (msg.command) {
-                case MIDI_CMD_SYSEX:
-                    state = STATE_SYSEX;
-                    break;
+        /* Not channel directed message */
+        switch (msg.command) {
+        case MIDI_CMD_SYSEX:
+            state = STATE_SYSEX;
+            break;
 
-                case MIDI_CMD_TIMECODE:
-                    break;
+        case MIDI_CMD_TIMECODE:
+            break;
 
-                case MIDI_CMD_SONGPOS:
-                    break;
+        case MIDI_CMD_SONGPOS:
+            break;
 
-                case MIDI_CMD_SONGSEL:
-                    break;
+        case MIDI_CMD_SONGSEL:
+            break;
 
-                case MIDI_CMD_TUNEREQUEST:
-                    break;
+        case MIDI_CMD_TUNEREQUEST:
+            break;
 
-                case MIDI_CMD_SYSEX_END:
-                    break;
+        case MIDI_CMD_SYSEX_END:
+            break;
 
-                case MIDI_CMD_CLOCK:
-                    sequencer_midi_clock();
-                    break;
+        case MIDI_CMD_CLOCK:
+            sequencer_midi_clock();
+            break;
 
-                case MIDI_CMD_START:
-                    sequencer_play();
-                    break;
+        case MIDI_CMD_START:
+            sequencer_play();
+            break;
 
-                case MIDI_CMD_CONTINUE:
-                    sequencer_continue();
-                    break;
+        case MIDI_CMD_CONTINUE:
+            sequencer_continue();
+            break;
 
-                case MIDI_CMD_STOP:
-                    sequencer_stop();
-                    break;
+        case MIDI_CMD_STOP:
+            sequencer_stop();
+            break;
 
-                case MIDI_CMD_ACTIVESENSE:
-                    break;
+        case MIDI_CMD_ACTIVESENSE:
+            break;
 
-                case MIDI_CMD_RESET:
-                    break;
-                }
-            }
+        case MIDI_CMD_RESET:
+            break;
         }
     }
 }
 
 #define SYSEX_STOP 0xF7
-#define SYSEX_CMD_SAMPLE_LOAD 1
-#define SYSEX_CMD_FIRMWARE_LOAD 2
 
 uint8_t midi_transfer_progress = 0;
 
@@ -190,11 +192,6 @@ static inline void sysex()
 
             initiate_transfer();
         }
-
-        else if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
-            // To do
-            state = STATE_TRANSFER;
-        }
     }
 }
 
@@ -215,17 +212,7 @@ static inline void transfer()
         }
 
         else if ((val & 0x80) == 0) {
-            if (sysex_command == SYSEX_CMD_FIRMWARE_LOAD) {
-                if (nibble_flag == 0)
-                    temp_val = val << 4;
-                else {
-                    temp_val |= val;
-                    // TODO: Write data to firmware memory
-                }
-                nibble_flag ^= 1;
-            }
-
-            else if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+            if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
                 if (sample.bytes_done < sample.size) {
                     sample_write_serial(&sample, val);
                     midi_transfer_progress = (sample.bytes_done << 4) / sample.size;
