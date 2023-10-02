@@ -256,6 +256,9 @@ void dmc_update_sample_raw(void)
 
 void dmc_update_sample(void)
 {
+    if (!dmc.sample_enabled)
+        return;
+
     if (dmc.sample.type == SAMPLE_TYPE_RAW)
         dmc_update_sample_raw();
 }
