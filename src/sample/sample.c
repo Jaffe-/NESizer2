@@ -38,7 +38,7 @@
 
 #define BLOCKTABLE_START (INDEX_START + INDEX_SIZE)
 #define BLOCK_SIZE 1024
-#define BLOCKTABLE_SIZE 1024
+#define BLOCKTABLE_SIZE 1024*2
 #define BLOCK_START BLOCKTABLE_START + BLOCKTABLE_SIZE
 
 #define NUM_BLOCKS (MEMORY_SIZE - BLOCK_START) / BLOCK_SIZE
@@ -46,7 +46,8 @@
 /* Internal functions */
 
 static inline uint16_t get_next_block(uint16_t block);
-static inline void link_blocks(uint16_t block, uint16_t next_block);
+static uint16_t next_block_index(uint16_t block_entry);
+static inline void link_blocks(uint16_t block_index, uint16_t next_block_index);
 static inline void write_to_block(struct memory_context *mem_ctx, uint16_t block, uint16_t pos, uint8_t value);
 static inline uint8_t read_from_block(struct memory_context *mem_ctx, uint16_t block, uint16_t pos);
 static uint16_t allocate_block(void);
@@ -59,12 +60,13 @@ static inline uint8_t index_occupied(uint8_t index);
 
 /* Public */
 
-void sample_clean(void)
-/* Writes the sample index at the start of the sample area */
+void sample_clear_all(void)
 {
-    for (uint8_t i = 0; i < NUM_SAMPLES; i++) {
-        if (index_occupied(i))
-            sample_delete(i);
+    for (uint32_t i = 0; i < INDEX_ENTRY_SIZE * NUM_SAMPLES; i++) {
+        memory_write(INDEX_START + i, 0);
+    }
+    for (uint32_t i = 0; i < BLOCKTABLE_SIZE; i++) {
+        memory_write(BLOCKTABLE_START + i, 0);
     }
 }
 
@@ -90,7 +92,7 @@ uint8_t sample_read_byte(struct sample *sample)
 
     if (++sample->current_position == BLOCK_SIZE) {
         sample->current_position = 0;
-        sample->current_block = get_next_block(sample->current_block);
+        sample->current_block = get_next_block(next_block_index(sample->current_block));
     }
 
     sample->bytes_done++;
@@ -123,18 +125,34 @@ void sample_write_serial(struct sample *sample, uint8_t value)
     }
 }
 
+static uint16_t end_of_chain(uint16_t block_entry)
+{
+    return block_entry & 0x8000;
+}
+
+static uint16_t next_block_index(uint16_t block_entry)
+{
+    return block_entry & 0x3ff;
+}
+
+static uint16_t read_block_entry(uint16_t block_index)
+{
+    return memory_read_word(BLOCKTABLE_START + 2 * block_index);
+}
+
 void sample_delete(uint8_t index)
 {
     struct sample sample;
     read_from_index(&sample, index);
 
-    uint16_t block = sample.first_block;
+    uint16_t block_index = sample.first_block;
+    uint16_t block_entry;
 
-    for (uint16_t i = 0; i < sample.size / BLOCK_SIZE; i++) {
-        uint16_t next_block = get_next_block(block);
-        free_block(block);
-        block = next_block;
-    }
+    do {
+        block_entry = read_block_entry(block_index);
+        free_block(block_index);
+        block_index = next_block_index(block_entry);
+    } while (!end_of_chain(block_entry));
 
     remove_from_index(index);
 }
@@ -147,16 +165,18 @@ uint8_t sample_occupied(uint8_t index)
 
 /* Internal function definitions */
 
-static inline uint16_t get_next_block(uint16_t block)
+static inline uint16_t get_next_block(uint16_t block_index)
 {
-    // Find the next block from the block table
-    return memory_read_word(BLOCKTABLE_START + block * 2) - 1;
+    return memory_read_word(BLOCKTABLE_START + block_index * 2);
 }
 
-static inline void link_blocks(uint16_t block, uint16_t next_block)
+static inline void link_blocks(uint16_t block_index, uint16_t next_block_index)
 /* Write the next block number at the block's location in the block table */
 {
-    memory_write_word(BLOCKTABLE_START + block * 2, next_block + 1);
+    /* Note: this keeps the block tree state, but removes the end of chain flag */
+    uint16_t block_state = memory_read(BLOCKTABLE_START + block_index * 2 + 1) & 0x3c;
+    uint16_t block_entry = (block_state << 8) | next_block_index;
+    memory_write_word(BLOCKTABLE_START + block_index * 2, block_entry);
 }
 
 static inline void write_to_block(struct memory_context *mem_ctx, uint16_t block, uint16_t pos, uint8_t value)
@@ -176,29 +196,137 @@ static inline uint8_t read_from_block(struct memory_context *mem_ctx, uint16_t b
     return memory_read_sequential(mem_ctx);
 }
 
+/*
+  Tree based block allocation
+
+  Each block table entry has the following info:
+
+  +---+--------------+------------+
+  | T | child-states | next-block |
+  +---+--------------+------------+
+   15   13..10        9..0
+
+   The block table holds the state of two data structures for
+   each entry.
+   One is a FAT like linked list:
+      T            - chain terminated flag
+      next-block   - next block in the chain
+
+   The second is a tree used for fast allocation. This information
+   is not related to the block itself, but it is co-located with
+   block data to make address calculations quick.
+
+      child-states - the occupancy state of each child node, if
+                     a bit is set here it means the corresponding
+                     child has at least one free block
+
+*/
+
+static inline uint8_t get_child_states(uint8_t block_entry_upper)
+{
+    return (block_entry_upper >> 2) & 0x0f;
+}
+
+static inline uint8_t set_child_states(uint8_t block_entry_upper, uint8_t val)
+{
+    return (block_entry_upper & 0x83) | (val << 2);
+}
+
+static inline uint8_t get_next_child(uint8_t child_states)
+{
+    for (uint8_t i = 0; i < 4; i++) {
+        if (!(child_states & (1 << i)))
+            return i;
+    }
+    return 0xff;
+}
+
+static inline uint16_t get_block_index(uint16_t logical_block_index, uint8_t level)
+{
+    if (level == 0)
+        return 1023;
+    return logical_block_index + (4 - level);
+}
+
 static uint16_t allocate_block(void)
 {
-    for (uint16_t i = 0; i < NUM_BLOCKS; i++) {
-        uint16_t block_entry = memory_read_word(BLOCKTABLE_START + i * 2);
-        if (block_entry == 0) {
-            // Mark the block as in use
-            memory_write_word(BLOCKTABLE_START + i * 2, 0xFFFF);
+    uint8_t path_cache[5];
+    uint16_t logical_block_index = 0;
+    uint8_t next_child = 0;
+    uint8_t block_entry_upper;
 
-            // Return allocated block number
-            return i;
-        }
+    for (uint8_t level = 0; level < 5; level++) {
+        logical_block_index |= next_child;
+        logical_block_index <<= 2;
+
+        uint16_t block_index = get_block_index(logical_block_index, level);
+        block_entry_upper = memory_read(BLOCKTABLE_START + 2 * block_index + 1);
+        uint8_t child_states = get_child_states(block_entry_upper);
+        next_child = get_next_child(child_states);
+        path_cache[level] = block_entry_upper;
     }
 
-    // Return error code if no free block was found
-    return 0xFFFF;
+    uint16_t new_block_index = logical_block_index | next_child;
+
+    // Mark block as end of chain
+    block_entry_upper = memory_read(BLOCKTABLE_START + 2 * new_block_index + 1) | 0x80;
+    memory_write(BLOCKTABLE_START + 2 * new_block_index + 1, block_entry_upper);
+
+    // Reverse through cached blocks and update them
+    logical_block_index = new_block_index;
+
+    for (int8_t level = 4; level >= 0; level--) {
+        uint8_t child_index = logical_block_index & 0x03;
+        logical_block_index &= ~0x03;
+        uint16_t block_index = get_block_index(logical_block_index, level);
+        logical_block_index >>= 2;
+        block_entry_upper = path_cache[level];
+        uint8_t child_states = get_child_states(block_entry_upper);
+        child_states |= (1 << child_index);
+        memory_write(BLOCKTABLE_START + 2 * block_index + 1,
+                     set_child_states(block_entry_upper, child_states));
+
+        /* This node still has free blocks after marking the child as
+           occupied, so we are done updating the path from the root with
+           new child states */
+        if (child_states != 0x0f)
+            break;
+    }
+
+    return new_block_index;
 }
 
-static inline void free_block(uint16_t block)
+static void free_block(uint16_t block_index)
 {
-    // Write 0 to block table to indicate that the block is now free
-    memory_write_word(BLOCKTABLE_START + block * 2, 0);
+    uint16_t logical_block_index = block_index;
+
+    for (int8_t level = 4; level >= 0; level--) {
+        uint8_t child_index = logical_block_index & 0x03;
+        logical_block_index &= ~0x03;
+        block_index = get_block_index(logical_block_index, level);
+        logical_block_index >>= 2;
+        uint8_t block_entry_upper = memory_read(BLOCKTABLE_START + 2 * block_index + 1);
+        uint8_t child_states = get_child_states(block_entry_upper);
+
+        /* This child is already marked as having free space,
+           so we can stop updating the path back to the root. */
+        if (!(child_states & (1 << child_index)))
+            return;
+
+        child_states &= ~(1 << child_index);
+        memory_write(BLOCKTABLE_START + 2 * block_index + 1,
+                     set_child_states(block_entry_upper, child_states));
+    }
 }
 
+
+/*
+  Index table
+
+  The index table keeps track of 100 sample 'files',
+  containing an occupation flag, type, sample size and a pointer
+  to the first block of data in the sample.
+*/
 static inline uint32_t index_address(uint8_t index)
 {
     return INDEX_START + (uint16_t)index * INDEX_ENTRY_SIZE;

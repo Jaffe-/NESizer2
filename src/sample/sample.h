@@ -45,7 +45,7 @@ struct sample {
   struct memory_context mem_ctx;
 };
 
-void sample_clean(void);
+void sample_clear_all(void);
 void sample_new(struct sample *sample, uint8_t index);
 void sample_load(struct sample *sample, uint8_t index);
 void sample_reset(struct sample *sample);

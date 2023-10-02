@@ -113,10 +113,7 @@ static inline void toplevel(void)
     }
 
     if (button_pressed(BTN_SAMPLE_FORMAT)) {
-        for (uint8_t i = 0; i < 99; i++) {
-            if (sample_occupied(i))
-                sample_delete(i);
-        }
+        sample_clear_all();
     }
 
     if (button_pressed(BTN_INIT_SETTINGS)) {
