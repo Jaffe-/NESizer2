@@ -201,7 +201,8 @@ void tick(void)
             }
         }
         else if (current_note->length == duration_counter) {
-            stop_note(chn);
+            if (chn <= 3)
+                stop_note(chn);
             if (sequencer_midi_out_channels[chn] != 0) {
                 struct midi_message msg = {.command = MIDI_CMD_NOTE_OFF,
                                            .channel = sequencer_midi_out_channels[chn] - 1,
