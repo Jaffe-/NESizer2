@@ -41,8 +41,15 @@
 #include "sequencer/sequencer.h"
 #include "settings/settings.h"
 
+#define BTN_CH0 0
+#define BTN_CH1 1
+#define BTN_CH2 2
+#define BTN_CH3 3
+#define BTN_CH4 4
 #define BTN_MIDI_CHN 5
 #define BTN_BATTERY 6
+#define BTN_CLOCKDIV 7
+
 #define BTN_PATCH_FORMAT 8
 #define BTN_PATTERN_FORMAT 9
 #define BTN_SEQ_EXTCLK 10
@@ -50,7 +57,6 @@
 #define BTN_MEM_DBG 12
 #define BTN_SAMPLE_FORMAT 14
 #define BTN_SAMPLE_DELETE 15
-#define BTN_CLOCKDIV 7
 
 #define SIZE(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
@@ -179,6 +185,17 @@ static inline void toplevel(void)
 static inline void mem_dbg(void)
 {
     static uint32_t addr = 0;
+
+    if (button_pressed(BTN_CH0))
+        addr = 0;
+    if (button_pressed(BTN_CH1))
+        addr = 0x20;
+    if (button_pressed(BTN_CH2))
+        addr = 22656;
+    if (button_pressed(BTN_CH3))
+        addr = 23456;
+    if (button_pressed(BTN_CH4))
+        addr = 24480;
 
     if (button_pressed(BTN_SAVE)) {
         state = STATE_TOPLEVEL;
