@@ -27,6 +27,7 @@
 
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include "midi.h"
 #include "ringbuffer.h"
 
@@ -60,8 +61,17 @@ void midi_io_setup(void)
     // Period: 20 MHz / (16 * 31250) = 39
     UBRR0L = 39;
 
-    UCSR0B = (1 << TXEN0) | (1 << RXEN0);
+    UCSR0B = (1 << TXEN0) | (1 << RXEN0) | (1 << RXCIE0);
     UCSR0C = (0b11 << UCSZ00);
+}
+
+ISR(USART_RX_vect)
+{
+    // If the RXC0 bit in UCSR0A is set, there is unread data in the receive
+    // register.
+    while (UCSR0A & (1 << RXC0)) {
+        ring_buffer_write(&input_buffer, UDR0);
+    }
 }
 
 /*
@@ -69,12 +79,9 @@ void midi_io_setup(void)
 */
 void midi_io_handler(void)
 {
-    // If the RXC0 bit in UCSR0A is set, there is unread data in the receive
-    // register.
     while (UCSR0A & (1 << RXC0)) {
         ring_buffer_write(&input_buffer, UDR0);
     }
-
     if (ring_buffer_bytes_remaining(&output_buffer) > 0) {
         while (!(UCSR0A & (1 << UDRE0)));
         UDR0 = ring_buffer_read(&output_buffer);
