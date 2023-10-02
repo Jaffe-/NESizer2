@@ -195,6 +195,8 @@ static inline void sysex()
     }
 }
 
+#define ERROR_MIDI_RX_LEN_MISMATCH (1 << 2)
+
 static inline void transfer()
 /*
   Handlers transfering of data via MIDI
@@ -207,8 +209,10 @@ static inline void transfer()
         uint8_t val = midi_io_read_byte();
 
         if (val == SYSEX_STOP) {
-            mode = MODE_PAGE1;
+            ui_pop_mode();
             state = STATE_MESSAGE;
+            if (sample.bytes_done != sample.size)
+                error_set(ERROR_MIDI_RX_LEN_MISMATCH);
         }
 
         else if ((val & 0x80) == 0) {
@@ -226,7 +230,7 @@ static inline void initiate_transfer()
 {
     // Set UI mode to transfer (which turns the button LEDs into a status bar
     // for the duration of the transfer)
-    mode = MODE_TRANSFER;
+    ui_push_mode(MODE_TRANSFER);
 
     // Disable DMC
     dmc.sample_enabled = 0;

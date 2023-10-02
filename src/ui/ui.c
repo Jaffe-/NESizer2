@@ -68,6 +68,7 @@ static void getvalue_handler(void);
 static void show_startup_errors(void);
 static void silence_channels(void);
 static void transfer(void);
+static void error_handler(void);
 
 struct mode_data modes[] = {
     [MODE_PAGE1] = {.button = BTN_PAGE1,
@@ -88,6 +89,9 @@ struct mode_data modes[] = {
     [MODE_TRANSFER] = {.button = 0xFF,
                        .leds = 0,
                        .handler = transfer},
+    [MODE_ERROR] = {.button = 0xFF,
+                       .leds = 0,
+                       .handler = error_handler},
     [MODE_STARTUP_CHECK] = {.button = 0xFF,
                             .leds = 0,
                             .handler = show_startup_errors},
@@ -95,6 +99,46 @@ struct mode_data modes[] = {
                       .leds = 0,
                       .handler = silence_channels}
 };
+
+static uint8_t mode_stack[3];
+static uint8_t mode_stack_pointer = 0;
+
+static inline void mode_stack_push(uint8_t m)
+{
+    if (mode_stack_pointer >= 3)
+        while (1); // should not happen
+
+    mode_stack[mode_stack_pointer] = m;
+    mode_stack_pointer++;
+}
+
+static inline uint8_t mode_stack_pop(void)
+{
+    if (mode_stack_pointer == 0)
+        while (1); // should not happen
+
+    mode_stack_pointer--;
+    return mode_stack[mode_stack_pointer];
+}
+
+void ui_push_mode(uint8_t m)
+{
+    mode_stack_push(mode);
+    if (!modes[m].leds) {
+        for (uint8_t i = 0; i < 24; i++) {
+            leds_off(i);
+        }
+    }
+    button_leds = modes[m].leds;
+    mode = m;
+}
+
+void ui_pop_mode()
+{
+    uint8_t m = mode_stack_pop();
+    button_leds = modes[m].leds;
+    mode = m;
+}
 
 void ui_handler(void)
 /*
@@ -109,8 +153,7 @@ void ui_handler(void)
             if (button_pressed(modes[m].button)) {
                 button_led_off(modes[mode].button);
                 mode = m;
-                if (modes[m].leds != 0)
-                    button_leds = modes[m].leds;
+                button_leds = modes[m].leds;
             }
         }
     }
@@ -139,6 +182,12 @@ void ui_leds_handler(void)
 {
     static uint8_t counter;
 
+    if (counter++ == BLINK_CNT)
+        counter = 0;
+
+    if (button_leds == 0)
+        return;
+
     for (uint8_t i = 0; i < 24; i++) {
         if (button_led_get(i) == LED_STATE_OFF)
             leds_off(i);
@@ -152,8 +201,6 @@ void ui_leds_handler(void)
             }
         }
     }
-    if (counter++ == BLINK_CNT)
-        counter = 0;
 }
 
 
@@ -360,5 +407,34 @@ static void show_startup_errors(void)
 
 void transfer(void)
 {
+    leds[3] = 0b00001010; // s
+    leds[4] = 0b00001010; // A
 
+    for (uint8_t i = 0; i < 16; i++) {
+        if (midi_transfer_progress > i)
+            leds_on(i);
+    }
+}
+
+static uint8_t error_mask;
+
+void error_set(uint8_t error_bit)
+{
+    error_mask |= error_bit;
+    ui_push_mode(MODE_ERROR);
+}
+
+static void error_handler(void)
+{
+    for (uint8_t i = 0; i < 7; i++) {
+        if (error_mask & (1 << i))
+            leds_on(i);
+        else
+            leds_off(i);
+    }
+    leds_7seg_set(3, 0b10011110);
+    leds_7seg_set(4, 0b00001010);
+
+    if (button_pressed(BTN_SAVE))
+        ui_pop_mode();
 }

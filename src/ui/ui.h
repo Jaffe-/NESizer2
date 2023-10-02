@@ -83,6 +83,7 @@ enum mode {
     MODE_SETTINGS,
     MODE_GETVALUE,
     MODE_TRANSFER,
+    MODE_ERROR,
     MODE_STARTUP_CHECK,
     MODE_SILENCE,
 };
@@ -115,3 +116,8 @@ extern struct getvalue_config getvalue;
 void ui_handler(void);
 void ui_leds_handler(void);
 uint8_t ui_updown(int8_t* value, int8_t min, int8_t max);
+
+void ui_pop_mode(void);
+void ui_push_mode(uint8_t m);
+
+void error_set(uint8_t error);
