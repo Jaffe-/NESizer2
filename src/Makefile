@@ -2,7 +2,7 @@
 TARGET = nesizer_fw
 
 # Target type
-MCU=atmega328
+MCU=atmega328p
 PROGRAMMER=jtag3isp
 F_CPU=20000000L
 
@@ -12,7 +12,7 @@ HEADERS = $(foreach m, $(MODULES), $(wildcard $(m)*.h))
 OBJ = $(CSRC:.c=.o) 2a03_s.o
 
 # Compiler / Linker flags:
-CFLAGS = -mmcu=$(MCU) -Wall -O3 -std=gnu11 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -I$(shell pwd) -DTARGET
+CFLAGS = -mmcu=$(MCU) -Wall -O2 -std=gnu11 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -I$(shell pwd) -DTARGET
 LDFLAGS = -mmcu=$(MCU) -Wl,-Map=$(TARGET).map -Wl,--gc-sections
 
 ###################################
