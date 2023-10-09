@@ -280,7 +280,14 @@ static uint16_t allocate_block(void)
         logical_block_index &= ~0x03;
         uint16_t block_index = get_block_index(logical_block_index, level);
         logical_block_index >>= 2;
+
         block_entry_upper = path_cache[level];
+
+        /* The block we are updating from cache might be the one we just allocated,
+           if so, we need to also update it with the end-of-chain marker */
+        if (block_index == new_block_index)
+            block_entry_upper |= 0x80;
+
         uint8_t child_states = get_child_states(block_entry_upper);
         child_states |= (1 << child_index);
         memory_write(BLOCKTABLE_START + 2 * block_index + 1,
