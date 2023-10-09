@@ -79,9 +79,6 @@ ISR(USART_RX_vect)
 */
 void midi_io_handler(void)
 {
-    while (UCSR0A & (1 << RXC0)) {
-        ring_buffer_write(&input_buffer, UDR0);
-    }
     if (ring_buffer_bytes_remaining(&output_buffer) > 0) {
         while (!(UCSR0A & (1 << UDRE0)));
         UDR0 = ring_buffer_read(&output_buffer);
