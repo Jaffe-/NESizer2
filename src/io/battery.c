@@ -27,20 +27,33 @@
 
 void battery_setup(void)
 {
+    /* Set up PORTC pin 5 as ADC input */
     DDRC &= ~(1 << 5);
     PORTC &= ~(1 << 5);
     DIDR0 = 1 << ADC5D;
+
+    /* - Use AVCC (5V) as reference voltage,
+       - Left adjust the result
+       - Select ADC channel 5 as input */
     ADMUX = (1 << REFS0) | (1 << ADLAR) | (5 << MUX0);
-    ADCSRB = 0;
-    ADCSRA = (1 << ADEN) | (1 << ADSC) | 7;
+
+    /* ADC clock is main clock divided by 128 */
+    ADCSRA = 7;
 }
 
 uint8_t battery_read(void)
 {
+    /* Enable ADC, start new conversion */
+    ADCSRA |= (1 << ADEN) | (1 << ADSC);
+
+    /* Wait for conversion to complete */
+    while (ADCSRA & (1 << ADSC));
+
     uint32_t val = ADCH;
     uint16_t voltage_rounded = (5 * 100 * val) / 256;
 
-    // Start new conversion
-    ADCSRA |= (1 << ADSC);
+    /* Disable ADC */
+    ADCSRA &= ~(1 << ADEN);
+
     return voltage_rounded / 10;
 }
