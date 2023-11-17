@@ -242,28 +242,28 @@ static inline void initiate_transfer()
 const struct midi_command midi_channels_cc[][15] = {
     [0] = {
         // {0, NULL}, //TODO bank select,
-        {1, SQ1_DETUNE},
-        {3, SQ1_DUTY},
+        {1, SQ1_DUTY},
         {5, SQ1_GLIDE},
         {7, SQ1_VOLMOD},
+        {14, SQ1_DETUNE},
+        {15, SQ1_COARSE},
         {20, ENV1_ATTACK},
         {21, ENV1_DECAY},
         {22, ENV1_SUSTAIN},
         {23, ENV1_RELEASE},   
-        {24, SQ1_ENVMOD},  //on/off ENV
+        {24, SQ1_ENVMOD},
         {30, SQ1_LFO1},
         {31, SQ1_LFO2},
         {32, SQ1_LFO3},
-        {123, SQ1_ENABLED}
-        // {SQ1_COARSE}
-        // {SQ1_ENVMOD}
+        {123, SQ1_ENABLED},
     },
     [1] = {
         // {0, NULL}, //TODO bank select,
-        {1, SQ2_DETUNE},
-        {3, SQ2_DUTY},
+        {1, SQ2_DUTY},
         {5, SQ2_GLIDE},
         {7, SQ2_VOLMOD},
+        {14, SQ2_DETUNE},
+        {15, SQ2_COARSE},
         {20, ENV2_ATTACK},
         {21, ENV2_DECAY},
         {22, ENV2_SUSTAIN},
@@ -272,39 +272,32 @@ const struct midi_command midi_channels_cc[][15] = {
         {30, SQ2_LFO1},
         {31, SQ2_LFO2},
         {32, SQ2_LFO3},
-        {123, SQ2_ENABLED}
+        {123, SQ2_ENABLED},
     },
     [2] = {
-        // {0, NULL}, //TODO bank select,
-        {1, TRI_DETUNE},
+        // {0, NULL}, //TODO bank select,        
         {5, TRI_GLIDE},
         // {TRI_PITCHBEND},
-        // {TRI_COARSE},
+        {14, TRI_DETUNE},
+        {15, TRI_COARSE},
         {24, TRI_ENVMOD},
         {30, TRI_LFO1},
         {31, TRI_LFO2},
         {32, TRI_LFO3},
         {123, TRI_ENABLED},
-        // {SQ2_COARSE}
-        // {SQ2_ENVMOD}
     },
     [3] = {
         // {0, NULL}, //TODO bank select,
         {7, NOISE_VOLMOD},
         {14, NOISE_LOOP},
-        
         {20, ENV3_ATTACK},
         {21, ENV3_DECAY},
         {22, ENV3_SUSTAIN},
         {23, ENV3_RELEASE},  
-
         {24, NOISE_ENVMOD},
         {30, NOISE_LFO1},
         {31, NOISE_LFO2},
         {32, NOISE_LFO3},
-        
-        // {NOISE_PITCHBEND},
-        // {NOISE_HALF},
         {123, NOISE_ENABLED},
     },
     [4] = {
