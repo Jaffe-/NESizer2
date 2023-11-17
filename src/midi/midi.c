@@ -349,6 +349,21 @@ void control_change( uint8_t midi_chn, uint8_t data1, uint8_t data2 )
         return;
     }
     struct parameter parameter = parameter_get( id );
-    uint8_t total_range = 1 + parameter.max - parameter.min;
-    *parameter.target = (data2 / ( MIDI_MAX_CC / total_range ) ) << 0 ;
+    
+    //Need to force the range on/off : 0-63/64-127 for BOOL
+    uint8_t total_range = 1;
+
+    if( parameter.type == RANGE ){
+        total_range = parameter.max - parameter.min;
+    }
+
+    total_range += 1;
+
+    uint8_t range_offset = 0;
+
+    if( parameter.min < 0 ){
+        range_offset = parameter.min - 1;
+    }
+    
+    *parameter.target = ( (data2 / ( MIDI_MAX_CC / total_range ) ) << 0 ) + range_offset;
 }
