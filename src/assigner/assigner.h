@@ -37,6 +37,7 @@ void assigner_notify_note_on(uint8_t midi_channel, uint8_t note);
 void assigner_notify_note_off(uint8_t midi_channel, uint8_t note);
 void assigner_midi_channel_change(uint8_t midi_channel, uint8_t chn);
 uint8_t assigner_midi_channel_get(uint8_t chn);
+uint8_t assigner_channel_get(uint8_t midi_channel);
 
 enum assigner_mode {
     MONO,

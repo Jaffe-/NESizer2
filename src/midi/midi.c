@@ -238,3 +238,117 @@ static inline void initiate_transfer()
     state = STATE_TRANSFER;
     midi_transfer_progress = 0;
 }
+
+const struct midi_command midi_channels_cc[][15] = {
+    [0] = {
+        // {0, NULL}, //TODO bank select,
+        {1, SQ1_DETUNE},
+        {3, SQ1_DUTY},
+        {5, SQ1_GLIDE},
+        {7, SQ1_VOLMOD},
+        {20, ENV1_ATTACK},
+        {21, ENV1_DECAY},
+        {22, ENV1_SUSTAIN},
+        {23, ENV1_RELEASE},   
+        {24, SQ1_ENVMOD},  //on/off ENV
+        {30, SQ1_LFO1},
+        {31, SQ1_LFO2},
+        {32, SQ1_LFO3},
+        {123, SQ1_ENABLED}
+        // {SQ1_COARSE}
+        // {SQ1_ENVMOD}
+    },
+    [1] = {
+        // {0, NULL}, //TODO bank select,
+        {1, SQ2_DETUNE},
+        {3, SQ2_DUTY},
+        {5, SQ2_GLIDE},
+        {7, SQ2_VOLMOD},
+        {20, ENV2_ATTACK},
+        {21, ENV2_DECAY},
+        {22, ENV2_SUSTAIN},
+        {23, ENV2_RELEASE},   
+        {24, SQ2_ENVMOD},
+        {30, SQ2_LFO1},
+        {31, SQ2_LFO2},
+        {32, SQ2_LFO3},
+        {123, SQ2_ENABLED}
+    },
+    [2] = {
+        // {0, NULL}, //TODO bank select,
+        {1, TRI_DETUNE},
+        {5, TRI_GLIDE},
+        // {TRI_PITCHBEND},
+        // {TRI_COARSE},
+        {24, TRI_ENVMOD},
+        {30, TRI_LFO1},
+        {31, TRI_LFO2},
+        {32, TRI_LFO3},
+        {123, TRI_ENABLED},
+        // {SQ2_COARSE}
+        // {SQ2_ENVMOD}
+    },
+    [3] = {
+        // {0, NULL}, //TODO bank select,
+        {7, NOISE_VOLMOD},
+        {14, NOISE_LOOP},
+        
+        {20, ENV3_ATTACK},
+        {21, ENV3_DECAY},
+        {22, ENV3_SUSTAIN},
+        {23, ENV3_RELEASE},  
+
+        {24, NOISE_ENVMOD},
+        {30, NOISE_LFO1},
+        {31, NOISE_LFO2},
+        {32, NOISE_LFO3},
+        
+        // {NOISE_PITCHBEND},
+        // {NOISE_HALF},
+        {123, NOISE_ENABLED},
+    },
+    [4] = {
+        {14, DMC_SAMPLE_LOOP},
+        {123, DMC_ENABLED},
+    },
+    [5] = {
+        //Global CC
+        {50, LFO1_PERIOD},
+        {51, LFO1_WAVEFORM},
+
+        {52, LFO2_PERIOD},
+        {53, LFO2_WAVEFORM},
+
+        {54, LFO3_PERIOD},
+        {55, LFO3_WAVEFORM},
+    }
+};
+
+enum parameter_id get_cc_parameter( uint8_t chn, uint8_t cc )
+{
+    uint8_t ln = sizeof( midi_channels_cc[chn] );
+
+    for( uint8_t i = 0; i < ln ; i++ ){
+        if( midi_channels_cc[chn][i].cc == cc ){
+            return midi_channels_cc[chn][i].parameter;
+        }
+    }
+    return -1;
+}
+
+void control_change( uint8_t midi_chn, uint8_t data1, uint8_t data2 )
+{
+    uint8_t chn = assigner_channel_get( midi_chn );
+    if( data1 > 49 && data1 < 56 ){
+        chn = 5;
+    }
+
+    enum parameter_id id = get_cc_parameter( chn, data1 );
+    
+    if( id < 0 ){
+        return;
+    }
+    struct parameter parameter = parameter_get( id );
+    uint8_t total_range = 1 + parameter.max - parameter.min;
+    *parameter.target = (data2 / ( MIDI_MAX_CC / total_range ) ) << 0 ;
+}

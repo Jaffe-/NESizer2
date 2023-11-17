@@ -26,8 +26,10 @@
 
 #pragma once
 #include <stdint.h>
+#include "parameter/parameter.h"
 
 #define MIDI_NOTE_LIST_MAX 8
+#define MIDI_MAX_CC 0x80 //128
 
 enum sysex_cmd {
     SYSEX_CMD_SAMPLE_LOAD = 1,
@@ -55,3 +57,8 @@ extern uint8_t midi_notes[5];
 void midi_channel_subscribe(uint8_t midi_chn, uint8_t chn);
 void midi_channel_unsubscribe(uint8_t midi_chn, uint8_t chn);
 void midi_handler(void);
+
+struct midi_command{
+    int8_t cc;
+    enum parameter_id parameter;
+};

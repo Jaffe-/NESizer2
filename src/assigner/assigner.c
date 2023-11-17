@@ -113,6 +113,16 @@ uint8_t assigner_midi_channel_get(uint8_t chn)
     return midi_channels[chn];
 }
 
+uint8_t assigner_channel_get(uint8_t midi_channel)
+{   
+    for( uint8_t i = 0; i < 5; i++ ){
+        if( midi_channels[i] == midi_channel ){
+            return i;
+        }
+    }
+    return -1;
+}
+
 void assigner_notify_note_on(uint8_t midi_channel, uint8_t note)
 {
     /* find the group listening on the channel */
