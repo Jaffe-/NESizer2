@@ -93,6 +93,9 @@ void midi_channel_apply(struct midi_message* msg)
             }
         }
         break;
+    case MIDI_CMD_CONTROL_CHANGE:
+        control_change( midi_channel, msg->data1, msg->data2 );
+        break;
     }
 }
 
