@@ -41,6 +41,7 @@
 #include "ui/ui.h"
 #include "settings/settings.h"
 #include "patch/patch.h"
+#include "midi/midi.h"
 
 #define F_CPU 20000000L
 #include <util/delay.h>
@@ -102,4 +103,6 @@ int main()
 
     // The task manager takes over from here
     task_manager();
+
+    midi_init();
 }
