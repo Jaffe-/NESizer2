@@ -62,3 +62,4 @@ struct midi_command{
     int8_t cc;
     enum parameter_id parameter;
 };
+void control_change(uint8_t midi_chn, uint8_t data1, uint8_t data2);

@@ -23,7 +23,7 @@
   Interprets MIDI messages and acts accordingly.
 */
 
-
+#include <avr/pgmspace.h>
 #include <stdint.h>
 #include "midi.h"
 #include "io/midi.h"
@@ -242,7 +242,7 @@ static inline void initiate_transfer()
     midi_transfer_progress = 0;
 }
 
-const struct midi_command midi_channels_cc[][15] = {
+const struct midi_command midi_channels_cc[][15] PROGMEM = {
     [0] = {
         // {0, NULL}, //TODO bank select,
         {1, SQ1_DUTY},
@@ -320,7 +320,13 @@ const struct midi_command midi_channels_cc[][15] = {
     }
 };
 
-enum parameter_id get_cc_parameter( uint8_t chn, uint8_t cc )
+struct midi_command midi_channels_cc_get(uint8_t chn)
+{
+    struct midi_command m = { pgm_read_byte_near(&midi_channels_cc[chn]) };
+    return m;
+}
+
+enum parameter_id get_cc_parameter(uint8_t chn, uint8_t cc)
 {
     uint8_t ln = sizeof( midi_channels_cc[chn] );
 
@@ -332,7 +338,7 @@ enum parameter_id get_cc_parameter( uint8_t chn, uint8_t cc )
     return -1;
 }
 
-void control_change( uint8_t midi_chn, uint8_t data1, uint8_t data2 )
+void control_change(uint8_t midi_chn, uint8_t data1, uint8_t data2)
 {
     uint8_t chn = assigner_channel_get( midi_chn );
     if( data1 > 49 && data1 < 56 ){
