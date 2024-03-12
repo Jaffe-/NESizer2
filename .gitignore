@@ -1,0 +1,15 @@
+# General
+.DS_Store
+
+### General ###
+*.o
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Firmware
+*.elf
+*.bin
+*.hex
