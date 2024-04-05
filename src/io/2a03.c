@@ -28,7 +28,6 @@
 #include <avr/io.h>
 #include <stdbool.h>
 
-#define F_CPU 20000000L
 #include <util/delay.h>
 
 #include <util/atomic.h>
