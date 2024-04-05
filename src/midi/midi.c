@@ -202,9 +202,6 @@ static inline void transfer()
   Handlers transfering of data via MIDI
 */
 {
-    static uint8_t nibble_flag = 0;
-    static uint8_t temp_val = 0;
-
     while (midi_io_bytes_remaining() >= 1) {
         uint8_t val = midi_io_read_byte();
 

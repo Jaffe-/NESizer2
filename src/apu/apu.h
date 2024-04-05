@@ -82,10 +82,8 @@ extern struct dmc dmc;
 
 /* Functions */
 
-void sq1_setup(void);
-void sq1_update(void);
-void sq2_setup(void);
-void sq2_update(void);
+void sq_setup(uint8_t, struct square*);
+void sq_update(struct square*);
 void tri_setup(void);
 void tri_update(void);
 void noise_setup(void);
@@ -95,6 +93,7 @@ void dmc_update(void);
 void dmc_update_sample(void);
 void apu_refresh_channel(uint8_t);
 void apu_refresh_all(void);
+void apu_update_channel(uint8_t);
 void apu_update_handler(void);
 void apu_dmc_update_handler(void);
 void apu_setup(void);

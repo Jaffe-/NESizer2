@@ -27,7 +27,6 @@
 #include "2a03.h"
 #include <avr/io.h>
 
-#define F_CPU 20000000L
 #include <util/delay.h>
 
 #include <util/atomic.h>
