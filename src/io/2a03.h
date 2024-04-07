@@ -29,7 +29,9 @@
 
 #include <stdint.h>
 
-#define F_CPU 20000000L
+#ifndef F_CPU
+    #define F_CPU 20000000L
+#endif
 
 void io_register_write(uint8_t reg, uint8_t value);
 void io_write_changed(uint8_t reg);
