@@ -119,9 +119,9 @@ void leds_7seg_set(uint8_t row, uint8_t val)
     leds[row] = leds_7seg_values[val];
 }
 
-void leds_7seg_minus(void)
+void leds_7seg_minus(uint8_t row)
 {
-    leds[3] |= SYM_MINUS;
+    leds[row] = SYM_MINUS;
 }
 
 void leds_7seg_dot_on(uint8_t row)

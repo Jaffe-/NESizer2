@@ -26,6 +26,7 @@
 
 #include "2a03.h"
 #include <avr/io.h>
+#include <stdbool.h>
 
 #define F_CPU 20000000L
 #include <util/delay.h>
@@ -60,7 +61,7 @@ extern void reset_pc16(void);
 extern void disable_interrupts12(void);
 extern void disable_interrupts15(void);
 extern void disable_interrupts16(void);
-extern uint8_t detect(void);
+extern uint8_t detect_2a03_type(void);
 
 void (*register_set)(uint8_t, uint8_t);
 void (*reset_pc)(void);
@@ -155,10 +156,53 @@ void io_reset_pc(void)
     bus_deselect();
 }
 
-void io_setup(void)
+static uint8_t rw_transition_count;
+
+ISR(PCINT1_vect)
+{
+    if (rw_transition_count < 255)
+        rw_transition_count++;
+}
+
+bool detect_2a03_presence(void)
+{
+    rw_transition_count = 0;
+
+    /* Enable Pin Change Interrupt 1 and unmask PCINT11 (Port C pin 3, RW signal from 2A03) */
+    PCMSK1 = (1 << PCINT11);
+    PCICR = (1 << PCIE1);
+    sei();
+
+    /* Wait while interrupt handler will catch R/W toggles */
+    _delay_us(10);
+
+    /* Disable interrupt */
+    cli();
+    PCMSK1 = 0;
+    PCICR = 0;
+
+    return rw_transition_count > 10;
+}
+
+void register_set_noop(uint8_t, uint8_t)
+{
+    return;
+}
+
+void reset_pc_noop(void)
+{
+    return;
+}
+
+void disable_interrupts_noop(void)
+{
+    return;
+}
+
 /*
   Initializes the interface to communicate with 6502
 */
+void io_setup(void)
 {
     // Configure the /RES pin on PORT C as output and set /RES high, also set
     // bits 0, 1 as output
@@ -183,14 +227,19 @@ void io_setup(void)
     // Wait a while until the 6502 has completed its reset cycle
     _delay_us(100);
 
-    // Run detect function and set the right functions for communicating with
-    // the 2A03/clone chip used. Try three times to ensure that a correct
-    // value is read.
-    uint8_t tries = 3;
-    while (tries-- > 0) {
-        io_clockdiv = detect();
-        if (io_clockdiv == 12 || io_clockdiv == 15 || io_clockdiv == 16)
-            break;
+    /* Start out assuming no 2A03 is installed */
+    io_clockdiv = 0;
+
+    /* Check if 2A03 is installed and is running */
+    if (detect_2a03_presence()) {
+        /* Run detect_2a03_type to determine what kind of 2A03 is installed,
+           this is used later to set up functions to talk to the 2A03. */
+        uint8_t tries = 3;
+        while (tries-- > 0) {
+            io_clockdiv = detect_2a03_type();
+            if (io_clockdiv == 12 || io_clockdiv == 15 || io_clockdiv == 16)
+                break;
+        }
     }
 
     /* Point function pointers to correct function based on which 2A03 model is
@@ -198,7 +247,7 @@ void io_setup(void)
 
     switch (io_clockdiv) {
     case 12:
-        register_set= &register_set12;
+        register_set = &register_set12;
         reset_pc = &reset_pc12;
         disable_interrupts = &disable_interrupts12;
         break;
@@ -213,6 +262,13 @@ void io_setup(void)
         register_set = &register_set16;
         reset_pc = &reset_pc16;
         disable_interrupts = &disable_interrupts16;
+        break;
+
+        /* Fallback case when 2A03 is not present or not able to detect */
+    default:
+        register_set = register_set_noop;
+        reset_pc = reset_pc_noop;
+        disable_interrupts = disable_interrupts_noop;
         break;
     }
 
