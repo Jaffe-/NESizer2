@@ -1,4 +1,5 @@
-\documentclass[a4paper, 12p, titlepaget]{book}
+\documentclass[a4paper, 12p]{extarticle}
+\usepackage[centering, margin=3.0cm]{geometry}
 \usepackage{cmbright}
 \usepackage{graphicx}
 \usepackage[intlimits]{amsmath}
@@ -12,6 +13,9 @@
 \usetikzlibrary{calc}
 \usepackage{enumerate}
 \usepackage{framed}
+\usepackage{tikz}
+
+\setcounter{secnumdepth}{0}
 
 \newcommand \name {NESIZER }
 \newcommand {\btn}[1] {\framebox{\textbf{\footnotesize #1}}}
@@ -19,6 +23,7 @@
 \newcommand {\lbl}[1] {\emph{\footnotesize #1}}
 \newcommand \dsp \texttt
 
+\AddToHook{cmd/section/before}{\clearpage}
 
 \title{NESIZER}
 \author{}
@@ -56,10 +61,6 @@
 \tableofcontents
 
 %\maketitle
-
-\chapter{User manual}
-
-\section{Overview}
 
 \section{The NESIZER}
 
@@ -657,7 +658,9 @@ The \name can be controlled externally using MIDI.
 
 Each of the five sound channels can be assigned to any of the 16 MIDI channels, and will then only respond to incoming messages on the selected channel.
 
-To select a MIDI channel, enter the \lbl{SETTINGS} mode by pressing \btn{SETTINGS}. Hold down \btn{MIDI CHANNEL} and then press the desired channel's button. The LEDs will flash and you can select one of the 16 MIDI channels using the \btn{UP} and \btn{DOWN} buttons. If you select the value 0, the sound channel will not listen to any MIDI channel.
+If you select the value 0, the sound channel will not listen to any MIDI channel.
+
+To select a MIDI channel, enter the \lbl{SETTINGS} mode by pressing \btn{SETTINGS}. Hold down \btn{MIDI CHANNEL} and then press the desired channel's button. The LEDs will flash and you can select one of the 16 MIDI channels using the \btn{UP} and \btn{DOWN} buttons.
 
 \subsubsection{External clock}
 Use \btn{EXT. CLOCK} to use the incoming MIDI clock to set the tempo of the sequencer. When this is set to 1, the sequencer will not do anything unless an external MIDI device sends MIDI Clock messages. When the setting is 0, the internal tempo is used.
@@ -688,5 +691,82 @@ The errors that can occur are:
 \item \verb+bL+: Battery low (less than 2.5 V measured) - battery should be changed
 \item \verb+cr+: Corrupt RAM - RAM contents will be re-initialized automatically
 \end{itemize}
+
+
+\section{Using DMC samples}
+
+\subsection{Sample upload workflow}
+
+\tikzstyle{process} = [rectangle,centered,thick,draw=black]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+\begin{tikzpicture}
+  \begin{scope}
+    \node (infile) {Input audio file};
+    \node (convert) [process, below of=infile] {Convert sample to raw format};
+    \node (sysex) [process, below of=convert] {Create SysEx wrapper};
+    \node (sampleno) [right of=sysex, xshift=4cm] {Sample index number};
+    \node (upload) [process, below of=sysex] {Send/play SysEx file on MIDI output device};
+
+    \draw [arrow] (infile) -- (convert);
+    \draw [arrow] (convert) -- (sysex);
+    \draw [arrow] (sampleno) -- (sysex);
+    \draw [arrow] (sysex) -- (upload);
+  \end{scope}
+\end{tikzpicture}
+
+\subsection{Converting a sample file}
+The first step of creating an audio sample suitable for DMC playback is to convert the audio file to \textbf{raw, 7-bits unsigned per sample, 16 kHz sample rate} format. Many tools will only allow conversion to an 8-bit per sample, however. It is therefore often necessary to convert to 8-bit first, and then truncate each sample to 7-bits when creating a System Exclusive file later.
+
+A variety of audio software tools exist to perform this conversion. The following example uses the tool \emph{Sound eXchange (SoX)}, which is open source and available for Linux, Windows and macOS. Using SoX with an input audio file in \verb+.wav+ format, the conversion can be done as follows:
+
+\verb+sox sample.wav -r 16000 -b 8 -e unsigned-integer sample.raw+
+
+\subsection{Creating a SysEx file}
+The converted sample needs to be wrapped with the necessary metadata and MIDI SysEx commands before it can be sent to the NESIZER via MIDI. The stream of bytes to send via MIDI must be in the following format:
+
+\begin{verbatim}
+  F0 (System Exclusive)
+  00 (Sample load command)
+  ii (Sample index)
+  00 (Reserved)
+  ss (Sample size 6..0)
+  ss (Sample size 13..7)
+  ss (Sample size 20..14)
+  dd (Sample data 0)
+  dd (Sample data 1)
+  ..
+  dd (Sample data N-1)
+  F7 (End of Exclusive)
+\end{verbatim}
+
+\textbf{Note:} Any data byte contained within a MIDI System Exclusive message must never have the most significant bit set.
+
+The sample index can be any number between 0 and 99. The index 0 corresponds to MIDI note 60, which is middle C. This is the note that has to be played on the MIDI input or entered into a sequence pattern to trigger the sample on the DMC channel.
+
+The sample size must be given in bytes, but split across three 7-bit words.
+
+The sample data must be 7-bit raw sample values.
+
+In the NESIZER source repository, there is a helpful tool \verb+gensysex.c+ which is a small C program to create this wrapper. This tool can be used as follows (assuming the tool is compiled into a binary called \verb+gensysex+):
+
+\verb+gensysex sample <input format> <index> <raw filename> <sysex filename>+
+
+The following example creates a SysEx file for the file \verb+sample.raw+ created in the above example. It places the sample at index 2, meaning that the note D4 must be played to trigger this sample:
+
+\verb+gensysex sample 8bit 2 sample.raw sample.syx+
+
+\subsection{Uploading samples}
+The MIDI SysEx file containing the MIDI byte stream created in the previous step can now be played back on (or sent to) the MIDI adapter which the NESIZER is connected to. There are many different software options for doing this.
+
+On a Linux system, the \verb+amidi+ ALSA utility tool is the easiest way to do this. To find connected MIDI devices, run \verb+amidi -l+ to list connected devices and make note of the Device identifier for the MIDI device you want to use. This should be of the form \verb+hw:x,x,x+, for example \verb+hw:2,0,0+.
+To send the SysEx file out on the MIDI line from this MIDI device, run the following command:
+
+\verb+amidi -p <MIDI device> -s <sysex file path>+
+
+Continuing the above example, the \verb+sample.syx+ file can be sent to a NESIZER connected to MIDI device \verb+hw:2,0,0+ by running
+
+\verb+amidi -p hw:2,0,0 -s sample.syx+
+
+When this command is running, the connected NESIZER should be displaying the index number of the sample on the 7 segment display, and the 16 top LEDs should be lighting up a progress bar.
 
 \end{document}
