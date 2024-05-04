@@ -126,8 +126,14 @@ static inline void toplevel(void)
         settings_init();
     }
 
-    if (button_on(BTN_CLOCKDIV))
-        leds_7seg_two_digit_set(3, 4, io_clockdiv);
+    if (button_on(BTN_CLOCKDIV)) {
+        if (io_clockdiv != 0)
+            leds_7seg_two_digit_set(3, 4, io_clockdiv);
+        else {
+            leds_7seg_minus(3);
+            leds_7seg_minus(4);
+        }
+    }
 
     if (button_on(BTN_MIDI_CHN)) {
         uint8_t chn = 0xFF;

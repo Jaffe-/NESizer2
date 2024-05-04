@@ -324,7 +324,7 @@ static void getvalue_handler(void)
     }
     else if (getvalue.parameter.min < 0) {
         if (value < 0) {
-            leds_7seg_minus();
+            leds_7seg_minus(3);
             leds_7seg_set(4, -value);
         }
         else {

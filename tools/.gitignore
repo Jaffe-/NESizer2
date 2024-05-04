@@ -1,4 +1,7 @@
 .vscode/*
+samples/*
+
+convert-all-samples.sh
 
 deltacompress.exe
 deltacompress.ilk
