@@ -38,6 +38,8 @@
 #include "sample/sample.h"
 #include "sequencer/sequencer.h"
 
+#include "debug/debug.h"
+
 enum midi_state {
     STATE_MESSAGE,
     STATE_SYSEX,
@@ -73,6 +75,8 @@ void midi_channel_apply(struct midi_message* msg)
                 assigner_notify_note_off(midi_channel, msg->data1);
             } else {
                 assigner_notify_note_on(midi_channel, msg->data1);
+                // serial debug test:
+                    debug_message(DBG_MIDI, 4, msg->command, msg->channel, msg->data1, msg->data2);
             }
         }
         break;
