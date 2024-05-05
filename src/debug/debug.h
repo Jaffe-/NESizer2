@@ -8,9 +8,9 @@ extern "C" {
 #endif
 
 
-    enum MESSAGE_HEADER { DBG_STOP = 0b10100000, DBG_MIDI = 0b10100001 };  // more debug messages types coming soon
+    enum MESSAGE_HEADER { DBG_STOP = 0b10100000, DBG_MIDI, DBG_PARAM };  // more debug messages types coming soon
 
-    void debug_message(int message_type, int size, ...);
+    void debug_message(uint8_t msg_type, uint8_t size, ...);
 
 
     void debug_setup();
