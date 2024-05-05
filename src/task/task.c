@@ -40,6 +40,7 @@
 #include "ui/ui_sequencer.h"
 #include "assigner/assigner.h"
 #include "sequencer/sequencer.h"
+#include "debug/debug.h"
 
 struct task {
     void (*const handler)(void);
@@ -62,6 +63,7 @@ struct task tasks[] = {
     {.handler = &input_refresh, .period = 80, .counter = 8},
     {.handler = &ui_handler, .period = 80, .counter = 9},
     {.handler = &ui_leds_handler, .period = 80, .counter = 9},
+    {.handler = &debug_print, .period = 1, .counter = 1}
 };
 
 static const uint8_t num_tasks = sizeof(tasks)/sizeof(struct task);
