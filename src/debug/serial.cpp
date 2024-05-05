@@ -18,7 +18,7 @@ extern "C" {
 
     void serial_debug_setup(long baudrate) { mySerial.begin(baudrate); }
 
-    void serial_print(uint8_t data) { mySerial.println(data); }
+    void serial_print(uint8_t data) { mySerial.write(data); }
 
 
 #ifdef __cplusplus
