@@ -41,6 +41,7 @@
 #include "ui/ui.h"
 #include "settings/settings.h"
 #include "patch/patch.h"
+#include "debug/debug.h"
 
 #include <util/delay.h>
 
@@ -98,6 +99,7 @@ int main()
     sequencer_setup();
     ui_sequencer_setup();
     ui_programmer_setup();
+    debug_setup();
 
     // The task manager takes over from here
     task_manager();
