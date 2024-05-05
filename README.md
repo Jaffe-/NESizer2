@@ -14,7 +14,7 @@ This project is inspired by a similar approach taken here: http://www.soniktech.
 
 Check out the most recent demo [here](https://www.youtube.com/watch?v=pXKrs0bFvvk)!
 
-See the ocumentation for a description of how the NESizer works:
+See the documentation for a description of how the NESizer works:
 
 - [Hardware documentation](docs/hardware.md)
 - [Software documentation](docs/software.md)
