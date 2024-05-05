@@ -27,11 +27,12 @@ extern "C" {
 
         specify the message type from MESSAGE_HEADER in debug.h, then specify the number of bytes to be loaded, followed by the bytes in order
     */
-    void debug_message(const int MSG_TYPE, int size, ...)
+    void debug_message(uint8_t msg_type, uint8_t size, ...)
     {
         va_list args;
         va_start(args, size);
-            debug_load(MSG_TYPE);
+            debug_load(msg_type);
+            debug_load(size);
             while(size > 0) {
                 debug_load((uint8_t)va_arg(args, int));
                 size--;
