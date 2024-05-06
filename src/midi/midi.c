@@ -83,8 +83,10 @@ void midi_channel_apply(struct midi_message* msg)
             } else {
                 sequencer_midi_note = msg->data1;
                 note_stack_push(midi_channel, msg->data1);
-                // serial debug test:
-                    debug_message(DBG_MIDI, 4, msg->command, msg->channel, msg->data1, msg->data2);
+// serial debug test:
+                    debug_text_message("Note");
+                    debug_byte_message(DBG_MIDI_NOTE, 3, midi_channel, msg->data1, msg->data2);
+//
             }
         }
         break;
@@ -107,6 +109,10 @@ void midi_channel_apply(struct midi_message* msg)
         break;
 
     case MIDI_CMD_CONTROL_CHANGE:
+// serial debug test:
+            debug_text_message("CC");
+            debug_byte_message(DBG_MIDI_CC, 3, midi_channel, msg->data1, msg->data2);
+//
         break;
 
     case MIDI_CMD_PATCH_CHANGE:
