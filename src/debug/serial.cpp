@@ -11,14 +11,14 @@ extern "C" {
     #define MOSI 11  // Tx pin
 
 
-    SendOnlySoftwareSerial mySerial(MOSI);
+    SendOnlySoftwareSerial debugSerial(MOSI);
 
 
     // wrappers for c compatibility:
 
-    void serial_debug_setup(long baudrate) { mySerial.begin(baudrate); }
+    void serial_debug_setup(long baudrate) { debugSerial.begin(baudrate); }
 
-    void serial_print(uint8_t data) { mySerial.write(data); }
+    void serial_print(uint8_t data) { debugSerial.write(data); }
 
 
 #ifdef __cplusplus

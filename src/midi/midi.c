@@ -76,7 +76,7 @@ void midi_channel_apply(struct midi_message* msg)
             } else {
                 assigner_notify_note_on(midi_channel, msg->data1);
 // serial debug test:
-                    debug_text_message("Note");
+                    debug_text_message("Note test");
                     debug_byte_message(DBG_MIDI_NOTE, 3, midi_channel, msg->data1, msg->data2);
 //
             }
@@ -102,7 +102,7 @@ void midi_channel_apply(struct midi_message* msg)
 
     case MIDI_CMD_CONTROL_CHANGE:
 // serial debug test:
-            debug_text_message("CC");
+            debug_text_message("CC test");
             debug_byte_message(DBG_MIDI_CC, 3, midi_channel, msg->data1, msg->data2);
 //
         break;

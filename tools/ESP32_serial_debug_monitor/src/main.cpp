@@ -11,7 +11,14 @@ void unexpected_byte(byte data);
 
 
 
-enum MESSAGE_HEADER { DBG_STOP = 0b10100000, DBG_TEXT, DBG_MIDI_NOTE, DBG_MIDI_CC, DBG_PARAM_EDIT };  // more debug messages types coming soon
+enum DEBUG_MESSAGE_HEADER {
+    DBG_STOP = 0b10100000,
+    DBG_TEXT,
+    DBG_MIDI_NOTE,
+    DBG_MIDI_CC,
+    DBG_PARAM_EDIT
+};  // more debug messages types coming soon
+
 
 byte message_type = DBG_STOP;
 
