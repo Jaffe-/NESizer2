@@ -1,6 +1,6 @@
 #include "debug.h"
 #include "serial.h"
-#include "ringbuffer.h"
+#include "debugBuffer.h"
 #include <stdarg.h>
 
 
@@ -21,11 +21,12 @@ extern "C" {
         debug_byte_message(uint8_t message_header, uint8_t size, ...) is Variadic Function for creating debug messages with a dynamic number of bytes.
         it loads bytes to the ring buffer in order to build a packet with a header/instructions for processing on the RX end.
 
-        the first loaded byte will be the message type, such as "midi note", followed by an arbitrary number data bytes.
-        a "stop" byte will be appeneded automatically, and the RX MCU can use the headers to decide how to format
-        the message before printing to a console. if you just want to see individual bytes, use debug_load()
+        the first loaded byte will be the message type, such as "midi note on", followed by an arbitrary number data bytes.
+        a "stop" byte will be appeneded automatically, and the RX MCU can use the headers to decide how to format the message before printing to a console.
 
-        specify the message type from MESSAGE_HEADER in debug.h, then specify the number of bytes to be loaded, followed by the bytes in order
+        specify the message type from MESSAGE_HEADER enum found in debug.h, then specify the number of bytes to be loaded, followed by the bytes in order
+
+        if you just want to send individual bytes, use debug_load(uint8_t data)
     */
     void debug_byte_message(uint8_t message_header, uint8_t size, ...)
     {
@@ -40,6 +41,7 @@ extern "C" {
             debug_load(DBG_STOP);
         va_end(args);
     }
+
 
     /*
         debug_text_message(const char *msg) sends a text string over serial to the debug RX device
