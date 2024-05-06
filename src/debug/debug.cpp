@@ -18,7 +18,7 @@ extern "C" {
 
 
     /*
-        debug_message(...) is Variadic Function for creating debug messages with dynamic size.
+        debug_byte_message(uint8_t message_header, uint8_t size, ...) is Variadic Function for creating debug messages with a dynamic number of bytes.
         it loads bytes to the ring buffer in order to build a packet with a header/instructions for processing on the RX end.
 
         the first loaded byte will be the message type, such as "midi note", followed by an arbitrary number data bytes.
@@ -27,19 +27,33 @@ extern "C" {
 
         specify the message type from MESSAGE_HEADER in debug.h, then specify the number of bytes to be loaded, followed by the bytes in order
     */
-    void debug_message(uint8_t msg_type, uint8_t size, ...)
+    void debug_byte_message(uint8_t message_header, uint8_t size, ...)
     {
         va_list args;
         va_start(args, size);
-            debug_load(msg_type);
+            debug_load(message_header);
             debug_load(size);
-            while(size > 0) {
+            while (size > 0) {
                 debug_load((uint8_t)va_arg(args, int));
                 size--;
             }
-            debug_load(MESSAGE_HEADER::DBG_STOP);
+            debug_load(DBG_STOP);
         va_end(args);
     }
+
+    /*
+        debug_text_message(const char *msg) sends a text string over serial to the debug RX device
+    */
+    void debug_text_message(const char *msg) {
+        debug_load(DBG_TEXT);
+        int i = 0;
+        while (msg[i] != '\0') {
+            debug_load((uint8_t)msg[i]);
+            i++;
+        }
+        debug_load(DBG_STOP);
+    }
+
 
 
     // wrappers for c compatibility:
