@@ -38,6 +38,8 @@
 #include "sample/sample.h"
 #include "sequencer/sequencer.h"
 
+#include "debug/debug.h"
+
 enum midi_state {
     STATE_MESSAGE,
     STATE_SYSEX,
@@ -73,6 +75,10 @@ void midi_channel_apply(struct midi_message* msg)
                 assigner_notify_note_off(midi_channel, msg->data1);
             } else {
                 assigner_notify_note_on(midi_channel, msg->data1);
+// serial debug test:
+                    debug_text_message("Note test");
+                    debug_byte_message(DBG_MIDI_NOTE, 3, midi_channel, msg->data1, msg->data2);
+//
             }
         }
         break;
@@ -92,6 +98,13 @@ void midi_channel_apply(struct midi_message* msg)
                     mod_pitchbend_input[i] = msg->data2 >> 3;
             }
         }
+        break;
+
+    case MIDI_CMD_CONTROL_CHANGE:
+// serial debug test:
+            debug_text_message("CC test");
+            debug_byte_message(DBG_MIDI_CC, 3, midi_channel, msg->data1, msg->data2);
+//
         break;
     }
 }

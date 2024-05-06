@@ -183,7 +183,7 @@ bool detect_2a03_presence(void)
     return rw_transition_count > 10;
 }
 
-void register_set_noop(uint8_t, uint8_t)
+void register_set_noop(uint8_t a, uint8_t b)
 {
     return;
 }
