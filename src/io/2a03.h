@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -20,7 +20,7 @@
 
   Low level 2A03 I/O interface
 
-  Contains functions for communicating with and controlling the 
+  Contains functions for communicating with and controlling the
   2A03.
 */
 
@@ -28,6 +28,10 @@
 #pragma once
 
 #include <stdint.h>
+
+#ifndef F_CPU
+    #define F_CPU 20000000L
+#endif
 
 void io_register_write(uint8_t reg, uint8_t value);
 void io_write_changed(uint8_t reg);

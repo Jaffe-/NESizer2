@@ -28,7 +28,7 @@
 #include <avr/pgmspace.h>
 #include <stdint.h>
 #include "apu/apu.h"
-#include "data/sine.c"
+#include "data/sine.h"
 
 struct lfo lfo[3];
 

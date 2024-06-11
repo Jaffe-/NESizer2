@@ -206,9 +206,6 @@ static inline void transfer()
   Handlers transfering of data via MIDI
 */
 {
-    static uint8_t nibble_flag = 0;
-    // static uint8_t temp_val = 0;
-
     while (midi_io_bytes_remaining() >= 1) {
         uint8_t val = midi_io_read_byte();
 
@@ -294,7 +291,7 @@ const struct midi_command pulse1_cc[] PROGMEM = {
     {5, SQ1_GLIDE, 65, &pulse1_state[1].state, &pulse1_state[1].stashed },
 
     {24, SQ1_ENVMOD}, //Pitch envelope modulation amount
-    
+
     {30, SQ1_LFO1}, //77
     {31, SQ1_LFO2},
     {32, SQ1_LFO3},
@@ -302,11 +299,11 @@ const struct midi_command pulse1_cc[] PROGMEM = {
     {72, ENV1_RELEASE, 60, &pulse1_state[9].state, &pulse1_state[9].stashed },
     {73, ENV1_ATTACK,  61, &pulse1_state[10].state, &pulse1_state[10].stashed },
     {75, ENV1_DECAY,   62, &pulse1_state[11].state, &pulse1_state[11].stashed },
-    
+
     {77, SQ1_VOLMOD}, //Volume modulation by LFO3
 
     {79, ENV1_SUSTAIN, 63, &pulse1_state[12].state, &pulse1_state[12].stashed },
-    
+
     {82, SQ1_PITCHBEND}, //Bend wheel intensity in semitones
     {85, SQ1_DETUNE},
     {94, SQ1_COARSE}, //Octave shift
@@ -343,23 +340,23 @@ const struct midi_command triangle_cc[] PROGMEM = {
     {5, TRI_GLIDE, 65,  &triangle_state[0].state, &triangle_state[0].stashed},
     // {TRI_PITCHBEND},
     {24, TRI_ENVMOD},
-    
+
     {30, TRI_LFO1},
     {31, TRI_LFO2},
     {32, TRI_LFO3},
 
     {82, TRI_PITCHBEND}, //Bend wheel intensity in semitones
     {85, TRI_DETUNE},
-    
+
     {94, TRI_COARSE},
 
     {123, TRI_ENABLED},
 };
 const struct midi_command noise_cc[] PROGMEM = {
     // {0, NULL}, //TODO bank select,
-    
-    {14, NOISE_LOOP},    
-    
+
+    {14, NOISE_LOOP},
+
     {24, NOISE_ENVMOD},
     {30, NOISE_LFO1},
     {31, NOISE_LFO2},
@@ -368,9 +365,9 @@ const struct midi_command noise_cc[] PROGMEM = {
     {72, ENV3_RELEASE},
     {73, ENV3_ATTACK},
     {75, ENV3_DECAY},
-    
+
     {77, NOISE_VOLMOD},
-    
+
     {79, ENV3_SUSTAIN},
 
     {82, NOISE_PITCHBEND}, //Bend wheel intensity in semitones
@@ -486,7 +483,7 @@ uint8_t get_target_value(struct parameter parameter, int8_t cc_value ){
     int8_t min = parameter.min;
     int8_t max = parameter.max;
 
-    //TODO 
+    //TODO
     switch (parameter.type) {
     case BOOL:
         if (cc_value < 0x40) {
@@ -515,7 +512,7 @@ uint8_t get_target_value(struct parameter parameter, int8_t cc_value ){
         // return target_value;
     }
 
-    
+
 
     return target_value;
 
@@ -555,7 +552,7 @@ void control_change(uint8_t midi_chn, uint8_t data1, uint8_t data2)
             *parameter.target = *command.stashed_state;
             *command.stash_active = false;
             return;
-        } 
+        }
         if (data2 < MIDI_MID_CC && ! *command.stash_active) {
             //Turn off parameter and stash
             *command.stash_active = true;
@@ -569,6 +566,6 @@ void control_change(uint8_t midi_chn, uint8_t data1, uint8_t data2)
         *command.stashed_state  = target_value;
         return;
     }
-    
+
     *parameter.target = target_value;
 }
