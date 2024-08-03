@@ -44,7 +44,6 @@
 #define BLINK_CNT 30
 
 enum mode mode = MODE_SILENCE;
-struct getvalue_config getvalue;
 
 uint8_t prev_input[3] = {0};
 
