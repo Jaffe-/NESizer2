@@ -68,11 +68,13 @@ void midi_channel_apply(struct midi_message* msg)
         if (getvalue.state == ACTIVE && getvalue.parameter.type == NOTE) {
             getvalue.midi_note = msg->data1;
         } else {
-            sequencer_midi_note = msg->data1;
             if (msg->data2 == 0) {
-                assigner_notify_note_off(midi_channel, msg->data1);
+                if (sequencer_midi_note == msg->data1)
+                    sequencer_midi_note = 0xFF;
+                pop_note(midi_channel, msg->data1);
             } else {
-                assigner_notify_note_on(midi_channel, msg->data1);
+                sequencer_midi_note = msg->data1;
+                push_note(midi_channel, msg->data1);
             }
         }
         break;
@@ -80,7 +82,7 @@ void midi_channel_apply(struct midi_message* msg)
     case MIDI_CMD_NOTE_OFF:
         if (sequencer_midi_note == msg->data1)
             sequencer_midi_note = 0xFF;
-        assigner_notify_note_off(midi_channel, msg->data1);
+        pop_note(midi_channel, msg->data1);
         break;
 
     case MIDI_CMD_PITCH_BEND:
@@ -92,6 +94,9 @@ void midi_channel_apply(struct midi_message* msg)
                     mod_pitchbend_input[i] = msg->data2 >> 3;
             }
         }
+        break;
+
+    case MIDI_CMD_CONTROL_CHANGE:
         break;
     }
 }
