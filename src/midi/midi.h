@@ -27,6 +27,10 @@
 #pragma once
 #include <stdint.h>
 
+// Used for ignoring unwanted sysex messages:
+#define SYSEX_ID 0x7D         // 7D is the "Special ID", reserved for non-commerical use
+#define SYSEX_DEVICE_ID 0x4E  // 4E is "N" in ASCII hex, for NESizer :)
+
 #define MIDI_NOTE_LIST_MAX 8
 
 enum sysex_cmd {

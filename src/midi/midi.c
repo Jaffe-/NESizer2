@@ -41,7 +41,8 @@
 enum midi_state {
     STATE_MESSAGE,
     STATE_SYSEX,
-    STATE_TRANSFER
+    STATE_TRANSFER,
+    STATE_IGNORE_SYSEX
 };
 
 uint8_t midi_notes[5];
@@ -52,8 +53,9 @@ static uint8_t sysex_command;
 static inline void interpret_message();
 static inline void transfer();
 static inline void sysex();
-
 static inline void initiate_transfer();
+static inline void ignore_sysex();
+
 static inline uint8_t get_midi_channel(uint8_t channel)
 {
     return channel + 1;
@@ -110,6 +112,8 @@ void midi_handler()
         sysex(); break;
     case STATE_TRANSFER:
         transfer(); break;
+    case STATE_IGNORE_SYSEX:
+        ignore_sysex(); break;
     default: break;
     }
 }
@@ -182,20 +186,30 @@ static inline void sysex()
 {
     // When the state just changed, we need to look at the first few bytes
     // to determine what sysex message we're dealing with
-    if (midi_io_bytes_remaining() >= 6) {
-        sysex_command = midi_io_read_byte();
+    if (midi_io_bytes_remaining() >= 8) {
 
-        if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+        uint8_t sysex_id = midi_io_read_byte();
+        uint8_t device_id = midi_io_read_byte();
 
-            // Read sample descriptor and store in sample object
-            uint8_t sample_number = midi_io_read_byte();
-            sample.type = midi_io_read_byte();
-            sample.size = midi_io_read_byte();
-            sample.size |= (uint32_t)midi_io_read_byte() << 7;
-            sample.size |= (uint32_t)midi_io_read_byte() << 14;
-            sample_new(&sample, sample_number);
+        if ((sysex_id == SYSEX_ID) && (device_id == SYSEX_DEVICE_ID)) {
 
-            initiate_transfer();
+            sysex_command = midi_io_read_byte();
+
+            if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+                // Read sample descriptor and store in sample object
+                uint8_t sample_number = midi_io_read_byte();
+                sample.type = midi_io_read_byte();
+                sample.size = midi_io_read_byte();
+                sample.size |= (uint32_t)midi_io_read_byte() << 7;
+                sample.size |= (uint32_t)midi_io_read_byte() << 14;
+                sample_new(&sample, sample_number);
+
+                initiate_transfer();
+            }
+        }
+
+        else {
+            ignore_sysex();
         }
     }
 }
@@ -239,4 +253,18 @@ static inline void initiate_transfer()
 
     state = STATE_TRANSFER;
     midi_transfer_progress = 0;
+}
+
+static inline void ignore_sysex()
+{
+    // for handling streams of sysex data not meant for NESizer.
+    state = STATE_IGNORE_SYSEX;
+
+    while (midi_io_bytes_remaining() >= 1) {
+        uint8_t val = midi_io_read_byte();
+
+        if (val == SYSEX_STOP) {
+            state = STATE_MESSAGE;
+        }
+    }
 }
