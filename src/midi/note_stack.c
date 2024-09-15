@@ -27,6 +27,7 @@
 
 
 #include <stdint.h>
+#include "apu/apu.h"
 #include "assigner/assigner.h"
 
 
@@ -51,9 +52,9 @@ void push_note(uint8_t channel, uint8_t note)
 {
     uint8_t c = channel - 1;
 
-    // buffering causes stuck note issues in polyphonic and split mode.
+    // buffering causes stuck note issues in polyphonic and split mode. also DMC channel behaved better before.
     // revert to previous behaviour as a workaround. this could be handled better:
-    if (assigner_split || assigner_upper_mode == POLY) {
+    if (assigner_split || assigner_upper_mode == POLY || assigner_midi_channel_get(CHN_DMC) == channel) {
         assigner_notify_note_on(channel, note);
         if (active_notes[c] > 0)
             clear_note_buffer();
@@ -81,9 +82,9 @@ void pop_note(uint8_t channel, uint8_t note)
 {
     uint8_t c = channel - 1;
 
-    // buffering causes stuck note issues in polyphonic and split mode.
+    // buffering causes stuck note issues in polyphonic and split mode. also DMC channel behaved better before.
     // revert to previous behaviour as a workaround. this could be handled better:
-    if (assigner_split || assigner_upper_mode == POLY) {
+    if (assigner_split || assigner_upper_mode == POLY || assigner_midi_channel_get(CHN_DMC) == channel) {
         assigner_notify_note_off(channel, note);
         if (active_notes[c] > 0)
             clear_note_buffer();
