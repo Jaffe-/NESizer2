@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "ringbuffer.h"
+#include "ui/ui.h"
 
 #define ERROR_RINGBUF_WRITE_OFLOW (1 << 0)
 #define ERROR_RINGBUF_READ_UFLOW (1 << 1)

@@ -72,7 +72,7 @@ TCNT0 = 0x26
 .global reset_pc12
 .global reset_pc15
 .global reset_pc16
-.global detect
+.global detect_2a03_type
 .section .text
 
 
@@ -349,7 +349,7 @@ reset_pc16:
 	
 ;;; ----------------------------------------------------------------------------
 	
-;;; detect -- 2A03 type auto detection
+;;; detect_2a03_type -- 2A03 type auto detection
 ;;;
 ;;; Parameters: none
 ;;; Return:	r24: number of Atmega clock cycles per 6502 clock cycle
@@ -364,7 +364,7 @@ reset_pc16:
 ;;; R/W transition. The counted number of cycles is divided by 8 to get the
 ;;; number of Atmega cycles per one 6502 cycle.
 
-detect:
+detect_2a03_type:
 	ldi r18, 1 
 	ldi r19, 0
 	out TCNT0, r19

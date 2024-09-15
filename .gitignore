@@ -13,3 +13,6 @@
 *.elf
 *.bin
 *.hex
+
+.pio
+.vscode

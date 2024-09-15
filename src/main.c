@@ -43,7 +43,6 @@
 #include "patch/patch.h"
 #include "midi/midi.h"
 
-#define F_CPU 20000000L
 #include <util/delay.h>
 
 #define MAGIC 0xdeadbeef
