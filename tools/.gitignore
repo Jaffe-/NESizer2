@@ -1,14 +1,6 @@
-.vscode/*
-samples/*
+.vscode
+samples
+ESP32_serial_debug_monitor
 
-convert-all-samples.sh
-
-deltacompress.exe
-deltacompress.ilk
-deltacompress.obj
-deltacompress.pdb
-gensysex.exe
-gensysex.ilk
-gensysex.obj
-gensysex.pdb
-vc140.pdb
+# sysex generator tools: msvc compiler output
+.build

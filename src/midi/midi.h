@@ -30,6 +30,10 @@
 #include <stdbool.h>
 #include "parameter/parameter.h"
 
+// Used for ignoring unwanted sysex messages:
+#define SYSEX_ID 0x7D         // 7D is the "Special ID", reserved for non-commerical use
+#define SYSEX_DEVICE_ID 0x4E  // 4E is "N" in ASCII hex, for NESizer :)
+
 #define MIDI_NOTE_LIST_MAX 8
 #define MIDI_MAX_CC 0x80 //128
 #define MIDI_MID_CC 0x3F //63
@@ -58,9 +62,13 @@ struct midi_channel {
 extern uint8_t midi_transfer_progress;
 extern uint8_t midi_notes[5];
 
-void midi_channel_subscribe(uint8_t midi_chn, uint8_t chn);
-void midi_channel_unsubscribe(uint8_t midi_chn, uint8_t chn);
 void midi_handler(void);
+
+
+// used for note stack
+void push_note(uint8_t channel, uint8_t note);
+void pop_note(uint8_t channel, uint8_t note);
+
 
 struct midi_command{
     uint8_t cc;
