@@ -726,6 +726,8 @@ The converted sample needs to be wrapped with the necessary metadata and MIDI Sy
 
 \begin{verbatim}
   F0 (System Exclusive)
+  7D (Sysex ID)
+  NE (Device ID)
   00 (Sample load command)
   ii (Sample index)
   00 (Reserved)
@@ -741,7 +743,7 @@ The converted sample needs to be wrapped with the necessary metadata and MIDI Sy
 
 \textbf{Note:} Any data byte contained within a MIDI System Exclusive message must never have the most significant bit set.
 
-The sample index can be any number between 0 and 99. The index 0 corresponds to MIDI note 60, which is middle C. This is the note that has to be played on the MIDI input or entered into a sequence pattern to trigger the sample on the DMC channel.
+The sample index can be any number between 0 and 99. The index 0 corresponds to MIDI note 36, which is C3, commonly used for kick drum in the General MIDI drum map standard. This is the note that has to be played on the MIDI input or entered into a sequence pattern to trigger the sample on the DMC channel.
 
 The sample size must be given in bytes, but split across three 7-bit words.
 
@@ -751,7 +753,7 @@ In the NESIZER source repository, there is a helpful tool \verb+gensysex.c+ whic
 
 \verb+gensysex sample <input format> <index> <raw filename> <sysex filename>+
 
-The following example creates a SysEx file for the file \verb+sample.raw+ created in the above example. It places the sample at index 2, meaning that the note D4 must be played to trigger this sample:
+The following example creates a SysEx file for the file \verb+sample.raw+ created in the above example. It places the sample at index 2, meaning that the note D3 must be played to trigger this sample:
 
 \verb+gensysex sample 8bit 2 sample.raw sample.syx+
 
