@@ -65,3 +65,12 @@ void patch_load(uint8_t num)
         *data.target = memory_read(address++);
     }
 }
+
+uint8_t patch_pc_limit(int8_t* patch_num, int8_t min, int8_t max, int8_t pc_num)
+{
+    if (min <= pc_num && pc_num <= max) {
+        *patch_num = pc_num;
+        return 1;
+    }
+    return 0;
+}
