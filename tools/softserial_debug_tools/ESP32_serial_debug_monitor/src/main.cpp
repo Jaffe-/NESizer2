@@ -1,7 +1,5 @@
 #include <Arduino.h>
 
-
-
 void handle_data(byte data);
 void init_buffer(byte size);
 void load_buffer(byte data);
@@ -10,15 +8,14 @@ void del_buffer();
 void unexpected_byte(byte data);
 
 
-
 enum DEBUG_MESSAGE_HEADER {
     DBG_STOP = 0b10100000,
     DBG_TEXT,
     DBG_MIDI_NOTE,
     DBG_MIDI_CC,
-    DBG_PARAM_EDIT
+    DBG_PARAM_EDIT,
+    DBG_MIDI_SYSEX
 };  // more debug messages types coming soon
-
 
 byte message_type = DBG_STOP;
 
@@ -26,8 +23,7 @@ byte *buffer;
 bool buffer_init = false;
 int buffer_size = 0;
 int buffer_index = 0;
-
-
+int printed_bytes = 0;
 
 void handle_data(byte data)
 {
@@ -37,6 +33,7 @@ void handle_data(byte data)
             case DBG_MIDI_NOTE:
             case DBG_MIDI_CC:
             case DBG_PARAM_EDIT:
+            case DBG_MIDI_SYSEX:
             case DBG_STOP:
                 message_type = data;  // start new message by updating message_type
                 break;
@@ -50,7 +47,14 @@ void handle_data(byte data)
             message_type = data;
 
         } else if (message_type == DBG_TEXT) {
-            Serial.write(data);  // incoming message should just be a text string, print it
+            Serial.write(data); // incoming message should just be a text string, print it
+
+        } else if (message_type == DBG_MIDI_SYSEX) {
+            Serial.print(data, HEX); Serial.print(" ");  // incoming message should just be a text string, print it
+            if (++printed_bytes > 15) {
+                printed_bytes = 0;
+                Serial.println();
+            }
 
         } else {
             if (!buffer_init) {
@@ -88,6 +92,7 @@ void print_buffer()
 {
     switch (message_type) {
         case DBG_TEXT:
+        case DBG_MIDI_SYSEX:
             Serial.println();
             break;
 

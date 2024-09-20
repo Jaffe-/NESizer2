@@ -41,9 +41,10 @@
 #include "ui/ui.h"
 #include "settings/settings.h"
 #include "patch/patch.h"
-#include "debug/debug.h"
 
 #include <util/delay.h>
+
+#include "softserial_debug/debug.h"
 
 #define MAGIC 0xdeadbeef
 #define MAGIC_ADDR 0

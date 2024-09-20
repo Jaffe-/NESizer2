@@ -42,7 +42,7 @@
 #include "settings/settings.h"
 #include "note_stack/note_stack.h"
 
-#include "debug/debug.h"
+#include "softserial_debug/debug.h"
 
 enum midi_state {
     STATE_MESSAGE,
@@ -83,10 +83,9 @@ void midi_channel_apply(struct midi_message* msg)
             } else {
                 sequencer_midi_note = msg->data1;
                 note_stack_push(midi_channel, msg->data1);
-// serial debug test:
-                    debug_text_message("Note test");
-                    debug_byte_message(DBG_MIDI_NOTE, 3, midi_channel, msg->data1, msg->data2);
-//
+                // serial debug test:
+                debug_text_message("Note test");
+                debug_byte_message(DBG_MIDI_NOTE, 3, midi_channel, msg->data1, msg->data2);
             }
         }
         break;
@@ -109,10 +108,9 @@ void midi_channel_apply(struct midi_message* msg)
         break;
 
     case MIDI_CMD_CONTROL_CHANGE:
-// serial debug test:
-            debug_text_message("CC test");
-            debug_byte_message(DBG_MIDI_CC, 3, midi_channel, msg->data1, msg->data2);
-//
+        // serial debug test:
+        debug_text_message("CC test");
+        debug_byte_message(DBG_MIDI_CC, 3, midi_channel, msg->data1, msg->data2);
         break;
 
     case MIDI_CMD_PATCH_CHANGE:
@@ -154,7 +152,7 @@ static inline void interpret_message()
         /* Not channel directed message */
         switch (msg.command) {
         case MIDI_CMD_SYSEX:
-            state = STATE_SYSEX;
+            state = STATE_SYSEX;    debug_load(DBG_MIDI_SYSEX); debug_load(msg.command << 4);
             break;
 
         case MIDI_CMD_TIMECODE:
@@ -209,20 +207,20 @@ static inline void sysex()
     // to determine what sysex message we're dealing with
     if (midi_io_bytes_remaining() >= 8) {
 
-        uint8_t sysex_id = midi_io_read_byte();
-        uint8_t device_id = midi_io_read_byte();
+        uint8_t sysex_id = midi_io_read_byte();                         debug_load(sysex_id);
+        uint8_t device_id = midi_io_read_byte();                        debug_load(device_id);
 
         if ((sysex_id == SYSEX_ID) && (device_id == SYSEX_DEVICE_ID)) {
 
-            sysex_command = midi_io_read_byte();
+            sysex_command = midi_io_read_byte();                        debug_load(sysex_command);
 
             if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
                 // Read sample descriptor and store in sample object
-                uint8_t sample_number = midi_io_read_byte();
-                sample.type = midi_io_read_byte();
-                sample.size = midi_io_read_byte();
-                sample.size |= (uint32_t)midi_io_read_byte() << 7;
-                sample.size |= (uint32_t)midi_io_read_byte() << 14;
+                uint8_t sample_number = midi_io_read_byte();            debug_load(sample_number);
+                sample.type = midi_io_read_byte();                      debug_load(sample.type);
+                sample.size = midi_io_read_byte();                      debug_load(sample.size);
+                sample.size |= (uint32_t)midi_io_read_byte() << 7;      debug_load(sample.size);
+                sample.size |= (uint32_t)midi_io_read_byte() << 14;     debug_load(sample.size);
                 sample_new(&sample, sample_number);
 
                 initiate_transfer();
@@ -244,6 +242,8 @@ static inline void transfer()
 {
     while (midi_io_bytes_remaining() >= 1) {
         uint8_t val = midi_io_read_byte();
+        debug_load(val);
+        debug_print();
 
         if (val == SYSEX_STOP) {
             ui_pop_mode();
@@ -283,9 +283,12 @@ static inline void ignore_sysex()
 
     while (midi_io_bytes_remaining() >= 1) {
         uint8_t val = midi_io_read_byte();
+        debug_load(val);
+        debug_print();
 
         if (val == SYSEX_STOP) {
             state = STATE_MESSAGE;
+            debug_load(DBG_STOP);
         }
     }
 }

@@ -1,21 +1,17 @@
 #include "debug.h"
-#include "serial.h"
-#include "debugBuffer.h"
+#include "software_serial.h"
+#include "serial_debug_buffer.h"
 #include <stdarg.h>
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
     // config
     #define DEBUG_BUFFER_SIZE 128
     #define SERIAL_BAUDRATE 115200
 
-
     DebugBuffer debugBuffer{DEBUG_BUFFER_SIZE};
-
 
     /*
         debug_byte_message(uint8_t message_header, uint8_t size, ...) is Variadic Function for creating debug messages with a dynamic number of bytes.
@@ -42,7 +38,6 @@ extern "C" {
         va_end(args);
     }
 
-
     /*
         debug_text_message(const char *msg) sends a text string over serial to the debug RX device
     */
@@ -56,16 +51,10 @@ extern "C" {
         debug_load(DBG_STOP);
     }
 
-
-
     // wrappers for c compatibility:
-
     void debug_setup() { serial_debug_setup(SERIAL_BAUDRATE); }
-
     void debug_load(uint8_t data) { debugBuffer.loadByte(data); }
-
     void debug_print() { debugBuffer.printByte(); }
-
 
 #ifdef __cplusplus
 }

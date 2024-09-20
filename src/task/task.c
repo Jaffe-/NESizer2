@@ -24,6 +24,7 @@
   their set intervals.
 */
 
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "task.h"
@@ -40,7 +41,8 @@
 #include "ui/ui_sequencer.h"
 #include "assigner/assigner.h"
 #include "sequencer/sequencer.h"
-#include "debug/debug.h"
+
+#include "softserial_debug/debug.h"
 
 struct task {
     void (*const handler)(void);

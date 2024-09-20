@@ -2,11 +2,9 @@
 
 #include <stdint.h>
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
     class DebugBuffer {
     public:
@@ -29,7 +27,6 @@ extern "C" {
     private:
         void initBuffer();
     };
-
 
 #ifdef __cplusplus
 }

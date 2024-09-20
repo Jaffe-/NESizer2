@@ -1,11 +1,9 @@
-#include "debugBuffer.h"
-#include "serial.h"
-
+#include "serial_debug_buffer.h"
+#include "software_serial.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
     // constructor
     DebugBuffer::DebugBuffer(int s)
@@ -15,13 +13,11 @@ extern "C" {
         this->initBuffer();
     }
 
-
     // destructor
     DebugBuffer::~DebugBuffer()
     {
         delete [] m_buffer;
     }
-
 
     // initialize debug buffer (not sure this is necessary)
     void DebugBuffer::initBuffer()
@@ -30,7 +26,6 @@ extern "C" {
             m_buffer[i] = 0x0;
         }
     }
-
 
     // push byte into buffer, move to next load index and increase print queue size
     void DebugBuffer::loadByte(uint8_t data)
@@ -46,7 +41,6 @@ extern "C" {
         }
     }
 
-
     // print byte from buffer to console, move to next print index and decrease print queue size
     void DebugBuffer::printByte()
     {
@@ -61,7 +55,6 @@ extern "C" {
             m_queueSize--;
         }
     }
-
 
 #ifdef __cplusplus
 }
