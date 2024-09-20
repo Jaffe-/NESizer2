@@ -41,9 +41,6 @@
 #define BTN_UPPER_POLY 14
 #define BTN_UPPER_MONO 15
 
-#define PATCH_MIN 0
-#define PATCH_MAX 99
-
 uint8_t programmer_leds[6];
 
 enum state { STATE_TOPLEVEL, STATE_SAVE };
@@ -399,4 +396,9 @@ static inline void toplevel_handler(void)
             init_getvalue(BTN_SET_SPLIT, 0xFF, &parameter);
         }
     }
+}
+
+int8_t* get_patchno_addr()
+{
+    return (&patchno);
 }

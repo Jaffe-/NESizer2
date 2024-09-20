@@ -57,6 +57,3 @@ extern uint8_t midi_transfer_progress;
 extern uint8_t midi_notes[5];
 
 void midi_handler(void);
-
-void push_note(uint8_t channel, uint8_t note);
-void pop_note(uint8_t channel, uint8_t note);

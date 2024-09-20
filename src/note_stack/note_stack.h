@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt
+  Copyright 2024 Johan Fjeldtvedt and Beau Sterling
 
   This file is part of NESIZER.
 
@@ -18,17 +18,14 @@
 
 
 
-  Patch programmer user interface
+  Note Stack
 
-  Handles the user interface when in programming mode.
+  Buffers held notes in monophonic mode, to improve live performace experience.
+  This behavior is called "legato" mode in most synths.
+  In polyphonic mode, or DCM channel, reverts to previous behavior.
 */
 
-
-#pragma once
 #include <stdint.h>
 
-void ui_programmer_setup(void);
-void programmer(void);
-int8_t* get_patchno_addr(void);
-
-extern uint8_t programmer_leds[6];
+void note_stack_push(uint8_t channel, uint8_t note);
+void note_stack_pop(uint8_t channel, uint8_t note);

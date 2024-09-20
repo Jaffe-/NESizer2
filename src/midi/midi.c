@@ -30,6 +30,7 @@
 #include "envelope/envelope.h"
 #include "lfo/lfo.h"
 #include "ui/ui.h"
+#include "ui/ui_programmer.h"
 #include "ui/ui_sequencer.h"
 #include "modulation/modulation.h"
 #include "io/leds.h"
@@ -37,6 +38,9 @@
 #include "assigner/assigner.h"
 #include "sample/sample.h"
 #include "sequencer/sequencer.h"
+#include "patch/patch.h"
+#include "settings/settings.h"
+#include "note_stack/note_stack.h"
 
 enum midi_state {
     STATE_MESSAGE,
@@ -73,10 +77,10 @@ void midi_channel_apply(struct midi_message* msg)
             if (msg->data2 == 0) {
                 if (sequencer_midi_note == msg->data1)
                     sequencer_midi_note = 0xFF;
-                pop_note(midi_channel, msg->data1);
+                note_stack_pop(midi_channel, msg->data1);
             } else {
                 sequencer_midi_note = msg->data1;
-                push_note(midi_channel, msg->data1);
+                note_stack_push(midi_channel, msg->data1);
             }
         }
         break;
@@ -84,7 +88,7 @@ void midi_channel_apply(struct midi_message* msg)
     case MIDI_CMD_NOTE_OFF:
         if (sequencer_midi_note == msg->data1)
             sequencer_midi_note = 0xFF;
-        pop_note(midi_channel, msg->data1);
+        note_stack_pop(midi_channel, msg->data1);
         break;
 
     case MIDI_CMD_PITCH_BEND:
@@ -99,6 +103,13 @@ void midi_channel_apply(struct midi_message* msg)
         break;
 
     case MIDI_CMD_CONTROL_CHANGE:
+        break;
+
+    case MIDI_CMD_PATCH_CHANGE:
+        if (patch_pc_limit(get_patchno_addr(), PATCH_MIN, PATCH_MAX, msg->data1)) {  // range limit
+            patch_load(msg->data1);
+            settings_write(PROGRAMMER_SELECTED_PATCH, msg->data1);
+        }
         break;
     }
 }
