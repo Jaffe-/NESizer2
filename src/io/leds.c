@@ -180,3 +180,22 @@ void leds_7seg_two_digit_set_hex(uint8_t row1, uint8_t row2, uint8_t value)
     leds_7seg_set(row2, value % 16);
     leds_7seg_set(row1, value / 16);
 }
+
+void leds_7seg_custom(uint8_t row, uint8_t value)
+{
+    leds[row] = value;
+
+    // Left digit: row = 3
+    // Right digit: row = 4
+    // Bit number / segment map:
+    //     7
+    // 2       6
+    //     1
+    // 3       5
+    //     4       0
+
+    // example:
+    // 3 is made from bits 1, 4, 5, 6, and 7.
+    // bits are numbered [ 7 6 5 4 | 3 2 1 0 ]
+    // so pass 0b11110010 to value to display 3
+}
