@@ -54,3 +54,4 @@ void leds_7seg_dot_off(uint8_t row);
 void leds_7seg_clear(uint8_t row);
 void leds_7seg_note_set(uint8_t row1, uint8_t row2, uint8_t note);
 void leds_7seg_minus(uint8_t row);
+void leds_7seg_custom(uint8_t row, uint8_t value);

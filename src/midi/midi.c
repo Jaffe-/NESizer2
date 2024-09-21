@@ -54,7 +54,9 @@ enum midi_state {
 uint8_t midi_notes[5];
 
 static enum midi_state state = STATE_MESSAGE;
-static uint8_t sysex_command;
+static uint8_t sysex_id = 0;
+static uint8_t device_id = 0;
+static uint8_t sysex_command = 0;
 
 static inline void interpret_message();
 static inline void transfer();
@@ -205,25 +207,42 @@ static inline void sysex()
 {
     // When the state just changed, we need to look at the first few bytes
     // to determine what sysex message we're dealing with
-    if (midi_io_bytes_remaining() >= 8) {
+    debug_load(midi_io_bytes_remaining());
 
-        uint8_t sysex_id = midi_io_read_byte();                         debug_load(sysex_id);
-        uint8_t device_id = midi_io_read_byte();                        debug_load(device_id);
+    if (midi_io_bytes_remaining() >= 3) {
+        if (!sysex_command) {
+            sysex_id = midi_io_read_byte();                         debug_load(sysex_id);
+            device_id = midi_io_read_byte();                        debug_load(device_id);
+            sysex_command = midi_io_read_byte();                    debug_load(sysex_command);
+        }
 
         if ((sysex_id == SYSEX_ID) && (device_id == SYSEX_DEVICE_ID)) {
 
-            sysex_command = midi_io_read_byte();                        debug_load(sysex_command);
-
             if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
+                if (midi_io_bytes_remaining() >= 5) {
                 // Read sample descriptor and store in sample object
-                uint8_t sample_number = midi_io_read_byte();            debug_load(sample_number);
-                sample.type = midi_io_read_byte();                      debug_load(sample.type);
-                sample.size = midi_io_read_byte();                      debug_load(sample.size);
-                sample.size |= (uint32_t)midi_io_read_byte() << 7;      debug_load(sample.size);
-                sample.size |= (uint32_t)midi_io_read_byte() << 14;     debug_load(sample.size);
-                sample_new(&sample, sample_number);
+                    uint8_t sample_number = midi_io_read_byte();            debug_load(sample_number);
+                    sample.type = midi_io_read_byte();                      debug_load(sample.type);
+                    sample.size = midi_io_read_byte();                      debug_load(sample.size);
+                    sample.size |= (uint32_t)midi_io_read_byte() << 7;      debug_load(sample.size);
+                    sample.size |= (uint32_t)midi_io_read_byte() << 14;     debug_load(sample.size);
+                    sample_new(&sample, sample_number);
 
-                initiate_transfer();
+                    initiate_transfer();
+                }
+            }
+
+            if (sysex_command == (uint8_t)SYSEX_CMD_PATCH_LOAD) {
+                if (midi_io_bytes_remaining() >= 1) {
+                    // example message (selects patch # 4):
+                    // F0    7D    4E    03    04    F7
+                    // STRT  {  ID  }    CMD   ##    END
+                    uint8_t patch_byte = midi_io_read_byte();
+                    if (patch_pc_limit(get_patchno_addr(), PATCH_MIN, PATCH_MAX, patch_byte)) {  // range limit
+                        patch_load(patch_byte);
+                        settings_write(PROGRAMMER_SELECTED_PATCH, patch_byte);
+                    }
+                }
             }
         }
 
@@ -231,6 +250,8 @@ static inline void sysex()
             ignore_sysex();
         }
     }
+
+    ignore_sysex();
 }
 
 #define ERROR_MIDI_RX_LEN_MISMATCH (1 << 2)
@@ -281,12 +302,18 @@ static inline void ignore_sysex()
     // for handling streams of sysex data not meant for NESizer.
     state = STATE_IGNORE_SYSEX;
 
+    leds_7seg_custom(3, 0b00101010);  // n
+    leds_7seg_custom(4, 0b00111010);  // o
+
     while (midi_io_bytes_remaining() >= 1) {
         uint8_t val = midi_io_read_byte();
         debug_load(val);
         debug_print();
 
         if (val == SYSEX_STOP) {
+            sysex_id = 0;
+            device_id = 0;
+            sysex_command = 0;
             state = STATE_MESSAGE;
             debug_load(DBG_STOP);
         }
