@@ -42,6 +42,7 @@
 #include "settings/settings.h"
 #include "patch/patch.h"
 #include "midi/midi.h"
+#include "midi/midi_cc.h"
 
 #include <util/delay.h>
 

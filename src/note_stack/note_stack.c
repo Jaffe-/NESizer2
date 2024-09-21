@@ -25,17 +25,14 @@
   In polyphonic mode, reverts to previous behavior.
 */
 
-
 #include <stdint.h>
 #include "apu/apu.h"
 #include "assigner/assigner.h"
-
 
 #define MAX_POLY 8
 
 static int active_notes[16] = { 0 };  // keep track of notes held in each midi channel
 static uint8_t note_buffer[16][MAX_POLY];
-
 
 void clear_note_buffer()
 {
@@ -47,8 +44,7 @@ void clear_note_buffer()
     }
 }
 
-
-void push_note(uint8_t channel, uint8_t note)
+void note_stack_push(uint8_t channel, uint8_t note)
 {
     uint8_t c = channel - 1;
 
@@ -77,8 +73,7 @@ void push_note(uint8_t channel, uint8_t note)
     }
 }
 
-
-void pop_note(uint8_t channel, uint8_t note)
+void note_stack_pop(uint8_t channel, uint8_t note)
 {
     uint8_t c = channel - 1;
 
