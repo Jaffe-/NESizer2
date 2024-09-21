@@ -152,7 +152,7 @@ static inline void interpret_message()
         /* Not channel directed message */
         switch (msg.command) {
         case MIDI_CMD_SYSEX:
-            state = STATE_SYSEX;    debug_load(DBG_MIDI_SYSEX); debug_load(msg.command << 4);
+            state = STATE_SYSEX;    debug_load(DBG_MIDI_SYSEX); debug_load(0xF0);
             break;
 
         case MIDI_CMD_TIMECODE:
