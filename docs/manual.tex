@@ -662,6 +662,38 @@ If you select the value 0, the sound channel will not listen to any MIDI channel
 
 To select a MIDI channel, enter the \lbl{SETTINGS} mode by pressing \btn{SETTINGS}. Hold down \btn{MIDI CHANNEL} and then press the desired channel's button. The LEDs will flash and you can select one of the 16 MIDI channels using the \btn{UP} and \btn{DOWN} buttons.
 
+
+\subsubsection{MIDI CC}
+\begin{tabular}{l | l | l | l | l | l}
+  CC & SQ 1 & SQ 2 & Tri & Noise & Sample\\ \hline
+  \textbf{1} & Duty & Duty & & & \\
+  \textbf{5} & Glide & Glide & Glide & & \\
+  \textbf{14} &  &  &  & Loop & Loop \\
+  \textbf{30} & LFO 1 & LFO 1 & LFO 1 & LFO 1 & \\
+  \textbf{31} & LFO 2 & LFO 2 & LFO 2 & LFO 2 & \\
+  \textbf{32} & LFO 3 & LFO 3 & LFO 3 & LFO 3 & \\
+  \textbf{72} & Release & Release &  & Release & \\
+  \textbf{73} & Attack & Attack &  & Attack & \\
+  \textbf{75} & Decay & Decay &  & Decay & \\
+  \textbf{77} & Vol mod (LFO 3) & Vol mod (LFO 3) &  & Vol mod (LFO 3) & \\
+  \textbf{79} & Sustain & Sustain &  & Sustain &\\
+  \textbf{82} & Pitch Bend intensity & Pitch Bend intensity &  & Pitch Bend intensity & \\
+  \textbf{85} & Detune & Detune & Detune &  &\\
+  \textbf{95} & Octave Shift & Octave Shift & Octave Shift &  &\\
+  \textbf{123} & Enable & Enable & Enable & Enable & Enable\\
+\end{tabular}
+
+\subsubsection{MIDI CC (Global)}
+\begin{tabular}{l | l}
+  CC & \\ \hline
+  \textbf{50} & LFO 1 Period\\
+    \textbf{51} & LFO 1 Waveform\\
+    \textbf{52} & LFO 2 Period\\
+    \textbf{53} & LFO 2 Waveform\\
+    \textbf{54} & LFO 3 Period\\
+    \textbf{55} & LFO 3 Waveform\\
+\end{tabular}
+
 \subsubsection{External clock}
 Use \btn{EXT. CLOCK} to use the incoming MIDI clock to set the tempo of the sequencer. When this is set to 1, the sequencer will not do anything unless an external MIDI device sends MIDI Clock messages. When the setting is 0, the internal tempo is used.
 
