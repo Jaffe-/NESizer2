@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "parameter/parameter.h"
 
 // Used for ignoring unwanted sysex messages:
 #define SYSEX_ID 0x7D         // 7D is the "Special ID", reserved for non-commerical use
