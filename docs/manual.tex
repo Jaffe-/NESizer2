@@ -662,38 +662,6 @@ If you select the value 0, the sound channel will not listen to any MIDI channel
 
 To select a MIDI channel, enter the \lbl{SETTINGS} mode by pressing \btn{SETTINGS}. Hold down \btn{MIDI CHANNEL} and then press the desired channel's button. The LEDs will flash and you can select one of the 16 MIDI channels using the \btn{UP} and \btn{DOWN} buttons.
 
-
-\subsubsection{MIDI CC}
-\begin{tabular}{l | l | l | l | l | l}
-  CC & SQ 1 & SQ 2 & Tri & Noise & Sample\\ \hline
-  \textbf{1} & Duty & Duty & & & \\
-  \textbf{5} & Glide & Glide & Glide & & \\
-  \textbf{14} &  &  &  & Loop & Loop \\
-  \textbf{30} & LFO 1 & LFO 1 & LFO 1 & LFO 1 & \\
-  \textbf{31} & LFO 2 & LFO 2 & LFO 2 & LFO 2 & \\
-  \textbf{32} & LFO 3 & LFO 3 & LFO 3 & LFO 3 & \\
-  \textbf{72} & Release & Release &  & Release & \\
-  \textbf{73} & Attack & Attack &  & Attack & \\
-  \textbf{75} & Decay & Decay &  & Decay & \\
-  \textbf{77} & Vol mod (LFO 3) & Vol mod (LFO 3) &  & Vol mod (LFO 3) & \\
-  \textbf{79} & Sustain & Sustain &  & Sustain &\\
-  \textbf{82} & Pitch Bend intensity & Pitch Bend intensity &  & Pitch Bend intensity & \\
-  \textbf{85} & Detune & Detune & Detune &  &\\
-  \textbf{95} & Octave Shift & Octave Shift & Octave Shift &  &\\
-  \textbf{123} & Enable & Enable & Enable & Enable & Enable\\
-\end{tabular}
-
-\subsubsection{MIDI CC (Global)}
-\begin{tabular}{l | l}
-  CC & \\ \hline
-  \textbf{50} & LFO 1 Period\\
-    \textbf{51} & LFO 1 Waveform\\
-    \textbf{52} & LFO 2 Period\\
-    \textbf{53} & LFO 2 Waveform\\
-    \textbf{54} & LFO 3 Period\\
-    \textbf{55} & LFO 3 Waveform\\
-\end{tabular}
-
 \subsubsection{External clock}
 Use \btn{EXT. CLOCK} to use the incoming MIDI clock to set the tempo of the sequencer. When this is set to 1, the sequencer will not do anything unless an external MIDI device sends MIDI Clock messages. When the setting is 0, the internal tempo is used.
 
@@ -724,6 +692,47 @@ The errors that can occur are:
 \item \verb+cr+: Corrupt RAM - RAM contents will be re-initialized automatically
 \end{itemize}
 
+
+\section{MIDI}
+
+\subsection{MIDI CC}
+The Nesizer is capable of receiving MIDI Control Change (CC) messages. Each track can independently respond to CC messages, adjusting its parameters according to the specified ranges under PROGRAM and PAGE 2 modes. These ranges are automatically scaled to the full CC range of 0-127. Additionally, toggle-based ranges are mapped to 'OFF' for values below 64 and 'ON' for values 64 or higher.
+
+
+\begin{tabular}{l | l | l | l | l | l }
+  CC/(*) & SQ 1 & SQ 2 & Tri & Noise & DMC\\ \hline
+  \textbf{1} & Duty & Duty & & & \\
+  \textbf{5/(65)} & Glide & Glide & Glide & & \\
+  \textbf{14} &  &  &  & Loop & Loop \\
+  \textbf{30} & LFO 1 & LFO 1 & LFO 1 & LFO 1 & \\
+  \textbf{31} & LFO 2 & LFO 2 & LFO 2 & LFO 2 & \\
+  \textbf{32} & LFO 3 & LFO 3 & LFO 3 & LFO 3 & \\
+  \textbf{72/(60)} & Release & Release &  & Release & \\
+  \textbf{73/(61)} & Attack & Attack &  & Attack & \\
+  \textbf{75/(62)} & Decay & Decay &  & Decay & \\
+  \textbf{77} & Vol mod (LFO 3) & Vol mod (LFO 3) &  & Vol mod (LFO 3) & \\
+  \textbf{79/(63)} & Sustain & Sustain &  & Sustain &\\
+  \textbf{82} & Pitch Bend intensity & Pitch Bend intensity &  & Pitch Bend intensity & \\
+  \textbf{85} & Detune & Detune & Detune &  &\\
+  \textbf{95} & Octave Shift & Octave Shift & Octave Shift &  &\\
+  \textbf{123} & Enable & Enable & Enable & Enable & Enable\\
+\end{tabular}
+
+* The number wrapped in '()' is the toggle message and will enable the parameter/disable the parameter.
+
+\subsection{MIDI CC (Global)}
+
+Global MIDI Control Change (CC) messages are received by all tracks and modify the global parameter value.
+
+\begin{tabular}{l | l}
+  CC & Global \\ \hline
+  \textbf{50} & LFO 1 Period\\
+    \textbf{51} & LFO 1 Waveform\\
+    \textbf{52} & LFO 2 Period\\
+    \textbf{53} & LFO 2 Waveform\\
+    \textbf{54} & LFO 3 Period\\
+    \textbf{55} & LFO 3 Waveform\\
+\end{tabular}
 
 \section{Using DMC samples}
 
