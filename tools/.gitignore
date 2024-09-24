@@ -1,6 +1,7 @@
 .vscode
-samples
-ESP32_serial_debug_monitor
 
 # sysex generator tools: msvc compiler output
 .build
+
+# sample generation and upload testing
+samples
