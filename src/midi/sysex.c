@@ -91,7 +91,7 @@ uint8_t sysex_stop_byte(uint8_t syx)
 
 void sysex()
 {
-    uint8_t val;
+    uint8_t val = MIDI_STATUS_UNDEF;
     if (midi_io_bytes_remaining() > 0) {
         if (!syx_header.data_ready) val = midi_io_read_byte();
         if (sysex_stop_byte(val)) return;  // check for 0xF7
