@@ -1,4 +1,5 @@
 .vscode
+./softserial_debug_tools/SendOnlySoftwareSerial
 
 # sysex generator tools: msvc compiler output
 .build

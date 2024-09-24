@@ -98,7 +98,7 @@ void sysex()
 {
     uint8_t val;
     if (midi_io_bytes_remaining() > 0) {
-        val = midi_io_read_byte();
+        if (!syx_header.data_ready) val = midi_io_read_byte();
         if (sysex_stop_byte(val)) return;  // check for 0xF7
 
         // When the state just changed, we need to look at the first few bytes
