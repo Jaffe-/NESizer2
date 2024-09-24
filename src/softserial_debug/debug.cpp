@@ -13,6 +13,17 @@ extern "C" {
 
     DebugBuffer debugBuffer{DEBUG_BUFFER_SIZE};
 
+    void debug_stop()
+    {
+        debug_load(DBG_STOP);
+    }
+
+    uint8_t debug_thru(uint8_t val)
+    {
+        debug_load(val);
+        return val;
+    }
+
     /*
         debug_byte_message(uint8_t message_header, uint8_t size, ...) is Variadic Function for creating debug messages with a dynamic number of bytes.
         it loads bytes to the ring buffer in order to build a packet with a header/instructions for processing on the RX end.
@@ -34,7 +45,7 @@ extern "C" {
                 debug_load((uint8_t)va_arg(args, int));
                 size--;
             }
-            debug_load(DBG_STOP);
+            debug_stop();
         va_end(args);
     }
 
@@ -48,8 +59,9 @@ extern "C" {
             debug_load((uint8_t)msg[i]);
             i++;
         }
-        debug_load(DBG_STOP);
+        debug_stop();
     }
+
 
     // wrappers for c compatibility:
     void debug_setup() { serial_debug_setup(SERIAL_BAUDRATE); }

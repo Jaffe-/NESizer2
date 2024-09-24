@@ -50,6 +50,7 @@ void handle_data(byte data)
             Serial.write(data); // incoming message should just be a text string, print it
 
         } else if (message_type == DBG_MIDI_SYSEX) {
+            if (data < 16) Serial.print("0");
             Serial.print(data, HEX); Serial.print(" ");  // incoming message should just be a text string, print it
             if (++printed_bytes > 15) {
                 printed_bytes = 0;
@@ -135,7 +136,9 @@ void del_buffer()
 
 void unexpected_byte(byte data)
 {
-    Serial.print("Unexpected byte: "); Serial.println(data);
+    Serial.print("Unexpected byte: ");
+    if (data < 16) Serial.print("0");
+    Serial.println(data, HEX);
 }
 
 

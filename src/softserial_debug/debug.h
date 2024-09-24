@@ -15,6 +15,8 @@ extern "C" {
         DBG_MIDI_SYSEX
     };  // more debug messages types coming soon
 
+    void debug_stop();
+    uint8_t debug_thru(uint8_t val);
     void debug_byte_message(uint8_t msg_type, uint8_t size, ...);
     void debug_text_message(const char *msg);
 
