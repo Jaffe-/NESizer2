@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -21,8 +21,8 @@
   SRAM interface with context switching
 
   Handles the low level details of reading and writing to/from the SRAM memory.
-  Provides means of random access using a given adress, as well as writing or 
-  reading sequentially to/from memory. 
+  Provides means of random access using a given adress, as well as writing or
+  reading sequentially to/from memory.
 */
 
 
@@ -61,3 +61,5 @@ void memory_write_sequential(struct memory_context *context, uint8_t value);
 
 void memory_setup(void);
 void memory_clean(void);
+
+uint32_t reverse_dword(uint32_t value);
