@@ -98,7 +98,7 @@ void sysex()
 {
     uint8_t val;
     if (midi_io_bytes_remaining() > 0) {
-        val = midi_io_read_byte();
+        if (!syx_header.data_ready) val = midi_io_read_byte();
         if (sysex_stop_byte(val)) return;  // check for 0xF7
 
         // When the state just changed, we need to look at the first few bytes
@@ -153,8 +153,9 @@ void sysex()
                 else {
                     sample.type = syx_header.sample_type;
                     sample.size = syx_header.sample_size;
-                    sample_new(&sample, syx_header.sample_number);
+                    sample_new(&sample, syx_header.sample_number); debug_load(DBG_MIDI_SYSEX);
                     initiate_transfer();
+                    return;
                 }
             }
 
@@ -193,12 +194,14 @@ void transfer()
         if (val == SYSEX_STOP) {
             ui_pop_mode();
             reset_sysex_header(&syx_header);
+            debug_stop(); debug_load_7dword(sample.bytes_done); debug_load_7dword(sample.size);
             if (sample.bytes_done != sample.size)
                 error_set(ERROR_MIDI_RX_LEN_MISMATCH);
         }
 
         else if ((val & 0x80) == 0) {
             if (sample.bytes_done < sample.size) {
+                debug_load(val);
                 sample_write_serial(&sample, val);
                 midi_transfer_progress = (sample.bytes_done << 4) / sample.size;
             }

@@ -15,14 +15,16 @@ extern "C" {
         DBG_MIDI_SYSEX
     };  // more debug messages types coming soon
 
-    void debug_stop();
-    uint8_t debug_thru(uint8_t val);
-    void debug_byte_message(uint8_t msg_type, uint8_t size, ...);
-    void debug_text_message(const char *msg);
-
     void debug_setup();
     void debug_load(uint8_t data);
     void debug_print();
+
+    void debug_text_message(const char *msg);
+    void debug_byte_message(uint8_t msg_type, uint8_t size, ...);
+    void debug_load_word(uint16_t data);
+    void debug_load_7dword(uint32_t data);
+    uint8_t debug_thru(uint8_t data);
+    void debug_stop();
 
 #ifdef __cplusplus
 }

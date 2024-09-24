@@ -13,16 +13,12 @@ extern "C" {
 
     DebugBuffer debugBuffer{DEBUG_BUFFER_SIZE};
 
-    void debug_stop()
-    {
-        debug_load(DBG_STOP);
-    }
 
-    uint8_t debug_thru(uint8_t val)
-    {
-        debug_load(val);
-        return val;
-    }
+    // wrappers for c compatibility:
+    void debug_setup() { serial_debug_setup(SERIAL_BAUDRATE); }
+    void debug_load(uint8_t data) { debugBuffer.loadByte(data); }
+    void debug_print() { debugBuffer.printByte(); }
+
 
     /*
         debug_byte_message(uint8_t message_header, uint8_t size, ...) is Variadic Function for creating debug messages with a dynamic number of bytes.
@@ -49,6 +45,7 @@ extern "C" {
         va_end(args);
     }
 
+
     /*
         debug_text_message(const char *msg) sends a text string over serial to the debug RX device
     */
@@ -63,10 +60,34 @@ extern "C" {
     }
 
 
-    // wrappers for c compatibility:
-    void debug_setup() { serial_debug_setup(SERIAL_BAUDRATE); }
-    void debug_load(uint8_t data) { debugBuffer.loadByte(data); }
-    void debug_print() { debugBuffer.printByte(); }
+    void debug_load_word(uint16_t data)
+    {
+        debug_load(data & 0xFF);
+        debug_load((data >> 8) & 0xFF);
+    }
+
+
+    void debug_load_7dword(uint32_t data)
+    {
+        uint8_t val = (uint8_t)(data & 0x7F);  debug_load(val);
+        val = (uint8_t)((data >> 7) & 0x7F);   debug_load(val);
+        val = (uint8_t)((data >> 14) & 0x7F);  debug_load(val);
+    }
+
+
+    uint8_t debug_thru(uint8_t val)
+    {
+        debug_load(val);
+        return val;
+    }
+
+
+    void debug_stop()
+    {
+        debug_load(DBG_STOP);
+    }
+
+
 
 #ifdef __cplusplus
 }
