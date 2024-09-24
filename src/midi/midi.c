@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include "midi.h"
+#include "sysex.h"
 #include "io/midi.h"
 #include "envelope/envelope.h"
 #include "lfo/lfo.h"
@@ -36,7 +37,6 @@
 #include "io/leds.h"
 #include "portamento/portamento.h"
 #include "assigner/assigner.h"
-#include "sample/sample.h"
 #include "sequencer/sequencer.h"
 #include "patch/patch.h"
 #include "settings/settings.h"
@@ -44,25 +44,9 @@
 
 #include "softserial_debug/debug.h"
 
-enum midi_state {
-    STATE_MESSAGE,
-    STATE_SYSEX,
-    STATE_TRANSFER,
-    STATE_IGNORE_SYSEX
-};
-
-uint8_t midi_notes[5];
-
-static enum midi_state state = STATE_MESSAGE;
-static uint8_t sysex_id = 0;
-static uint8_t device_id = 0;
-static uint8_t sysex_command = 0;
+enum midi_state state = STATE_MESSAGE;
 
 static inline void interpret_message();
-static inline void transfer();
-static inline void sysex();
-static inline void initiate_transfer();
-static inline void ignore_sysex();
 
 static inline uint8_t get_midi_channel(uint8_t channel)
 {
@@ -74,68 +58,66 @@ void midi_channel_apply(struct midi_message* msg)
 {
     uint8_t midi_channel = get_midi_channel(msg->channel);
     switch (msg->command) {
-    case MIDI_CMD_NOTE_ON:
-        if (getvalue.state == ACTIVE && getvalue.parameter.type == NOTE) {
-            getvalue.midi_note = msg->data1;
-        } else {
-            if (msg->data2 == 0) {
-                if (sequencer_midi_note == msg->data1)
-                    sequencer_midi_note = 0xFF;
-                note_stack_pop(midi_channel, msg->data1);
+        case MIDI_CMD_NOTE_ON:
+            if (getvalue.state == ACTIVE && getvalue.parameter.type == NOTE) {
+                getvalue.midi_note = msg->data1;
             } else {
-                sequencer_midi_note = msg->data1;
-                note_stack_push(midi_channel, msg->data1);
-                // serial debug test:
-                debug_text_message("Note test");
-                debug_byte_message(DBG_MIDI_NOTE, 3, midi_channel, msg->data1, msg->data2);
+                if (msg->data2 == 0) {
+                    if (sequencer_midi_note == msg->data1)
+                        sequencer_midi_note = 0xFF;
+                    note_stack_pop(midi_channel, msg->data1);
+                } else {
+                    sequencer_midi_note = msg->data1;
+                    note_stack_push(midi_channel, msg->data1);
+                    // serial debug test:
+                    debug_byte_message(DBG_MIDI_NOTE, 3, midi_channel, msg->data1, msg->data2);
+                }
             }
-        }
-        break;
+            break;
 
-    case MIDI_CMD_NOTE_OFF:
-        if (sequencer_midi_note == msg->data1)
-            sequencer_midi_note = 0xFF;
-        note_stack_pop(midi_channel, msg->data1);
-        break;
+        case MIDI_CMD_NOTE_OFF:
+            if (sequencer_midi_note == msg->data1)
+                sequencer_midi_note = 0xFF;
+            note_stack_pop(midi_channel, msg->data1);
+            break;
 
-    case MIDI_CMD_PITCH_BEND:
-        for (uint8_t i = 0; i < 5; i++) {
-            if (assigner_midi_channel_get(i) == midi_channel) {
-                if (i < 3)
-                    mod_pitchbend_input[i] = ((uint16_t)msg->data1) | ((uint16_t)msg->data2) << 7;
-                else if (i == 3)
-                    mod_pitchbend_input[i] = msg->data2 >> 3;
+        case MIDI_CMD_PITCH_BEND:
+            for (uint8_t i = 0; i < 5; i++) {
+                if (assigner_midi_channel_get(i) == midi_channel) {
+                    if (i < 3)
+                        mod_pitchbend_input[i] = ((uint16_t)msg->data1) | ((uint16_t)msg->data2) << 7;
+                    else if (i == 3)
+                        mod_pitchbend_input[i] = msg->data2 >> 3;
+                }
             }
-        }
-        break;
+            break;
 
-    case MIDI_CMD_CONTROL_CHANGE:
-        // serial debug test:
-        debug_text_message("CC test");
-        debug_byte_message(DBG_MIDI_CC, 3, midi_channel, msg->data1, msg->data2);
-        break;
+        case MIDI_CMD_CONTROL_CHANGE:
+            // serial debug test:
+            debug_byte_message(DBG_MIDI_CC, 3, midi_channel, msg->data1, msg->data2);
+            break;
 
-    case MIDI_CMD_PATCH_CHANGE:
-        if (patch_pc_limit(get_patchno_addr(), PATCH_MIN, PATCH_MAX, msg->data1)) {  // range limit
-            patch_load(msg->data1);
-            settings_write(PROGRAMMER_SELECTED_PATCH, msg->data1);
-        }
-        break;
+        case MIDI_CMD_PATCH_CHANGE:
+            if (patch_pc_limit(get_patchno_addr(), PATCH_MIN, PATCH_MAX, msg->data1)) {  // range limit
+                patch_load(msg->data1);
+                settings_write(PROGRAMMER_SELECTED_PATCH, msg->data1);
+            }
+            break;
     }
 }
 
 void midi_handler()
 {
     switch (state) {
-    case STATE_MESSAGE:
-        interpret_message(); break;
-    case STATE_SYSEX:
-        sysex(); break;
-    case STATE_TRANSFER:
-        transfer(); break;
-    case STATE_IGNORE_SYSEX:
-        ignore_sysex(); break;
-    default: break;
+        case STATE_MESSAGE:
+            interpret_message(); break;
+        case STATE_SYSEX:
+            sysex(); break;
+        case STATE_TRANSFER:
+            transfer(); break;
+        case STATE_IGNORE_SYSEX:
+            ignore_sysex(); break;
+        default: break;
     }
 }
 
@@ -153,169 +135,46 @@ static inline void interpret_message()
 
         /* Not channel directed message */
         switch (msg.command) {
-        case MIDI_CMD_SYSEX:
-            state = STATE_SYSEX;    debug_load(DBG_MIDI_SYSEX); debug_load(0xF0);
-            break;
+            case MIDI_CMD_SYSEX:
+                state = STATE_SYSEX; return;
+                break;
 
-        case MIDI_CMD_TIMECODE:
-            break;
+            case MIDI_CMD_TIMECODE:
+                break;
 
-        case MIDI_CMD_SONGPOS:
-            break;
+            case MIDI_CMD_SONGPOS:
+                break;
 
-        case MIDI_CMD_SONGSEL:
-            break;
+            case MIDI_CMD_SONGSEL:
+                break;
 
-        case MIDI_CMD_TUNEREQUEST:
-            break;
+            case MIDI_CMD_TUNEREQUEST:
+                break;
 
-        case MIDI_CMD_SYSEX_END:
-            break;
+            case MIDI_CMD_SYSEX_END:
+                break;
 
-        case MIDI_CMD_CLOCK:
-            sequencer_midi_clock();
-            break;
+            case MIDI_CMD_CLOCK:
+                sequencer_midi_clock();
+                break;
 
-        case MIDI_CMD_START:
-            sequencer_play();
-            break;
+            case MIDI_CMD_START:
+                sequencer_play();
+                break;
 
-        case MIDI_CMD_CONTINUE:
-            sequencer_continue();
-            break;
+            case MIDI_CMD_CONTINUE:
+                sequencer_continue();
+                break;
 
-        case MIDI_CMD_STOP:
-            sequencer_stop();
-            break;
+            case MIDI_CMD_STOP:
+                sequencer_stop();
+                break;
 
-        case MIDI_CMD_ACTIVESENSE:
-            break;
+            case MIDI_CMD_ACTIVESENSE:
+                break;
 
-        case MIDI_CMD_RESET:
-            break;
-        }
-    }
-}
-
-#define SYSEX_STOP 0xF7
-
-uint8_t midi_transfer_progress = 0;
-
-static struct sample sample;
-
-static inline void sysex()
-{
-    // When the state just changed, we need to look at the first few bytes
-    // to determine what sysex message we're dealing with
-    debug_load(midi_io_bytes_remaining());
-
-    if (midi_io_bytes_remaining() >= 3) {
-        if (!sysex_command) {
-            sysex_id = midi_io_read_byte();                         debug_load(sysex_id);
-            device_id = midi_io_read_byte();                        debug_load(device_id);
-            sysex_command = midi_io_read_byte();                    debug_load(sysex_command);
-        }
-
-        if ((sysex_id == SYSEX_ID) && (device_id == SYSEX_DEVICE_ID)) {
-
-            if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
-                if (midi_io_bytes_remaining() >= 5) {
-                // Read sample descriptor and store in sample object
-                    uint8_t sample_number = midi_io_read_byte();            debug_load(sample_number);
-                    sample.type = midi_io_read_byte();                      debug_load(sample.type);
-                    sample.size = midi_io_read_byte();                      debug_load(sample.size);
-                    sample.size |= (uint32_t)midi_io_read_byte() << 7;      debug_load(sample.size);
-                    sample.size |= (uint32_t)midi_io_read_byte() << 14;     debug_load(sample.size);
-                    sample_new(&sample, sample_number);
-
-                    initiate_transfer();
-                }
-            }
-
-            if (sysex_command == (uint8_t)SYSEX_CMD_PATCH_LOAD) {
-                if (midi_io_bytes_remaining() >= 1) {
-                    // example message (selects patch # 4):
-                    // F0    7D    4E    03    04    F7
-                    // STRT  {  ID  }    CMD   ##    END
-                    uint8_t patch_byte = midi_io_read_byte();
-                    if (patch_pc_limit(get_patchno_addr(), PATCH_MIN, PATCH_MAX, patch_byte)) {  // range limit
-                        patch_load(patch_byte);
-                        settings_write(PROGRAMMER_SELECTED_PATCH, patch_byte);
-                    }
-                }
-            }
-        }
-
-        else {
-            ignore_sysex();
-        }
-    }
-
-    ignore_sysex();
-}
-
-#define ERROR_MIDI_RX_LEN_MISMATCH (1 << 2)
-
-static inline void transfer()
-/*
-  Handlers transfering of data via MIDI
-*/
-{
-    while (midi_io_bytes_remaining() >= 1) {
-        uint8_t val = midi_io_read_byte();
-        debug_load(val);
-        debug_print();
-
-        if (val == SYSEX_STOP) {
-            ui_pop_mode();
-            state = STATE_MESSAGE;
-            if (sample.bytes_done != sample.size)
-                error_set(ERROR_MIDI_RX_LEN_MISMATCH);
-        }
-
-        else if ((val & 0x80) == 0) {
-            if (sysex_command == SYSEX_CMD_SAMPLE_LOAD) {
-                if (sample.bytes_done < sample.size) {
-                    sample_write_serial(&sample, val);
-                    midi_transfer_progress = (sample.bytes_done << 4) / sample.size;
-                }
-            }
-        }
-    }
-}
-
-static inline void initiate_transfer()
-{
-    // Set UI mode to transfer (which turns the button LEDs into a status bar
-    // for the duration of the transfer)
-    ui_push_mode(MODE_TRANSFER);
-
-    // Disable DMC
-    dmc.sample_enabled = 0;
-
-    state = STATE_TRANSFER;
-    midi_transfer_progress = 0;
-}
-
-static inline void ignore_sysex()
-{
-    // for handling streams of sysex data not meant for NESizer.
-    state = STATE_IGNORE_SYSEX;
-
-    leds_7seg_custom(3, 0b00101010);  // n
-    leds_7seg_custom(4, 0b00111010);  // o
-
-    while (midi_io_bytes_remaining() >= 1) {
-        uint8_t val = midi_io_read_byte();
-        debug_load(val);
-        debug_print();
-
-        if (val == SYSEX_STOP) {
-            sysex_id = 0;
-            device_id = 0;
-            sysex_command = 0;
-            state = STATE_MESSAGE;
-            debug_load(DBG_STOP);
+            case MIDI_CMD_RESET:
+                break;
         }
     }
 }
