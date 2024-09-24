@@ -34,6 +34,7 @@
 #include "io/input.h"
 #include "io/battery.h"
 #include "midi/midi.h"
+#include "midi/sysex.h"
 #include "modulation/modulation.h"
 #include "patch/patch.h"
 #include "io/memory.h"
@@ -66,7 +67,7 @@ struct getvalue_config getvalue;
 static void getvalue_handler(void);
 static void show_startup_errors(void);
 static void silence_channels(void);
-static void transfer(void);
+static void show_transfer(void);
 static void error_handler(void);
 
 struct mode_data modes[] = {
@@ -87,7 +88,7 @@ struct mode_data modes[] = {
                        .handler = getvalue_handler},
     [MODE_TRANSFER] = {.button = 0xFF,
                        .leds = 0,
-                       .handler = transfer},
+                       .handler = show_transfer},
     [MODE_ERROR] = {.button = 0xFF,
                        .leds = 0,
                        .handler = error_handler},
@@ -404,10 +405,10 @@ static void show_startup_errors(void)
     }
 }
 
-void transfer(void)
+static void show_transfer(void)
 {
-    leds[3] = 0b00001010; // s
-    leds[4] = 0b00001010; // A
+    leds[3] = 0b00011110; // t
+    leds[4] = 0b00001010; // r
 
     for (uint8_t i = 0; i < 16; i++) {
         if (midi_transfer_progress > i)
@@ -431,8 +432,8 @@ static void error_handler(void)
         else
             leds_off(i);
     }
-    leds_7seg_set(3, 0b10011110);
-    leds_7seg_set(4, 0b00001010);
+    leds[3] = 0b10011110; // E
+    leds[4] = 0b00001010; // r
 
     if (button_pressed(BTN_SAVE))
         ui_pop_mode();

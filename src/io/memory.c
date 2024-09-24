@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -21,8 +21,8 @@
   SRAM interface with context switching
 
   Handles the low level details of reading and writing to/from the SRAM memory.
-  Provides means of random access using a given adress, as well as writing or 
-  reading sequentially to/from memory. 
+  Provides means of random access using a given adress, as well as writing or
+  reading sequentially to/from memory.
 */
 
 
@@ -64,11 +64,11 @@ static inline void set_addrhigh(uint8_t addrhigh)
 
   /* In the case of the high address, the value written to this latch also
      controls the Chip Enable (CE) signals of the SRAMs. The lower three bits
-     of the latch are connected to the upper three bits of each SRAM's address 
+     of the latch are connected to the upper three bits of each SRAM's address
      inputs, while the fourth bit is the first SRAM's CE signal, and the fifth
      is the second SRAM's CE signal. The latter two must be set to zero
      depending on whether the most significant bit of addrhigh is set, in order
-     to select the correct SRAM IC.*/ 
+     to select the correct SRAM IC.*/
   bus_write((addrhigh & 0x07) | ((addrhigh & 0x08) ? 0b01000 : 0b10000));
 }
 
@@ -104,11 +104,11 @@ static inline uint8_t read_data(void)
 
   bus_deselect();
   bus_dir_input();
-    
+
   uint8_t value = bus_read();
-    
+
   bus_dir_output();
-    
+
   deselect();
 
   return value;
@@ -117,7 +117,7 @@ static inline uint8_t read_data(void)
 static inline void write_data(uint8_t value)
 {
   set_addrhigh(current_context->high);
-    
+
   // Switch to memory data address and put value on bus:
   bus_deselect();
   we_low();
@@ -164,7 +164,7 @@ void memory_set_address(struct memory_context *context, uint32_t address)
 */
 {
   current_context = context;
-  
+
   union val32 addr = {.value = address};
 
   // Put first 8 address bits in low address latch:
@@ -187,12 +187,12 @@ void memory_write(uint32_t address, uint8_t value)
 }
 
 uint8_t memory_read(uint32_t address)
-{    
+{
   // Set address:
   memory_set_address(&default_context, address);
 
   uint8_t value = read_data();
-	
+
   return value;
 }
 
@@ -256,7 +256,7 @@ uint32_t memory_read_dword(uint32_t address)
 void memory_clean(void)
 {
   memory_set_address(&default_context, 0);
-  for (uint32_t i = 0; i < MEMORY_SIZE; i++) 
+  for (uint32_t i = 0; i < MEMORY_SIZE; i++)
     memory_write_sequential(&default_context, 0);
 }
 
@@ -270,3 +270,8 @@ void memory_setup(void)
   DDRC |= WE;
 }
 
+uint32_t reverse_dword(uint32_t value)
+{
+    uint32_t new_value = (value & 0x000000ff) << 24 | (value & 0x0000ff00) << 8 | (value & 0x00ff0000) >> 8 | (value & 0xff000000) >> 24;
+    return new_value;
+}

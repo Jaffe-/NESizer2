@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include "parameter/parameter.h"
 
+#define MIDI_MAX_CC 0x80 //128
+#define MIDI_MID_CC 0x3F //63
+// #define NULL ((void *) 0)
 
 struct midi_command {
     uint8_t cc;

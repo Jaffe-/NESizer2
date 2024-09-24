@@ -16,3 +16,6 @@
 
 .pio
 .vscode
+
+src/softserial_debug
+tools/softserial_debug_tools

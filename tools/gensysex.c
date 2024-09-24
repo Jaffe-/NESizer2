@@ -4,7 +4,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "../src/midi/midi.h"
+#include "../src/midi/sysex.h"
 
 int main(int argc, char **argv)
 {

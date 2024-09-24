@@ -22,7 +22,7 @@
 
   Buffers held notes in monophonic mode, to improve live performace experience.
   This behavior is called "legato" mode in most synths.
-  In polyphonic mode, reverts to previous behavior.
+  In polyphonic mode, or DCM channel, reverts to previous behavior.
 */
 
 #include <stdint.h>
