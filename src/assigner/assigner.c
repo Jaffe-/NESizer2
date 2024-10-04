@@ -113,6 +113,16 @@ uint8_t assigner_midi_channel_get(uint8_t chn)
     return midi_channels[chn];
 }
 
+uint8_t assigner_channel_get(uint8_t midi_channel)
+{   
+    for (uint8_t i = 0; i < 5; i++) {
+        if (midi_channels[i] == midi_channel) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void assigner_notify_note_on(uint8_t midi_channel, uint8_t note)
 {
     /* find the group listening on the channel */
@@ -276,8 +286,8 @@ void play_note(uint8_t channel, uint8_t midi_note)
         break;
 
     case CHN_DMC:
-        if (sample_occupied(midi_note - 60)) {
-            sample_load(&dmc.sample, midi_note - 60);
+        if (sample_occupied(midi_note - SAMPLE_MIDI_LOW_INDEX)) {
+            sample_load(&dmc.sample, midi_note - SAMPLE_MIDI_LOW_INDEX);
             if (dmc.sample.size != 0)
                 dmc.sample_enabled = 1;
             break;

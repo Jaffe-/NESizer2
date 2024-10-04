@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015 Johan Fjeldtvedt 
+  Copyright 2014-2015 Johan Fjeldtvedt
 
   This file is part of NESIZER.
 
@@ -37,3 +37,4 @@ void patch_save(uint8_t num);
 void patch_load(uint8_t num);
 void patch_initialize(uint8_t num);
 void patch_clean(void);
+uint8_t patch_pc_limit(int8_t* patch_num, int8_t min, int8_t max, int8_t pc_num);

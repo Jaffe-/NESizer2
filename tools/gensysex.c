@@ -4,7 +4,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "../src/midi/midi.h"
+#include "../src/midi/sysex.h"
 
 int main(int argc, char **argv)
 {
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 
     header[0] = sysex_cmd;
 
-    size_t size_total = size_header + 2; // 2 bytes for System Exclusive and End of Exclusive
+    size_t size_total = size_header + 4;  // +1 byte each for System Exclusive, SysexId, DeviceId, and End of Exclusive
     switch (data_format) {
     default:
     case SYSEX_DATA_FORMAT_4BIT:
@@ -110,13 +110,15 @@ int main(int argc, char **argv)
 
     /* System Exclusive */
     buf[0] = 0xF0;
+    buf[1] = SYSEX_ID;
+    buf[2] = SYSEX_DEVICE_ID;
 
     for (size_t i = 0; i < size_header; i ++)
-        buf[i + 1] = header[i];
+        buf[i + 3] = header[i];
 
     /* Pack data according to given packing format */
     for (size_t fi = 0; fi < size_in; fi++) {
-        size_t i = 1 + size_header + fi;
+        size_t i = 3 + size_header + fi;
         uint8_t val;
         fread(&val, 1, 1, in);
         switch (data_format) {

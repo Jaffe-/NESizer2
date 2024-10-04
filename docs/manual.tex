@@ -693,6 +693,47 @@ The errors that can occur are:
 \end{itemize}
 
 
+\section{MIDI}
+
+\subsection{MIDI CC}
+The Nesizer is capable of receiving MIDI Control Change (CC) messages. Each track can independently respond to CC messages, adjusting its parameters according to the specified ranges under PROGRAM and PAGE 2 modes. These ranges are automatically scaled to the full CC range of 0-127. Additionally, toggle-based ranges are mapped to 'OFF' for values below 64 and 'ON' for values 64 or higher.
+
+
+\begin{tabular}{l | l | l | l | l | l }
+  CC/(*) & SQ 1 & SQ 2 & Tri & Noise & DMC\\ \hline
+  \textbf{1} & Duty & Duty & & & \\
+  \textbf{5/(65)} & Glide & Glide & Glide & & \\
+  \textbf{14} &  &  &  & Loop & Loop \\
+  \textbf{30} & LFO 1 & LFO 1 & LFO 1 & LFO 1 & \\
+  \textbf{31} & LFO 2 & LFO 2 & LFO 2 & LFO 2 & \\
+  \textbf{32} & LFO 3 & LFO 3 & LFO 3 & LFO 3 & \\
+  \textbf{72/(60)} & Release & Release &  & Release & \\
+  \textbf{73/(61)} & Attack & Attack &  & Attack & \\
+  \textbf{75/(62)} & Decay & Decay &  & Decay & \\
+  \textbf{77} & Vol mod (LFO 3) & Vol mod (LFO 3) &  & Vol mod (LFO 3) & \\
+  \textbf{79/(63)} & Sustain & Sustain &  & Sustain &\\
+  \textbf{82} & Pitch Bend intensity & Pitch Bend intensity &  & Pitch Bend intensity & \\
+  \textbf{85} & Detune & Detune & Detune &  &\\
+  \textbf{95} & Octave Shift & Octave Shift & Octave Shift &  &\\
+  \textbf{123} & Enable & Enable & Enable & Enable & Enable\\
+\end{tabular}
+
+* The number wrapped in '()' is the toggle message and will enable the parameter/disable the parameter.
+
+\subsection{MIDI CC (Global)}
+
+Global MIDI Control Change (CC) messages are received by all tracks and modify the global parameter value.
+
+\begin{tabular}{l | l}
+  CC & Global \\ \hline
+  \textbf{50} & LFO 1 Period\\
+    \textbf{51} & LFO 1 Waveform\\
+    \textbf{52} & LFO 2 Period\\
+    \textbf{53} & LFO 2 Waveform\\
+    \textbf{54} & LFO 3 Period\\
+    \textbf{55} & LFO 3 Waveform\\
+\end{tabular}
+
 \section{Using DMC samples}
 
 \subsection{Sample upload workflow}
@@ -726,6 +767,8 @@ The converted sample needs to be wrapped with the necessary metadata and MIDI Sy
 
 \begin{verbatim}
   F0 (System Exclusive)
+  7D (Sysex ID)
+  4E (Device ID)
   00 (Sample load command)
   ii (Sample index)
   00 (Reserved)
@@ -741,7 +784,7 @@ The converted sample needs to be wrapped with the necessary metadata and MIDI Sy
 
 \textbf{Note:} Any data byte contained within a MIDI System Exclusive message must never have the most significant bit set.
 
-The sample index can be any number between 0 and 99. The index 0 corresponds to MIDI note 60, which is middle C. This is the note that has to be played on the MIDI input or entered into a sequence pattern to trigger the sample on the DMC channel.
+The sample index can be any number between 0 and 99. The index 0 corresponds to MIDI note 36, which is C3, commonly used for kick drum in the General MIDI drum map standard. This is the note that has to be played on the MIDI input or entered into a sequence pattern to trigger the sample on the DMC channel.
 
 The sample size must be given in bytes, but split across three 7-bit words.
 
@@ -751,7 +794,7 @@ In the NESIZER source repository, there is a helpful tool \verb+gensysex.c+ whic
 
 \verb+gensysex sample <input format> <index> <raw filename> <sysex filename>+
 
-The following example creates a SysEx file for the file \verb+sample.raw+ created in the above example. It places the sample at index 2, meaning that the note D4 must be played to trigger this sample:
+The following example creates a SysEx file for the file \verb+sample.raw+ created in the above example. It places the sample at index 2, meaning that the note D3 must be played to trigger this sample:
 
 \verb+gensysex sample 8bit 2 sample.raw sample.syx+
 

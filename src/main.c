@@ -41,6 +41,8 @@
 #include "ui/ui.h"
 #include "settings/settings.h"
 #include "patch/patch.h"
+#include "midi/midi.h"
+#include "midi/midi_cc.h"
 
 #include <util/delay.h>
 
@@ -51,6 +53,7 @@ static bool ram_integrity_check(void)
 {
     for (uint8_t i = 0; i < 8; i++)
         if (memory_read_dword(MAGIC_ADDR+4*i) != MAGIC)
+        // if (memory_read_dword(MAGIC_ADDR+4*i) != reverse_dword(MAGIC))  // load bytes to memory in correct order (will erase SRAM)
             return false;
     return true;
 }
@@ -59,6 +62,7 @@ static void ram_initialize(void)
 {
     for (uint8_t i = 0; i < 8; i++)
         memory_write_dword(MAGIC_ADDR+4*i, MAGIC);
+        // memory_write_dword(MAGIC_ADDR+4*i, reverse_dword(MAGIC));  // load bytes to memory in correct order (will erase SRAM)
     settings_init();
     for (uint8_t i = 0; i < 100; i++)
         patch_initialize(i);
@@ -101,4 +105,6 @@ int main()
 
     // The task manager takes over from here
     task_manager();
+
+    midi_init();
 }
