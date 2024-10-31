@@ -138,7 +138,7 @@ In the programming mode, the various parameters of the sound channels and LFOs c
 \end{tikzpicture}
 
 \subsection{Loading patches}
-To load a patch, press either \btn{UP} or \btn{DOWN}. To go quickly up or down, press and hold the respective button. The current patch number is shown on the numeric display.
+To load a patch, press either \btn{UP} or \btn{DOWN}. To go quickly up or down, press and hold the respective button. The current patch number is shown on the numeric display. Patches can also be loaded using MIDI Program Change or short SysEx messages (see MIDI section).
 
 \subsection{Saving patches}
 To save a patch, press \btn{SAVE}. The button will start to blink to indicate that you can select where to store the new patch. Use \btn{UP} and \btn{DOWN} to select where to store the patch. Press \btn{SAVE} again to store the patch at the selected location.
@@ -696,7 +696,7 @@ The errors that can occur are:
 \section{MIDI}
 
 \subsection{MIDI CC}
-The Nesizer is capable of receiving MIDI Control Change (CC) messages. Each track can independently respond to CC messages, adjusting its parameters according to the specified ranges under PROGRAM and PAGE 2 modes. These ranges are automatically scaled to the full CC range of 0-127. Additionally, toggle-based ranges are mapped to 'OFF' for values below 64 and 'ON' for values 64 or higher.
+The NESIZER is capable of receiving MIDI Control Change (CC) messages. Each track can independently respond to CC messages, adjusting its parameters according to the specified ranges under PROGRAM and PAGE 2 modes. These ranges are automatically scaled to the full CC range of 0-127. Additionally, toggle-based ranges are mapped to 'OFF' for values below 64 and 'ON' for values 64 or higher.
 
 
 \begin{tabular}{l | l | l | l | l | l }
@@ -733,6 +733,12 @@ Global MIDI Control Change (CC) messages are received by all tracks and modify t
     \textbf{54} & LFO 3 Period\\
     \textbf{55} & LFO 3 Waveform\\
 \end{tabular}
+
+\subsection{MIDI Program Change}
+
+Patches can be quickly selected by sending a MIDI Program Change (PC) message on any channel. NESizer responds to "True Number" PC values 0-99. Some DAWs such as Logic use the True Number convention 0-127 as defined in the MIDI Specification, whereas others such as Cakewalk use the General MIDI convention of 1-128. Keep this in mind when scheduling patch changes in a DAW or using a controller.
+
+Patches can also be loaded using System Exclusive messages of the form: F0 7D 4E 03 \emph{nn} F7, where \emph{nn} is the desired 2-digit patch number 00-99 in hexidecimal format. For example, use 1C in place of \emph{nn} to load Patch 28.
 
 \section{Using DMC samples}
 
